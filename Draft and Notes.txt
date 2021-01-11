@@ -1,0 +1,107 @@
+Random numbers are everywhere, e.g. generation of private keys, voting systems, games, financial services, etc. While research on randomness is not a new one, there has been recent interest in a distributed version of randomness, i.e. sourcing random numbers (one at a time) from distributed sources such that we no longer need to worry about a single point of failure in case (say) NIST gets hacked by an attacker either internally or externally.
+
+In particular, we consider the scenario of a randomness beacon (a concept first formulated by Michael O. Rabin in 1983) -- a distributed version of it called distributed randomness beacon (DRB), in which we assume at most f number of nodes can be Byzantine. On the most basic level, such a beacon should output a random number (unpredictable and unbiased by any node or even a bounded group of nodes) every round (e.g. which could be preset to a specific time interval) for anyone to utilize in a public manner.
+
+Our working implementations in Elixir include 3 types of DRB: 1. Commit-Reveal + VDF [1][2] (verifiable delay function); 2. chain of trapdoor VDFs [12]; and 3. DVRF-based (distributed verifiable random function) DRB [4][5][6][8] involving an initial distributed key generation [10] (DKG). Respectively, we call these DRB-1, DRB-2, and DRB-3 for convenience throughout the paper. Largely speaking, we note that DRB-1 and DRB-2 are based on VDF while DRB-3 is based on DKG and DVRF. This latter note is noteworthy, as DRB-3 presents a generalization of drand, which is a state-of-the-art (first launched in July 2020 by a group called League of Entropy comprising organizations such as Cloudflare, Ethereum Foundation, and UCL) rendition of DRB using a specific type of DVRF, namely BLS threshold signature scheme (followed by a hash function).
+
+As we study the extent to which a DRB could be delayed with the presence of adversarial nodes (simulated via Emulation layer in Elixir), we also discuss some tradeoffs that certain protocols incur on a theoretical level as well. In sum, our contributions are the following:
+
+• Working implementations of DRB-1, DRB-2, and DRB-3 in Elixir
+• Discussion of effects of VDF on DRB-1 and DRB-2
+• Comparison of DRB-3 to drand (current state-of-the-art)
+• How message delay and Byzantine messages (either by sending a bad message or not sending any message when supposed to) can delay a DRB
+• Overall statement regarding the preference of DRB-1 and DRB-2 in a network with potentially many Byzantine nodes vs preference of DRB-3 when prioritizing speed while being robust to occasional failures by honest nodes
+
+2. Summary of Past Work
+The following are some of the relevant solutions to DRB: commit-reveal (strawman solution), PVSS-based (publicly verifiable secret sharing), VDF-based, and DKG-based. Our 3 DRBs fall into the last two categories.
+
+In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to its secret random number and then adding all shares (revealed later) from all nodes to compute the final random number in that round of DRB. The problem with this is that the last person to reveal his share can in fact check the round's output faster than other people and hence can decide not to reveal his number if he doesn't like the round's output, biasing the DRB. This is called the last revealer attack.
+
+To prevent this, the main idea (although there are definitely many variations) behind a scheme based on PVSS [3][11][13][14] (which is an extension of Shamir's secret sharing with public verifiability) is that when a node "fails" (either honestly or maliciously), other nodes (i.e. threshold t number of nodes specified by the protocol) are able to cooperate and "reconstruct" the faulty node's share without the presence of that node.
+
+Another idea is that each round's output can be run through a VDF per round such that it may take (say) 10 minutes before the last revealer has time to decide whether or not he likes the round's output. While this delay factor is the critical ingredient for schemes based on VDF, it is also worth noting that there have historically been only two popular types of VDFs [2] and that finding a good VDF (e.g. without trusted setup in a class group of imaginary quadratic number field) is an active area of research due to the novelty of the technique.
+
+Lastly, DKG is literally a distributed key generation, which allows unrelated nodes to possess individual secret keys that add up to a group secret key such that it becomes possible for individual nodes to produce a common output without ever having access to the group secret key that computed the output. For a demonstrative example, suppose Alice and Bob performed DKG and ended up with their respective individual secret keys. Then Alice can output shareAlice in some "fashion" while Bob can output shareBob in the same fashion. When combined, these two shares can create a common share (which is our random number in the context of DRB).
+
+Hence, a DRB based on DKG is subject to what the above "fashion" would entail. Namely, it entails BLS threshold signature scheme (followed by a hash function) in the case of drand, whereas it entails a DVRF (based on decisional Diffie-Hellman assumption) in the case of our DRB-3. One noteworthy property of DKG helpful in the context of DRB is that we are able to obtain a common share (DRB round's output) between nodes regardless of any specific nodes participating in the process as long as threshold t number of nodes send in valid shares per round. It is in this particular way that a DKG-based DRB is able to exhibit robustness to failures.
+
+3. Our Approaches: Design and Implementation
+Our approaches build upon verifiable delay functions [1][2] (DRB-1, DRB-2) and DKG [10] (DRB-3). Implementation and testing have been done in Elixir, with :crypto module used for some basic cryptographic functions (e.g. :sha256). We have also used a custom library for algorithms pertaining to number theory and prime numbers. Elixir’s Emulation layer is used to simulate message delays.
+
+3.1 VDF-based protocols
+A verifiable delay function is a function that takes a prescribed time to compute, even on a parallel computer. However once computed, the output can be quickly verified by anyone. Moreover, it maps every input to a unique valid output. Exponentiation in a group of unknown order is believed to have this property [2]. Trapdoor VDFs are a modification and extension to traditional VDFs such that in addition to the public parameters of the VDF, the party invoking the VDF knows a secret parameter sk, which can be used to evaluate the VDF efficiently. We have used T sequential squarings in RSA group to construct the delay function. To allow quick public verifiability, proofs are constructed using Wesolowski’s public-coin succinct argument [15].
+
+3.1.1 Commit-Reveal + VDF (DRB-1)
+The strawman solution of collecting randomness from multiple sources and hashing gives unfair advantage to the last revealer. This approach improves it by passing the output through a VDF (then hashing it). VDF adds a delay, making it slow to compute the random outcome from the collected shares.
+
+3.1.2 Chain of trapdoor VDFs (DRB-2)
+Inspired by RandRunner [12], this protocol improves upon the strawman commit-reveal protocol by not requiring a trusted third party to set up the public parameters of the VDF. It also provides an efficient alternate way to compute the result of the delay function. The protocol proceeds as follows.
+
+Setup: Every node generates its public parameters and secret trapdoor, to be used with its individual VDF based on the globally agreed parameter . Then, the public parameters are exchanged. At the end, every node should have the same set of public parameters of all the participating nodes.
+Bootstrapping: Once the setup is done, starting the protocol requires an initial random beacon value R0. It can be generated by collecting random shares from all the nodes and hashing it. R0 is also used to select the leader for the first round of the protocol.
+Execution: The protocol proceeds in rounds. A unique leader is selected at the beginning of each round without dispute. Leaders can be chosen in two ways: Randomized Round Robin and Randomized Sampling. Our implementation uses Randomized Sampling to select leaders. In each round r, the leader advances the protocol by mapping the previous random beacon value to the input space of the VDF and computing the VDF efficiently using its secret parameters (known only to the leader). The output is then broadcasted to all the nodes. To deal with adversarial leaders, at the beginning of each round, every non-leader node immediately starts to compute the round’s VDF in the background. Either after completing those T sequential steps or receiving a valid value from the leader, the nodes compute the round’s random beacon output and proceed to the next round.
+
+3.2 DKG-based protocol
+3.2.1 DVRF (DRB-3)
+A distributed verifiable random function is a distributed version of VRF, which is both verifiable and pseudorandom by definition -- where the owner of the secret key SK can compute the VRF FSK(x) and the proof SK(x) that proves its honest generation. Here, the interesting facet in the context of DRB is that no one really “owns” SK. Instead, everyone owns a part of SK via DKG such that no one ever gets to know SK in its whole in the protocol. As a result, distributed nodes can collectively produce a common output (used as the round’s output for our DRB-3) without ever knowing other parts of SK as well as SK itself. The actual computation of the final common output per round involves the Lagrange interpolation technique with any t active nodes.
+
+This is reminiscent of threshold signature schemes like BLS (based on pairing-based cryptography involving elliptic curves), which is the way adopted by drand. In contrast, our DRB-3 utilizes a DVRF based on decisional Diffie-Hellman assumption and generates a NIZK (non-interactive zero knowledge) proof based on the Chaum-Pedersen protocol.
+
+Due to the realization that DVRF is a more general form of threshold signatures (followed by a hash function), it can be stated that DRB-3 provides a more general approach to DRB when compared to drand (whose scope of discussion is limited to signature schemes). In a nutshell, DRB-3 is composed of DKG (once initially) followed by DVRF (every round) such that a BLS type of DVRF would yield drand whereas alternative forms of DVRF (which can be plugged into the protocol in a modular manner) would yield other types of DRB.
+
+4. Properties
+4.1 Security
+The following security properties are desired of DRB.
+Availability/Liveness (and Guaranteed Output Delivery): A protocol achieves liveness if an adversary cannot prevent the protocol from making progress. Guaranteed Output Delivery is a stronger form of liveness, which ensures that the adversary can not even prevent the protocol from producing a fresh output each round.
+Public-Verifiability: Third parties not directly participating in the protocol should also be able to verify generated values.
+Bias-Resistance: Any single participant or colluding adversary should not be able to influence future random beacon values to their advantage.
+Unpredictability: Correct, as well as adversarial nodes, should not be able to predict (precompute) future random beacon values.
+DRB-1 provides bias-resistance and unpredictability but fails to be available when the nodes do not broadcast their random shares. DRB-2 provides liveness, guaranteed output delivery, and bias-resistance but only provides a probabilistic guarantee of unpredictability. DRB-3 provides bias-resistance but fails to provide liveness and unpredictability when the threshold t is not in the range [f+1, n-f]. All three enjoy public-verifiability. Extended evaluation of security properties is provided in Appendix B and C.
+
+4.2 Efficiency
+Based on 100 simulations with 10 nodes, each generating 20 random numbers, we observe that the efficiency of VDF-based methods (DRB-1, DRB-2) suffers a lot with increase in network delays beyond the speed-up achieved by using trapdoors (500 ms), with the total time taken increasing from 4 sec to 60 sec. The impact of network delay on efficiency is similar to the scenario where all the leaders are adversarial and the nodes have to compute the VDF sequentially. DKG-based protocol (DRB-3) performs consistently better than VDF-based protocols in the presence of network delays, with the total time increasing from 2 sec to only 15 sec. However, the protocol fails to generate unbiased results when threshold t f . It becomes unavailable when t > n - f. Hence, t  must be in the range of [f + 1, n - f] for the protocol to work correctly. For our simulations, with t = 6, n = 10, number of Byzantine nodes allowed is f  4. Simulation results are provided in Appendix A.
+
+5. Future Work
+• Commit-Reveal + VDF protocol (DRB-1) can be extended to run without a trusted setup by using the class group of an imaginary quadratic number field instead of the RSA group.
+• DRB-1 can also be extended by using VDF on publicly available sources of randomness (e.g. closing stock price, Bitcoin’s block hash, etc.) instead of collecting random shares from nodes.
+• Trapdoor-based VDF protocol (DRB-2) can be made more efficient by using Pietrzak’s prover (instead of Wesolowski’s), which is more efficient taking only O(T) group operations to construct the proof (instead of O(T)).
+• Exploration of other types of DVRFs (e.g. distributed RSA-based signing without trusted setup) could be worthwhile for DRB-3.
+
+6. Conclusion
+In this project, we implement and evaluate the performance of VDF-based and DKG-based distributed randomness beacons in the presence of network delays and Byzantine nodes. Our VDF-based protocol (DRB-2) guarantees output delivery as long as at least one node is honest (which is best). However, efficiency takes a hit in the presence of network delay. On the other hand, our DKG-based protocol (DRB-3) performs consistently better in the presence of delay and occasional failures by honest nodes though it exhibits weaker security guarantees.
+
+Therefore, given a stable network with few dishonest nodes, DRB-3 is the preferred protocol to generate randomness. DRB-2 is preferred in a network with a majority of adversarial nodes.
+
+References
+
+
+
+[1] Boneh, Dan, et al. "Verifiable delay functions." Annual international cryptology conference. Springer, Cham, 2018.
+
+[2] Boneh, Dan, Benedikt Bünz, and Ben Fisch. "A Survey of Two Verifiable Delay Functions." IACR Cryptol. ePrint Arch. 2018 (2018): 712.
+
+[3] Cascudo, Ignacio, and Bernardo David. "SCRAPE: Scalable randomness attested by public entities." International Conference on Applied Cryptography and Network Security. Springer, Cham, 2017.
+
+[4] Dfinity. https://dfinity.org/pdf-viewer/pdfs/viewer?file=../library/dfinity-consensus.pdf
+
+[5] Dodis, Yevgeniy, and Aleksandr Yampolskiy. "A verifiable random function with short proofs and keys." International Workshop on Public Key Cryptography. Springer, Berlin, Heidelberg, 2005.
+
+[6] drand. https://github.com/drand/drand
+
+[7] Feldman, Paul. "A practical scheme for non-interactive verifiable secret sharing." 28th Annual Symposium on Foundations of Computer Science (sfcs 1987). IEEE, 1987.
+
+[8] Galindo, David, et al. "Fully Distributed Verifiable Random Functions and their Application to Decentralised Random Beacons." IACR Cryptol. ePrint Arch. 2020 (2020): 96.
+
+[9] Gennaro, Rosario, et al. "Secure distributed key generation for discrete-log based cryptosystems." International Conference on the Theory and Applications of Cryptographic Techniques. Springer, Berlin, Heidelberg, 1999.
+
+[10] Pedersen, Torben Pryds. "A threshold cryptosystem without a trusted party." Workshop on the Theory and Application of Cryptographic Techniques. Springer, Berlin, Heidelberg, 1991.
+
+[11] Schindler, Philipp, et al. "Hydrand: Efficient continuous distributed randomness." 2020 IEEE Symposium on Security and Privacy (SP). IEEE, 2020.
+
+[12] Schindler, Philipp, et al. RandRunner: Distributed Randomness from Trapdoor VDFs with Strong Uniqueness. Cryptology ePrint Archive, Report 2020/942, https://eprint. iacr. org/2020/942, 2020.
+
+[13] Schoenmakers, Berry. "A simple publicly verifiable secret sharing scheme and its application to electronic voting." Annual International Cryptology Conference. Springer, Berlin, Heidelberg, 1999.
+
+[14] Syta, Ewa, et al. "Scalable bias-resistant distributed randomness." 2017 IEEE Symposium on Security and Privacy (SP). Ieee, 2017.
+
+[15] Wesolowski, Benjamin. "Efficient verifiable delay functions." Annual International Conference on the Theory and Applications of Cryptographic Techniques. Springer, Cham, 2019.
