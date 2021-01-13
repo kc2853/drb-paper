@@ -1,3 +1,173 @@
+General notes
+• (unpredictable, unbiasable, unstoppable) = (1, 0, 1): RANDAO, Algorand, PoW
+• (unpredictable, unbiasable, unstoppable) = (1, 1, 0): Dfinity, Ouroboros
+• 
+• 
+• 
+• 
+
+Feldman's VSS paper
+https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
+• Probabilistic encryption
+• y_0 is not a commitment to s?
+• A_j: permutation?
+• SS + homomorphic encryption (DL, ECDL, RSA)
+
+Pedersen's paper (DKG)
+https://link.springer.com/content/pdf/10.1007/3-540-46416-6_47.pdf
+• Parallel Feldman's
+• Can get group secret without knowing individual secrets b/c sum of individual secrets
+
+Gennaro's DKG (based on Pedersen)
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.6445&rep=rep1&type=pdf
+• Joint-Feldman can allow biasing public key (how about private key?)
+• Use Pedersen-style VSS (instead of Feldman's): 2 polynomials per player + Pedersen commitments
+• Security in partial sync model
+
+Dfinity
+https://dfinity.org/pdf-viewer/library/dfinity-consensus.pdf
+• 4 layers
+• 1. Identity layer: pseudonymous, register w stake
+• 2. Random beacon layer
+• 3. Blockchain layer
+• 4. Notary layer
+• Threshold relay, committee to committee
+• Random beacon output -> block proposals -> block notarizations
+• Threshold sig: 2 attacks (prediction & aborting); non-interactiveness; uniqueness
+• Joint-Feldman DKG: yields a verification vector (commitment to final coefficients)
+• Sign with individual share on group poly -> can combine bc homomorphic?
+• Final signature: depends on current round number + previous number
+• drand vs Dfinity: Pedersen/Gennaro DKG vs Joint-Feldman DKG
+
+Gennaro's DKG Revisited paper
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.5426&rep=rep1&type=pdf
+• Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
+• Schnorr threshold sig: still secure with Ped-DKG (which uses Feldman-VSS)
+• "Additive" share pooling (paper uses this) vs "polynomial" share pooling
+
+ETHDKG paper
+https://eprint.iacr.org/2019/985.pdf
+• Joint-Feldman DKG + Neji
+• Correctness, uniformity, robustness (works even if up to t invalid shares), liveness
+• Send encrypted(!) shares via Diffie-Hellman
+• Dispute phase: NIZK for DH key (to prevent false accusation)
+• Neji: use new generator h (broadcasted later) for group public key; NIZK to show relationship between g & h
+• Sign with individual share (on the group poly) not individual secret key?!
+• mpk and mpk* (bc Neji and pairing-based?)
+
+Schoenmakers PVSS paper
+https://www.win.tue.nl/~berry/papers/crypto99.pdf
+• PVSS assumes public broadcast
+• Chaum-Pedersen subprotocol (DLEQ) for NIZK
+• Totally separate individual key pairs for everyone
+• Distribution phase (NIZK for encrypted shares) + reconstruction phase (NIZK for decrypted shares)
+• Secret shares are different from other protocols
+• Share pooling first (via dealer) -> publish share + decryption proof later (not clear from paper)?
+• Can reuse individual key pairs
+
+RandHerd paper
+https://eprint.iacr.org/2016/1067.pdf
+• 512 distributed servers -> 32 groups -> every 6 seconds
+• Schoenmakers PVSS
+• TSS (threshold Schnorr sig) & CoSi (collective signing = multisig aggregation + communication tree)
+• TSS: VSS (+ additional VSS for short-term secret / random number) -> sign with poly share of secret -> reconstruct via Lagrange?
+• RandShare: quasi-DKG but BA (Byzantine agreement) & computes all individual secrets (from individual poly) to compute group secret (sum of indiv secrets)
+• RandHound: PVSS groups (parallel PVSS within groups); final random = product of PVSS secrets (Schnorr only for intermediary steps)?!
+• RandHerd: RandHound for random permutation?; TSS groups; TSS-CoSi; group leader vs cothority; final random = Schnorr sig on timestamp
+• Leader election (dubious) via VRF possible
+
+Scrape paper (Cardano?)
+https://eprint.iacr.org/2017/216.pdf
+• Shamir's SS ~= Reed-Solomon error correcting code?!
+• Scrape's (DDH) PVSS = Schoenmakers PVSS - many exponentiations of poly coeff commitments + Reed-Solomon ECC (hence faster verif complexity)
+• Pairing-based (DBS) PVSS = Scrape's DDH PVSS - DLEQ NIZK + pairing + final secret in the form of pairing (not sure why)
+• Scrape's randomness protocol (n parallel PVSS): commit -> reveal -> recovery (final random = product of PVSS secrets)
+• Commit-reveal (basically) but other players can reconstruct your share if you don't reveal later
+
+HydRand
+https://eprint.iacr.org/2018/319.pdf
+• Scrape's PVSS but no trusted dealer (but actually seems like they have trusted dealer?)
+• Byzantine agreement variant?: "defers consensus decisions for up to f + 1 rounds"
+• Guaranteed output delivery
+• Permissioned setting (fixed players)
+• Each round of protocol has 3 phases: propose -> acknowledge -> vote
+• Propose: leader proposes a "dataset" which includes his secret (seed for PVSS) value from previous (when its commitment was published already!)
+• Acknowledge: each node verifies leader's proposal
+• Vote: each node verifies acknowledgement status of other nodes (may involve recovery stage via PVSS in case secret not received)
+• Final random = H(previous round's random || PVSS group secret)
+• Leader selection (non-interactive): take the most recent random number modulo |potential leader set|
+• Potential leader set = all nodes - previous leaders that failed but got reconstructed - leaders for the past f rounds
+• Attacker in round r can only attempt to affect round >= r + f + 1
+• Hence the claim no trusted dealer
+• No DKG
+• Drawback: can't trust first f founds then? why not similar attacks later?
+
+Dodis VRF
+https://eprint.iacr.org/2004/310.pdf
+• VUF (~= unique signature): replace VRF's pseudorandomness with unpredictability
+• VUF = just the "proof" part of their VRF construction
+• So can hash a unique sig (VUF) to get VRF
+
+Kate poly commitment
+https://www.iacr.org/archive/asiacrypt2010/6477178/6477178.pdf
+• PolyCommit_DL, PolyCommit_Ped
+• ZKS (zk set), nearly ZKS (length is leaked), ZK-EDB (zk elementary database)
+• CES (content extraction signature), selective show
+• Dynamic accumulators
+• DL & t-SDH (t-strong Diffie-Hellman) assumptions
+• Features: additive homomorphism, unconditional hiding (if only a few evaluations revealed), trapdoor commitment, batch opening (~= batch verification)
+• Applications: 1. VSS; 2. nearly ZKS / ZK-EDB; 3. selective show (have Trent sign poly commitment, then prove ɸ(i) = m_i => no need to show all messages!)
+
+DVRF-DRB
+https://eprint.iacr.org/2020/096.pdf
+• Strong pseudorandomness: adversary has (limited) oracle access to PartialEval
+• 2 proposed DVRF: DDH-DVRF, GLOW-DVRF
+• 3-5x faster than Dfinity
+• Cryptographic lib: MCL, RELIC, Libsodium
+• DistKG -> PartialEval -> Combine -> Verify
+• 1. DDH-DVRF: DistKG (secret key is share on group poly) -> PartialEval (hash to the power of secret key, proof is DLEQ NIZK) -> Combine (check NIZK) -> Verify
+• 2. GLOW-DVRF: DistKG (intro of g_2 and pairing a la Neji for Verify public key later) -> PartialEval (hash ^ secret, NIZK) -> Combine (NIZK) -> Verify (pairing)
+• Difference in Dfinity-VRF: Combine also uses pairing to prove => less efficient
+• Modified BLS (more efficient): GLOW-DVRF - last step's hash
+• Algorand DRB is not strongly pseudorandom?
+• Harmony: uses VDF?!
+• HERB (homomorphic encryption random beacon): uses ElGamal encryption
+
+Timed Commitments
+https://www.iacr.org/archive/crypto2000/18800237/18800237.pdf
+• Verifiable recovery (just recovery) + recovery with proof (outsiders can verify too) + immunity against parallelism
+• Contract signing, honest auction
+• Timed signature (with a new definition of valid signature) < timed commitment
+• ∃zk proof that the scheme is a timed commitment (from Alice before she commits)
+• Think about original definition of commitment b/c timed commitment is unorthodox
+• Basic idea: open (allows faster verification) vs forced open (verifier needs to compute the "VDF")
+• Q. Pietrzak's & Wesolowski's can help with efficient verification?
+
+RandRunner
+https://eprint.iacr.org/2020/942.pdf
+• Trapdoor VDF used in an unorthodox way
+• The entire randomness beacon is essentially a (deterministic) "hash chain" with trapdoor VDFs such that no one person can be super ahead in the chain
+• Information theoretically, no randomness?!
+• Mathematical bounds for how much one can get ahead
+• But dependent on Δ_VDF which is unknown
+
+RandPiper
+https://eprint.iacr.org/2020/1590.pdf
+• GRandPiper (Good): PVSS / static adversary; BRandPiper (Better): VSS(?) / adaptive adversary (can predict for GRandPiper) / but sacrifices complexity a bit
+• Quadratic communication per round without using threshold sig
+• Reconfiguration friendly (dynamic set of nodes)
+• Goal: good communication complexity (quadratic for worst case too); efficient cryptographic scheme (e.g. not VDF); reconfiguration friendly
+• SMR (state machine replication) protocol
+• Can reduce communication via erasure coding scheme or accumulators
+• GRandPiper: PVSS encryption vector; additional "votes"; "to all the honest nodes" (how?); leader doesn't repeat for t epochs (a la HydRand?); Even can corrupt the next t leaders & predict
+• BRandPiper: iVSS (improved VSS; modified version of eVSS = Kate poly commitment?); homomorphic sum; leader can secret share n shares at once (key insight)
+• HydRand: cubic communication complexity worst case; t < n / 3 (but t < n / 2 for RandPiper)
+• "Buffering": using last d-th time a node was a leader -> buffer d shares?
+• 
+• 
+
+
+
 Random numbers are everywhere, e.g. generation of private keys, voting systems, games, financial services, etc. While research on randomness is not a new one, there has been recent interest in a distributed version of randomness, i.e. sourcing random numbers (one at a time) from distributed sources such that we no longer need to worry about a single point of failure in case (say) NIST gets hacked by an attacker either internally or externally.
 
 In particular, we consider the scenario of a randomness beacon (a concept first formulated by Michael O. Rabin in 1983) -- a distributed version of it called distributed randomness beacon (DRB), in which we assume at most f number of nodes can be Byzantine. On the most basic level, such a beacon should output a random number (unpredictable and unbiased by any node or even a bounded group of nodes) every round (e.g. which could be preset to a specific time interval) for anyone to utilize in a public manner.
