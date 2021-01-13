@@ -1,0 +1,162 @@
+\documentclass[11pt]{article}
+
+% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+% Sets page size and margins
+\usepackage[letterpaper,margin=1.5in]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{seqsplit}
+\usepackage{indentfirst}
+\usepackage{tabu}
+\usepackage{lipsum}
+\usepackage{array}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{etoolbox}
+\usepackage{setspace}
+\usepackage{braket}
+\usepackage[backend=bibtex]{biblatex}
+\AtBeginEnvironment{quote}{\singlespace\vspace{1em}\small}
+\AtEndEnvironment{quote}{\vspace{1em}\endsinglespace}
+\renewcommand{\arraystretch}{1.5}
+\tabulinesep = 2mm
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{notes}{Notes}
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\title{A Survey on Distributed Randomness}
+\author{Kevin Choi}
+\date{Spring 2021}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\pagebreak
+
+\section{Building Blocks}
+\subsection{Commit-Reveal}
+In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to its secret random number and then adding all shares (revealed later) from all nodes to compute the final random number in that round of DRB. The problem with this is that the last person to reveal his share can in fact check the round's output faster than other people and hence can decide not to reveal his number if he doesn't like the round's output, biasing the DRB. This is called the \textit{last revealer attack}.
+
+\subsection{Verifiable Secret Sharing}
+The issue with the classical Shamir's secret sharing scheme is that either the dealer or other participants could in fact be acting maliciously, e.g. Alice (a participant) needs to trust that she has received her share correctly from the dealer while she also needs to trust that other participants' revealed shares are correct.
+
+This issue can be fixed by the notion of verifiable secret sharing (VSS). The idea is that we add an additional verification process to the usual Shamir's secret sharing scheme. Here, we take note of two commonly used VSS schemes: Feldman-VSS and Pedersen-VSS.
+
+\subsubsection{Feldman-VSS}
+% FIX p, q TECHNICALITY (Wikipedia seems to mix up too)
+The following summarizes a simple VSS scheme (where $t$ among $n$ participants can reconstruct the group secret) proposed by Paul Feldman.
+
+\begin{itemize}
+\item $\mathbb{Z}_q$ and $p$ are chosen, where primes $p, q$ satisfy: $p$ divides $q - 1$
+\item $f(x) = \sum_{i = 0}^{t - 1} a_i x^i$ is randomly selected by the dealer, where $f(0) = a_0$ is the secret
+\item The shares are $f(1), f(2), ..., f(n)$ and are distributed to $n$ participants, respectively
+\item Also distributed from the dealer are commitments to coefficients of $f$ modulo $p$, i.e. $c_j \equiv g^{a_j}$ for $j = 0, ..., t - 1$
+\item Given her share $f(k)$ and the polynomial coefficient commitments, Alice (a participant) can verify the validity of her share by checking:
+$$g^{f(k)} = g^{\sum_{i = 0}^{t - 1} a_i k^i} = \prod_{j = 0}^{t - 1} c_j^{k^j} = c_0 c_1^k c_2^{k^2} \cdots c_{t - 1}^{k^{t - 1}}$$
+\item Any $t$ number of participants (say) $i = 1, 2, ..., t$ can recover the secret $a_0$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$:
+$$a_0 = f(0) = \sum_{i = 1}^{t} f(i) \lambda_i$$
+\end{itemize}
+
+What is new here (compared to Shamir's secret sharing scheme) is the inclusion of commitments to polynomial coefficients modulo $p$. These commitments enable participants to verify the validity of their corresponding shares.
+
+% Public key attack example? But Joint-Feldman ok?
+
+\subsubsection{Pedersen-VSS}
+\subsection{Distributed Key Generation}
+The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner such that no participant has access to any of others' shares in the secret sharing process. Consequently, one round of DKG can pave the way for multiple rounds of (say) a threshold signature scheme (e.g. threshold BLS), which is an aspect of DKG that makes it different from PVSS (where each PVSS round involving a reconstruction of some unrevealed share needs to be followed by a new, separate PVSS round).
+
+\subsubsection{Pedersen-DKG}
+Parallel instances of Feldman-VSS, also called Joint-Feldman
+
+\subsubsection{Gennaro-DKG}
+Parallel instances of Pedersen-VSS
+
+% ETHDKG example?
+
+\subsection{Publicly Verifiable Secret Sharing}
+While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, VSS' verification process is not public. Publicly verifiable secret sharing (PVSS), on the other hand, involves a public verification process, which is useful and desirable in models such as the public bulletin model or blockchain. Here, we delineate Schoenmakers' PVSS scheme and Scrape's optimization of it.
+
+\subsubsection{Schoenmakers}
+A bit different from Shamir's $\rightarrow$ VSS
+
+\subsubsection{Scrape's Optimization}
+Involves Reed-Solomon codes
+
+\subsection{Verifiable Delay Function}
+\subsubsection{Wesolowski's}
+\subsubsection{Pietrzak's}
+\subsubsection{Group Instantiation}
+RSA group vs class group of $\mathbb{Q}(\sqrt{p})$ (non-trusted setup)
+
+\section{Protocols}
+\subsection{PVSS-based}
+
+
+\subsubsection{RandHound}
+One-off protocol
+
+\subsubsection{Scrape}
+Commit-reveal every round, with reconstruction via PVSS
+
+\subsubsection{HydRand}
+Delayed commit-reveal with a leader per round, with reconstruction via PVSS
+
+\subsection{DVRF-based}
+Distributed verifiable random function (DVRF) is quite naturally a distributed version of VRF, where the VRF's secret key is distributed among a group of participants.
+
+Hash of VUF $\rightarrow$ VRF
+
+Threshold signature can be interpreted under this bucket
+
+\subsubsection{RandHerd}
+Involves threshold Schnorr + CoSi (collective signing = multisig aggregation + communication tree) in a fairly complicated way
+
+\subsubsection{Dfinity}
+League of Entropy's drand
+
+Stalling the network? 100\% eventual liveness assumption?
+% Just knowing vs biasing
+\subsubsection{DDH-DVRF}
+Does not use pairings
+
+
+\subsection{VDF-based}
+\subsubsection{Extending Commit-Reveal}
+Unicorn: pre-VDF
+
+RANDAO + VDF
+% Where does timed commitment fit in?
+\subsubsection{Extending Public Randomness}
+Taking some closing stock price or a block hash + VDF
+\subsubsection{RandRunner}
+A VDF chain involving a group of trapdoor VDFs
+
+\newpage
+\begin{thebibliography}{20}
+\bibitem{Feldman}
+Feldman, Paul. ``A practical scheme for non-interactive verifiable secret sharing." 28th Annual Symposium on Foundations of Computer Science (sfcs 1987). IEEE, 1987.
+
+\bibitem{Dodis}
+Dodis, Yevgeniy, and Aleksandr Yampolskiy. ``A verifiable random function with short proofs and keys." International Workshop on Public Key Cryptography. Springer, Berlin, Heidelberg, 2005.
+\end{thebibliography}
+
+\end{document}
