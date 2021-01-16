@@ -54,47 +54,48 @@
 
 \section{Building Blocks}
 \subsection{Commit-Reveal}
-In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to its secret random number and then adding all shares (revealed later) from all nodes to compute the final random number in that round of DRB. The problem with this is that the last person to reveal his share can in fact check the round's output faster than other people and hence can decide not to reveal his number if he doesn't like the round's output, biasing the DRB. This is called the \textit{last revealer attack}.
+In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret random number and then adding all shares (revealed later) from all nodes to compute the final random number of a round. The problem with this is that the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output, biasing the distributed randomness. This is called the \textit{last revealer attack}.
 
 \subsection{Verifiable Secret Sharing}
 The issue with the classical Shamir's secret sharing scheme is that either the dealer or other participants could in fact be acting maliciously, e.g. Alice (a participant) needs to trust that she has received her share correctly from the dealer while she also needs to trust that other participants' revealed shares are correct.
 
 This issue can be fixed by the notion of verifiable secret sharing (VSS). The idea is that we add an additional verification process to the usual Shamir's secret sharing scheme. Here, we take note of two commonly used VSS schemes: Feldman-VSS and Pedersen-VSS.
 
+The mathematical setup is as follows. We choose primes $p$ and $q$ such that $q \mid p - 1$ and let $g$ be a generator of $G_q$, a cyclic subgroup of $\mathbb{Z}^*_p$. This setup has the effect of achieving the following: $a \equiv b \pmod q \iff g^a \equiv g^b \pmod p$. As a result, it should be understood that modular arithmetics are done in modulo $q$ whenever the numbers involved concern the exponents while in modulo $p$ otherwise. For convenience, we may omit mod $p$ such that one can aptly assume arithmetics are done in modulo $p$ given an equation unless stated otherwise.
+
 \subsubsection{Feldman-VSS}
-% FIX p, q TECHNICALITY (Wikipedia seems to mix up too)
 The following summarizes a simple VSS scheme (where $t$ among $n$ participants can reconstruct the group secret) proposed by Paul Feldman.
 
 \begin{itemize}
-\item $\mathbb{Z}_q$ and $p$ are chosen, where primes $p, q$ satisfy: $p$ divides $q - 1$
-\item $f(x) = \sum_{i = 0}^{t - 1} a_i x^i$ is randomly selected by the dealer, where $f(0) = a_0$ is the secret
-\item The shares are $f(1), f(2), ..., f(n)$ and are distributed to $n$ participants, respectively
-\item Also distributed from the dealer are commitments to coefficients of $f$ modulo $p$, i.e. $c_j \equiv g^{a_j}$ for $j = 0, ..., t - 1$
-\item Given her share $f(k)$ and the polynomial coefficient commitments, Alice (a participant) can verify the validity of her share by checking:
+\item $f(x) = \sum_{i = 0}^{t - 1} a_i x^i$ is randomly selected by the dealer, where $a_i \in \mathbb{Z}_q$ and $f(0) = a_0$ is the secret
+\item The shares are $f(1), f(2), ..., f(n)$ in mod $q$ and are distributed to $n$ participants, respectively
+\item Also distributed from the dealer are commitments to coefficients of $f$, i.e. $c_j = g^{a_j}$ for $j = 0, ..., t - 1$
+\item Given her share $f(k)$ and the polynomial coefficient commitments, Alice (a participant) can verify her share by checking:
 $$g^{f(k)} = g^{\sum_{i = 0}^{t - 1} a_i k^i} = \prod_{j = 0}^{t - 1} c_j^{k^j} = c_0 c_1^k c_2^{k^2} \cdots c_{t - 1}^{k^{t - 1}}$$
-\item Any $t$ number of participants (say) $i = 1, 2, ..., t$ can recover the secret $a_0$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$:
+\item Any $t$ number of participants (say) $i = 1, 2, ..., t$ can recover the secret $a_0$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ in mod $q$:
 $$a_0 = f(0) = \sum_{i = 1}^{t} f(i) \lambda_i$$
 \end{itemize}
 
-What is new here (compared to Shamir's secret sharing scheme) is the inclusion of commitments to polynomial coefficients modulo $p$. These commitments enable participants to verify the validity of their corresponding shares.
-
-% Public key attack example? But Joint-Feldman ok?
+What is new here (compared to Shamir's secret sharing scheme) is the inclusion of commitments to polynomial coefficients in the scheme. These commitments enable participants to verify the validity of their corresponding shares.
 
 \subsubsection{Pedersen-VSS}
-Reminiscent of Pedersen commitment, Pedersen-VSS is a variation that involves two random polynomials generated by the dealer as opposed to one. Namely, the protocol runs as follows.
+Reminiscent of Pedersen commitment, Pedersen-VSS is a variation that involves two random polynomials generated by the dealer as opposed to one. Namely, the scheme runs as follows.
 
 \begin{itemize}
-\item $\mathbb{Z}_q$ and $p$ are chosen, where primes $p, q$ satisfy: $p$ divides $q - 1$
-\item $f(x) = \sum_{i = 0}^{t - 1} a_i x^i$ and $f'(x) = \sum_{i = 0}^{t - 1} b_i x^i$ are randomly selected by the dealer, where $f(0) = a_0$ is the secret (as before)
-\item The shares are $(f(1), f'(1)), ..., (f(n), f'(n))$ and are distributed to $n$ participants, respectively
-\item Also distributed from the dealer are commitments to coefficients of $f$ and $f'$ modulo $p$, i.e. $c_j \equiv g^{a_j} h^{b_j}$ for $j = 0, ..., t - 1$
-\item Given her share $(f(k), f'(k))$ and the polynomial coefficient commitments, Alice (a participant) can verify the validity of her share by checking:
+\item $f(x) = \sum_{i = 0}^{t - 1} a_i x^i$ and $f'(x) = \sum_{i = 0}^{t - 1} b_i x^i$ are randomly selected by the dealer, where $a_i, b_i \in \mathbb{Z}_q$ and $f(0) = a_0$ is the secret (as before)
+\item The shares are $(f(1), f'(1)), ..., (f(n), f'(n))$ in mod $q$ and are distributed to $n$ participants, respectively
+\item Also distributed from the dealer are commitments to coefficients of $f$ and $f'$, i.e. $c_j = g^{a_j} h^{b_j}$ for $j = 0, ..., t - 1$
+\item Given her share $(f(k), f'(k))$ and the polynomial coefficient commitments, Alice (a participant) can verify her share by checking:
 $$g^{f(k)} h^{f'(k)} = \prod_{j = 0}^{t - 1} c_j^{k^j}$$
-\item Any $t$ number of participants (say) $i = 1, 2, ..., t$ can recover the secret $a_0$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$:
+\item Any $t$ number of participants (say) $i = 1, 2, ..., t$ can recover the secret $a_0$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ in mod $q$:
 $$a_0 = f(0) = \sum_{i = 1}^{t} f(i) \lambda_i$$
 \end{itemize}
 
-Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^{a_0}$ (as the public key corresponding to the secret key $a_0$) and $g^{a_0} h^{b_0}$ (as the published commitment for verification purposes). In other words, the verification process in which the participants verify their shares does not (even information-theoretically) leak any information regarding the initial secret $a_0$, a fact that is not true with Feldman-VSS. This subtlety is explained with an example in the scope of distributed key generation in a later section.
+Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^{a_0}$ (as the public key corresponding to the secret key $a_0$) and $g^{a_0} h^{b_0}$ (as the published commitment for verification purposes). In other words, the verification process in which the participants verify their shares does not (even information-theoretically) leak any information regarding the initial secret $a_0$, a fact that is not true with Feldman-VSS.
+
+% This subtlety is explained with an example in the scope of distributed key generation in a later section.
+
+% Joint-Feldman & biasing?
 
 \subsection{Distributed Key Generation}
 The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner such that no participant has access to any of others' shares in the secret sharing process. Consequently, one round of DKG can pave the way for multiple rounds of (say) a threshold signature scheme (e.g. threshold BLS), which is an aspect of DKG that makes it different from PVSS (where each PVSS round involving a reconstruction of some unrevealed share needs to be followed by a new, separate PVSS round).
@@ -125,7 +126,6 @@ RSA group vs class group of $\mathbb{Q}(\sqrt{p})$ (non-trusted setup)
 \section{Protocols}
 \subsection{PVSS-based}
 
-
 \subsubsection{RandHound}
 One-off protocol
 
@@ -152,7 +152,6 @@ Stalling the network? 100\% eventual liveness assumption?
 % Just knowing vs biasing
 \subsubsection{DDH-DVRF}
 Does not use pairings
-
 
 \subsection{VDF-based}
 \subsubsection{Extending Commit-Reveal}
