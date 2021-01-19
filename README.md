@@ -8,7 +8,7 @@ Kevin Choi (kc2296)
 
 ### Expected dates
 * 01/13: Feldman-VSS, Pedersen-VSS
-* 01/15: Pedersen-DKG, Gennaro-DKG, Schoenmakers, Scrape's optimization
+* 01/15: Joint-Feldman, Joint-Pedersen, Schoenmakers, Scrape's optimization
 * 01/18: VDFs, RandHound, RandHerd, Scrape
 * 01/20: drand/Dfinity, DVRF-DRB
 * 01/22: HydRand, RandPiper

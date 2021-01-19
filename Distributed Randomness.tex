@@ -53,6 +53,8 @@
 \pagebreak
 
 \section{Building Blocks}
+% Computational / communication / adversarial models
+
 \subsection{Commit-Reveal}
 In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret random number and then adding all shares (revealed later) from all nodes to compute the final random number of a round. The problem with this is that the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output, biasing the distributed randomness. This is called the \textit{last revealer attack}.
 
@@ -97,13 +99,18 @@ Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^{a_0}$
 
 % Joint-Feldman & biasing?
 
-\subsection{Distributed Key Generation}
-The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner such that no participant has access to any of others' shares in the secret sharing process. Consequently, one round of DKG can pave the way for multiple rounds of (say) a threshold signature scheme (e.g. threshold BLS), which is an aspect of DKG that makes it different from PVSS (where each PVSS round involving a reconstruction of some unrevealed share needs to be followed by a new, separate PVSS round).
+% Limitations of VSS?: 1. not leaderless -> DKG; 2. not publicly verifiable -> PVSS
 
-\subsubsection{Pedersen-DKG}
+\subsection{Distributed Key Generation}
+The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner where no participant has access to any of others' shares or even the group secret itself. Phrased differently, this means that participants in a DKG are able to collectively use...... Consequently, one round of DKG can pave the way for multiple rounds of (say) a threshold signature scheme (e.g. threshold BLS), which is an aspect of DKG that makes it different from PVSS (where each PVSS round involving a reconstruction of some unrevealed share needs to be followed by a new, separate PVSS round).
+
+% Clarify meaning of "share" later?
+% 3 correctness properties & 1 security property?
+
+\subsubsection{Joint-Feldman}
 Parallel instances of Feldman-VSS, also called Joint-Feldman
 
-\subsubsection{Gennaro-DKG}
+\subsubsection{Joint-Pedersen}
 Parallel instances of Pedersen-VSS
 
 % ETHDKG example?

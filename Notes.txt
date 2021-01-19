@@ -21,7 +21,13 @@ https://link.springer.com/content/pdf/10.1007/3-540-46416-6_47.pdf
 Gennaro's DKG (based on Pedersen)
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.6445&rep=rep1&type=pdf
 • Joint-Feldman can allow biasing public key (how about private key?)
-• Use Pedersen-style VSS (instead of Feldman's): 2 polynomials per player + Pedersen commitments
+• Use Pedersen-style VSS (instead of Feldman's): 2 polynomials per player + Pedersen commitments + separate public key extraction step (Step 4)
+• 3 correctness properties: 1. can recover the same secret with any honest subset over threshold; 2. public key (g^{secret}) extractable; 3. secret is uniformly distributed
+• Secrecy property: no information on x is leaked except for public key; simulator SIM argument involved
+• Explains why SIM fails for Joint-Feldman
+• Gennaro's DKG: proving correctness properties & security property; remark on generation of h: requires a distributed coin flipping protocol?!
+• 2 applications: ElGamal/DSA (randomizer); proactive secret sharing & signature (refresh phase)
+• Extension to adaptive adversary: modification to public key extraction step
 • Security in partial sync model
 
 Dfinity
@@ -42,8 +48,14 @@ https://dfinity.org/pdf-viewer/library/dfinity-consensus.pdf
 Gennaro's DKG Revisited paper
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.5426&rep=rep1&type=pdf
 • Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
-• Schnorr threshold sig: still secure with Ped-DKG (which uses Feldman-VSS)
+• Schnorr threshold sig: still secure with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
 • "Additive" share pooling (paper uses this) vs "polynomial" share pooling
+• Setup: computational, communication, adversary, DL assumption, security of threshold sig, simulation proof technique, ROM
+• Generalized presentation of the 1/2 -> 3/4 attack for biasing Joint-Feldman
+• <"secrecy-like" property of this protocol is good enough> -- adversary cannot bias the public key too much either?!
+• Main idea: Joint-Feldman should be good enough (even if biasing possible) for threshold sig -> ex: Schnorr threshold sig with additive pooling
+• Notion of security for threshold sig: robustness & unforgeability -> proving threshold Schnorr's security via SIM
+• Tradeoff: security reduction leads to degradation by a factor compared to security of DLP (discrete log problem) -> need stronger security parameter -> bigger field -> less efficiency
 
 ETHDKG paper
 https://eprint.iacr.org/2019/985.pdf
