@@ -158,7 +158,19 @@ As the goal in practical terms is to use
 While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, VSS' verification process is not public. Publicly verifiable secret sharing (PVSS), on the other hand, involves a public verification process, which is useful and desirable in models such as the public bulletin model or blockchain. Here, we delineate Schoenmakers' PVSS scheme and Scrape's optimization of it.
 
 \subsubsection{Schoenmakers}
-A bit different from Shamir's $\rightarrow$ VSS
+\textbf{Initialization.} The group $G_q$ and the generators $g, G$ are selected using an appropriate public procedure. Participants $P_i$ generates a private key $x_i \leftarrow \mathbb{Z}^*_q$ and registers $y_i = G^{x_i}$ as its public key.
+
+\textbf{Distribution.} The protocol consists of two steps:
+\begin{enumerate}
+\item \textit{Distribution of the shares.}
+\item \textit{Verification of the shares.}
+\end{enumerate}
+
+\textbf{Reconstruction.} The protocol consists of two steps:
+\begin{enumerate}
+\item \textit{Decryption of the shares.}
+\item \textit{Pooling the shares.}
+\end{enumerate}
 
 \subsubsection{Scrape's Optimization}
 Involves Reed-Solomon codes
