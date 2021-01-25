@@ -122,7 +122,7 @@ In the setting where at most $t - 1$ nodes can be controlled by an attacker with
 \end{enumerate}
 \end{definition}
 
-% Need to understand SIM above better?
+% Need to understand SIM above better? Potentially reword!
 The third correctness property is the one that motivates the .........
 
 
@@ -155,22 +155,36 @@ As the goal in practical terms is to use
 % ETHDKG example?
 
 \subsection{Publicly Verifiable Secret Sharing}
-While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, VSS' verification process is not public. Publicly verifiable secret sharing (PVSS), on the other hand, involves a public verification process, which is useful and desirable in models such as the public bulletin model or blockchain. Here, we delineate Schoenmakers' PVSS scheme and Scrape's optimization of it.
+While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, the verification process of a VSS is not public. Publicly verifiable secret sharing (PVSS), on the other hand, assumes a public setup where the verification process can be achieved publicly (e.g. by bystanders) such that the messages exchanged during the protocol are modified accordingly in order to reflect the fact that some information kept private in a typical VSS can be public in a PVSS. Naturally, this added facet of public verifiability is useful and desirable in models such as the public bulletin model or blockchain. We delineate Schoenmakers' PVSS scheme and Scrape's optimization of it here.
 
+% Reword start
 \subsubsection{Schoenmakers}
-\textbf{Initialization.} The group $G_q$ and the generators $g, G$ are selected using an appropriate public procedure. Participants $P_i$ generates a private key $x_i \leftarrow \mathbb{Z}^*_q$ and registers $y_i = G^{x_i}$ as its public key.
+\textbf{Initialization.} The group $G_q$ and the generators $g, G$ are selected using an appropriate public procedure. Participant $P_i$ generates a private key $x_i \leftarrow \mathbb{Z}^*_q$ and registers $y_i = G^{x_i}$ as its public key.
 
 \textbf{Distribution.} The protocol consists of two steps:
 \begin{enumerate}
-\item \textit{Distribution of the shares.}
-\item \textit{Verification of the shares.}
+\item \textit{Distribution of the shares.} Suppose without loss of generality that the dealer wishes to distribute a secret among participants $P_1, ..., P_n$. The dealer picks a random polynomial $p$ of degree at most $t - 1$ with coefficients in $\mathbb{Z}_q$
+$$p(x) = \sum_{i = 0}^{t - 1} a_i x^i$$
+and sets $s = a_0$. The dealer keeps this polynomial secret but publishes the related commitments $C_j = g^{a_j}$ for $0 \leq j < t$. The dealer also publishes the encrypted shares $Y_i = y_i^{p(i)}$ for $1 \leq i \leq n$ using the public keys of the participants. Finally, let $X_i = \prod_{j = 0}^{t - 1} C_j^{i^j}$. The dealer shows that the encrypted shares are consistent by producing a proof of knowledge of the unique $p(i)$ for $1 \leq i \leq n$ satisfying:
+$$X_i = g^{p(i)}, \phantom{ABC} Y_i = y_i^{p(i)}.$$
+The non-interactive proof is the $n$-fold parallel composition of the protocols for $DLEQ(g, X_i, y_i, Y_i)$. Applying Fiat-Shamir's technique, the challenge $c$ for the protocol is computed as a cryptographic hash of $X_i, Y_i, a_{1i}, a_{2i}, 1 \leq i \leq n$. The proof consists of the common challenge $c$ and the $n$ responses $r_i$.
+\item \textit{Verification of the shares.} The verifier computes $X_i = \prod_{j = 0}^{t - 1} C_j^{i^j}$ from the $C_j$ values. Using $y_i, X_i, Y_i, r_i, 1 \leq i \leq n$ and $c$ as input, the verifier computes $a_{1i}, a_{2i}$ as
+$$a_{1i} = g^{r_i} X_i^{c}, \phantom{ABC} a_{2i} = y_i^{r_i} Y_i^{c}$$
+and checks that the hash of $X_i, Y_i, a_{1i}, a_{2i}, 1 \leq i \leq n$ matches $c$.
 \end{enumerate}
 
 \textbf{Reconstruction.} The protocol consists of two steps:
 \begin{enumerate}
-\item \textit{Decryption of the shares.}
-\item \textit{Pooling the shares.}
+\item \textit{Decryption of the shares.} Using its private key $x_i$, each participant finds the share $S_i = G^{p(i)}$ from $Y_i$ by computing $S_i = Y_i^{1 / x_i}$. They publish $S_i$ plus a proof that the value $S_i$ is a correct decryption of $Y_i$. To this end, it suffices to prove knowledge of an $\alpha$ such that $y_i = G^\alpha$ and $Y_i = S_i^\alpha$, which is accomplished by the non-interactive version of the protocol $DLEQ(G, y_i, S_i, Y_i)$.
+\item \textit{Pooling the shares.} Suppose without loss of generality that participants $P_i$ produce correct values for $S_i$, for $i = 1, ..., t$. The secret $G^s$ is obtained by Lagrange interpolation:
+$$\prod_{i = 1}^{t} S_i^{\lambda_i} = \prod_{i = 1}^{t} \left(G^{p(i)}\right)^{\lambda_i} = G^{\sum_{i = 1}^{t} p(i) \lambda_i} = G^{p(0)} = G^s$$
+where $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ is a Lagrange coefficient.
 \end{enumerate}
+
+Note that the participants do not need nor learn the values of the exponents $p(i)$. Only the related values $S_i = G^{p(i)}$ are required to complete the reconstruction of the secret value $S = G^s$. Also, note that participant $P_i$ does not expose its private key $x_i$; consequently participant $P_i$ can use its key pair in several runs of the PVSS scheme. The type of encryption used for the shares has been optimized for performance; however, if desired, it is also possible to use standard ElGamal encryption instead. 
+
+Clearly, the scheme is homomorphic. For example, given the dealer’s output for secrets $G^{s_1}$ and $G^{s_2}$, the combined secret $G^{s_1 + s_2}$ can be obtained by applying the reconstruction protocol to the combined encrypted shares $Y_{i1} Y_{i2}$.
+% Reword end
 
 \subsubsection{Scrape's Optimization}
 Involves Reed-Solomon codes

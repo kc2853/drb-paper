@@ -23,12 +23,14 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.6445&rep=rep1&type=
 • Joint-Feldman can allow biasing public key (how about private key?)
 • Use Pedersen-style VSS (instead of Feldman's): 2 polynomials per player + Pedersen commitments + separate public key extraction step (Step 4)
 • 3 correctness properties: 1. can recover the same secret with any honest subset over threshold; 2. public key (g^{secret}) extractable; 3. secret is uniformly distributed
+• (C1') > (C1)
 • Secrecy property: no information on x is leaked except for public key; simulator SIM argument involved
+• Communication model (fully sync), adversary model (static vs adaptive)
 • Explains why SIM fails for Joint-Feldman
-• Gennaro's DKG: proving correctness properties & security property; remark on generation of h: requires a distributed coin flipping protocol?!
+• Gennaro's DKG: proving correctness properties & secrecy property; remark on generation of h: requires a distributed coin flipping protocol?!
 • 2 applications: ElGamal/DSA (randomizer); proactive secret sharing & signature (refresh phase)
 • Extension to adaptive adversary: modification to public key extraction step
-• Security in partial sync model
+• Security in partial sync model (Δ)
 
 Dfinity
 https://dfinity.org/pdf-viewer/library/dfinity-consensus.pdf
@@ -74,8 +76,12 @@ https://www.win.tue.nl/~berry/papers/crypto99.pdf
 • Totally separate individual key pairs for everyone
 • Distribution phase (NIZK for encrypted shares) + reconstruction phase (NIZK for decrypted shares)
 • Secret shares are different from other protocols
-• Share pooling first (via dealer) -> publish share + decryption proof later (not clear from paper)?
+• Share pooling first (via dealer) -> publish share + decryption proof later (not clear from paper)? -- secret can be public?
 • Can reuse individual key pairs
+• Complexity O(nk) & security theorems (DDH assumption + ROM assumption)
+• Z_p not mentioned but still is?
+• Alternative scenario: secret not random but from small (potentially not uniformly distributed) set
+• Section 5: electronic voting
 
 RandHerd paper
 https://eprint.iacr.org/2016/1067.pdf
