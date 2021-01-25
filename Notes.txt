@@ -81,7 +81,9 @@ https://www.win.tue.nl/~berry/papers/crypto99.pdf
 • Complexity O(nk) & security theorems (DDH assumption + ROM assumption)
 • Z_p not mentioned but still is?
 • Alternative scenario: secret not random but from small (potentially not uniformly distributed) set
-• Section 5: electronic voting
+• G^s (secret) != g^s
+• Section 5: electronic voting; voters = dealers while talliers = participants; cheating talliers can know each voter's vote though?
+• Section 6: threshold Binding ElGamal, threshold revocable electronic cash, threshold software key escrow
 
 RandHerd paper
 https://eprint.iacr.org/2016/1067.pdf
