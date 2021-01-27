@@ -155,7 +155,7 @@ As the goal in practical terms is to use
 % ETHDKG example?
 
 \subsection{Publicly Verifiable Secret Sharing}
-While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, the verification process of a VSS is not public. Publicly verifiable secret sharing (PVSS), on the other hand, assumes a public setup where the verification process can be achieved publicly (e.g. by bystanders) such that the messages exchanged during the protocol are modified accordingly in order to reflect the fact that some information kept private in a typical VSS can be public in a PVSS. Naturally, this added facet of public verifiability is useful and desirable in models such as the public bulletin model or blockchain. We delineate Schoenmakers' PVSS scheme and Scrape's optimization of it here.
+While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, the verification process of a VSS is not public. Publicly verifiable secret sharing (PVSS), on the other hand, assumes a public setup where the verification process can be achieved publicly (e.g. by bystanders) such that the messages exchanged during the protocol are modified accordingly in order to reflect the fact that some information kept private in a typical VSS can be public in a PVSS. Naturally, this added facet of public verifiability is useful and desirable in models such as the public bulletin board model (e.g. for blockchains). We delineate Schoenmakers' PVSS scheme and Scrape's variations of it here.
 
 % Reword start
 \subsubsection{Schoenmakers}
@@ -186,8 +186,14 @@ Note that the participants do not need nor learn the values of the exponents $p(
 Clearly, the scheme is homomorphic. For example, given the dealer’s output for secrets $G^{s_1}$ and $G^{s_2}$, the combined secret $G^{s_1 + s_2}$ can be obtained by applying the reconstruction protocol to the combined encrypted shares $Y_{i1} Y_{i2}$.
 % Reword end
 
-\subsubsection{Scrape's Optimization}
-Involves Reed-Solomon codes
+\subsubsection{Scrape's Variations}
+Scrape offers two variations of Schoenmakers' PVSS: one that relies on the DDH (decisional Diffie-Hellman) assumption in the random oracle model and one that relies on the DBS (decisional bilinear square) assumption in the plain model. Accordingly, the former utilizes the same NIZK (i.e. $DLEQ$ by Chaum and Pedersen) from Schoenmakers' whereas the latter utilizes a bilinear pairing, which serves as a valid size-efficient substitute to the NIZK at the cost of pairing-related computations. Both variations make novel use of Reed-Solomon codes from coding theory in a way that the total number of exponentiations needed to verify the shares distributed by the dealer in a PVSS is decreased from $O(n t)$ (which becomes quadratic if $t = \frac{n}{2}$ for instance) to $O(n)$. In other words, the approaches optimize the verifier's computational complexity before the Reconstruction phase.
+
+The idea is that the verifier does not have to compute $t$ exponentiations via $X_i = \prod_{j = 0}^{t - 1} C_j^{i^j}$ per share, before which the dealer publishes the commitments $C_j$ to the polynomial coefficients. Instead, the dealer publishes $v_i = g^{p(i)}$ directly alongside the dual code $\mathcal{C}^\perp$ of the $[n, k, n - k + 1]$ Reed-Solomon code $\mathcal{C}$ corresponding to the shares calculated by the dealer in the form $\mathcal{C} = \{(p(1), ..., p(n)) \mid p(x) \in \mathbb{Z}_q[x], \text{deg}(p(x)) \leq t - 1\}$, in which case the verifier can randomly sample a codeword $c^\perp = (c_1^\perp, ..., c_n^\perp)$ from $\mathcal{C}^\perp$, indirectly compute the inner product of $c^\perp$ and the share vector $(s_1, ..., s_n)$, and verify that $\prod v_i^{c_i^\perp} = g^{\sum s_i c_i^\perp} = g^0 = 1$ with $O(n)$ exponentiations.
+
+% The reason this works is that... coding theory...
+% Note that this makes the verification of shares probabilistic -> Lemma? -> Verification proposition (property of PVSS)?
+% Note on tradeoff: "high probability"; availability of the dual code -> but then we are able to make things O(n) b/c verif is not on per share basis but share vector
 
 \subsection{Verifiable Delay Function}
 \subsubsection{Wesolowski's}
@@ -202,7 +208,17 @@ RSA group vs class group of $\mathbb{Q}(\sqrt{p})$ (non-trusted setup)
 One-off protocol
 
 \subsubsection{Scrape}
-Commit-reveal every round, with reconstruction via PVSS
+% Reword start
+Protocol $\pi_{DDH}$ is run between $n$ parties $P_1, ..., P_n$ who have access to a public ledger where they can post information for later verification. A PVSS protocol is used as a subprotocol and it is assumed that the Setup phase is already done and the public keys $pk_i$ of each party $P_i$ are already registered in the ledger. The protocol proceeds as follows:
+
+\begin{enumerate}
+\item \textbf{Commit:} For $1 \leq j \leq n$, party $P_j$ executes the Distribution phase of the PVSS subprotocol as the Dealer with threshold $t = \frac{n}{2}$, publishing the encrypted shares and the verification information $PROOF_D^j$ on the public ledger, and also learning the random secret $h^{s^j}$ and $s^j$. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^j, r_j)$ (with fresh randomness $r_j \leftarrow \mathbb{Z}_q$), for $1 \leq j \leq n$.
+\item \textbf{Reveal:} For every set of encrypted shares and the verification information $PROOF_D^j$ published in the public ledger, all parties run the Verification phase of the PVSS subprotocol. Let $\mathcal{C}$ be the set of all parties who published commitments and valid shares. Once $\frac{n}{2}$ parties have posted their commitments and valid shares on the ledger, party $P_j$ opens its commitment, posting $\mathsf{Open}(s^j, r_j)$ on the ledger, for $j \in \mathcal{C}$.
+\item \textbf{Recovery:} For every party $P_a \in \mathcal{C}$ that does not publish $\mathsf{Open}(s^a, r_a)$ in the Reveal phase, party $P_j$ runs the Reconstruction phase of the PVSS protocol posting $\tilde{s}_j^a$ and $PROOF_j^a$ to the public ledger, for $1 \leq j \leq n$. Once $\frac{n}{2}$ valid decrypted shares are published, every party reconstructs $h^{s^a}$.
+\end{enumerate}
+
+The final randomness is computed as $\rho = \prod_{j \in \mathcal{C}} h^{s^j}$.
+% Reword end
 
 \subsubsection{HydRand}
 Delayed commit-reveal with a leader per round, with reconstruction via PVSS

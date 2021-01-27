@@ -1,6 +1,7 @@
 General notes
 • (unpredictable, unbiasable, unstoppable) = (1, 0, 1): RANDAO, Algorand, PoW
 • (unpredictable, unbiasable, unstoppable) = (1, 1, 0): Dfinity, Ouroboros
+• From HydRand: liveness (a correct node knowing R_{r - 1} can know R_r) vs guaranteed output delivery (all correct nodes can output R_r at round r)
 • 
 • 
 • 
@@ -98,6 +99,16 @@ https://eprint.iacr.org/2016/1067.pdf
 
 Scrape paper (Cardano?)
 https://eprint.iacr.org/2017/216.pdf
+• O(nt) exponentiations -> O(n)
+• Guaranteed output delivery?
+• DDH + ROM or DBS (decisional bilinear square) in the plain model
+• Public bulletin board model
+• Inner product: share vector & dual's codeword
+• Exact number of computations
+• Adversarial model (static)
+• Coding theory basics
+• 3 properties for a PVSS scheme: correctness, verifiability (high probabilistic), IND1-secrecy
+• Commitment definition, DLEQ definition
 • Shamir's SS ~= Reed-Solomon error correcting code?!
 • Scrape's (DDH) PVSS = Schoenmakers PVSS - many exponentiations of poly coeff commitments + Reed-Solomon ECC (hence faster verif complexity)
 • Pairing-based (DBS) PVSS = Scrape's DDH PVSS - DLEQ NIZK + pairing + final secret in the form of pairing (not sure why)
@@ -186,6 +197,15 @@ https://eprint.iacr.org/2020/1590.pdf
 • 
 • 
 
+On Bitcoin as a public randomness source
+https://eprint.iacr.org/2015/1015.pdf
+• At least 68 bits of min-entropy -> can extract 32 near-uniform bits
+• Single-bit lottery: safe up to 50 BTC
+• NIST, Random.org, stock market used for election in Takoma Park, BitcoinMegaLottery
+• Extractor (sufficient entropy number -> high entropy number)
+• Attacks: block withholding attack (could be non-miners in the bribing attacker model); P2P DoS attack (worst-case: Dolev-Yao attacker); idea of transition pruning (lottery as Markov trees & transition matrix)
+• Miners use "trusted peers" already
+• Proposition (on Bitcoin): OP_BEACON
 
 
 Random numbers are everywhere, e.g. generation of private keys, voting systems, games, financial services, etc. While research on randomness is not a new one, there has been recent interest in a distributed version of randomness, i.e. sourcing random numbers (one at a time) from distributed sources such that we no longer need to worry about a single point of failure in case (say) NIST gets hacked by an attacker either internally or externally.
