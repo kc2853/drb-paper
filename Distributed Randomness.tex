@@ -54,6 +54,10 @@
 
 \section{Building Blocks}
 % Computational / communication / adversarial models
+\subsection{Perfectly Synchronous Distributed Randomness}
+Suppose $n$ participants attempt to source a common random number in a distributed yet agreeable manner. In an ideal world where the communication model is perfectly synchronous such that all participants are able to successfully send and receive their random shares $s_i$ (which will make up the common random number) to and from all other participants at the same time, each participant can simply add all shares involved and call $s = \sum s_i$ to be the randomness produced in that round. Such protocol would be not only simple, but also agreeable, as its nature in fact parallels that of rock-paper-scissors, which many play in real life as part of a quick decision-making process. While distributed randomness is hardly a hard problem in this setting, situations can change dramatically in practical settings where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers that maliciously try to predict or bias the randomness to their benefit can exist.
+
+% Before dealing with all these issues at once, we start with the most basic issue that arises in a non-ideal setting: asynchrony in communication. Namely, some participants, in a communication model that is not perfectly synchronous
 
 \subsection{Commit-Reveal}
 In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret random number and then adding all shares (revealed later) from all nodes to compute the final random number of a round. The problem with this is that the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output, biasing the distributed randomness. This is called the \textit{last revealer attack}.
