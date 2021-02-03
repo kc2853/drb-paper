@@ -209,31 +209,36 @@ https://eprint.iacr.org/2015/1015.pdf
 
 18. Homomorphic Encryption Random Beacon
 https://eprint.iacr.org/2019/1320.pdf
-• 
-• 
-• 
-• 
 
 19. SPURT: Scalable Distributed Randomness Beacon with Transparent Setup
 https://eprint.iacr.org/2021/100.pdf
-• 
-• 
-• 
-• 
 
 20. Random Oracles in Constantinople: Practical Asynchronous Byzantine Agreement using Cryptography
 https://allquantor.at/blockchainbib/pdf/cachin2000random.pdf
-• 
-• 
-• 
-• 
 
 21. RANDCHAIN: Decentralised Randomness Beacon from Sequential Proof-of-Work
 https://eprint.iacr.org/2020/1033.pdf
-• 
-• 
-• 
-• 
+
+22. A Pragmatic Introduction to Secure Multi-Party Computation
+https://securecomputation.org/docs/pragmaticmpc.pdf
+• One interpretation of MPC: participants "secret-share" the inputs/outputs to an MPC protocol
+• In practice, participants usually secret-share the inputs in a way that those shares would eventually lead to a correct output
+• In other words: instead of input -> f(input) = output, we have something like input -> modified input (an input "share") -> modified output (an output "share") -> output
+1) Yao's garbled circuits
+• Alice (key generator) & Bob (evaluator)
+• Secret sharing: done via Alice's key generation (thus Bob can't know Alice's input) & Alice's oblivious transfer to Bob (thus Alice can't know Bob's input)
+• Idea: input -> modified input (used to encrypt the MPC function) -> use modified input to decrypt the MPC function -> output
+2) GMW (Goldreich-Micali-Wigderson) protocol
+• Secret sharing: done via additive shares (involving randomness) on wires/gates
+• Idea: input -> modified input (add with randomness) -> modified output (output share) -> output (randomness cancels out)
+3) BGW (Ben-Or-Goldwasser-Wigderson) protocol
+• Secret sharing: Shamir's(!) per participant
+• Idea: input -> modified input (Shamir shares) -> modified output = f(modified input) -> output (Lagrange interpolation)
+• Lindell in his survey paper Secure Multiparty Computation (MPC) notes that this method is not only general, but also the most efficient in practice more often than not?
+• Multiplication gates suffer from complexity in BGW due to its degree-reduction step -> optimization using Beaver triples & pre-processing phase
+• GMW & BGW suffer b/c number of rounds depends on circuit depth -> BMR (Beaver-Micali-Rogaway) protocol where Yao's garbled circuits idea is generalized to be distributed & parallel -> constant round
+• Some techniques turning semi-honest security into malicious security: cut-and-choose, GMW compiler, MPC in the head (state-of-the-art?)
+• For outputting an arithmetic sum: #3 (BGW) is relatively more efficient? -> basically repeated iterations of DKG
 
 
 
