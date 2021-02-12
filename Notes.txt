@@ -2,6 +2,10 @@ General notes
 • (unpredictable, unbiasable, unstoppable) = (1, 0, 1): RANDAO, Algorand, PoW
 • (unpredictable, unbiasable, unstoppable) = (1, 1, 0): Dfinity, Ouroboros
 • From HydRand: liveness (a correct node knowing R_{r - 1} can know R_r) vs guaranteed output delivery (all correct nodes can output R_r at round r)
+• Atomic broadcast ~= consensus (∃reductions both ways)
+• Byzantine broadcast (BB): leader broadcasts
+• Byzantine agreement (BA): everyone has inputs -> agree on output
+• BB ~= leader sends once + BA
 • 
 • 
 • 
