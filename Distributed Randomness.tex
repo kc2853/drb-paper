@@ -268,6 +268,11 @@ At the end of this phase, each node $i$ can obtain the round's random beacon val
 $$R_r \leftarrow H(R_{r - 1} || h^{s_\ell})$$
 % Reword end
 
+\subsubsection{RandPiper}
+RandPiper offers two protocols: GRandPiper (Good Pipelined Random beacon) and BRandPiper (Better Pipelined Random beacon). While GRandPiper roughly follows HydRand's protocol, it improves upon it via its idiosyncratic use of BFT SMR (state machine replication) protocol, which uses erasure coding and cryptographic accumulators (either of the bilinear type incurring a trusted setup tradeoff or of the Merkle tree type) to implement the public bulletin board model in a Byzantine broadcast fashion such that HydRand's worst-case communication complexity of $O(n^3)$ is improved to $O(n^2)$. The main idea is that RandPiper's SMR protocol allows a round leader to Byzantine broadcast a message of size $O(n)$ within a total communication complexity of $O(n^2)$ rather than $O(n^3)$. While this improvement benefits the side of communication complexity indeed, the same issue of predictability present in HydRand still remains in GRandPiper, where an adversary can predict up to $f$ number of rounds (albeit with low probability).
+
+% Motivated by this, BRandPiper...
+
 \subsection{DVRF-based}
 Distributed verifiable random function (DVRF) is quite naturally a distributed version of VRF, where the VRF's secret key is distributed among a group of participants.
 
