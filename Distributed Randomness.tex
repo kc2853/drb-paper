@@ -213,7 +213,7 @@ One-off protocol
 
 \subsubsection{Scrape}
 % Reword start
-Protocol $\pi_{DDH}$ is run between $n$ parties $P_1, ..., P_n$ who have access to a public ledger where they can post information for later verification. A PVSS protocol is used as a subprotocol and it is assumed that the Setup phase is already done and the public keys $pk_i$ of each party $P_i$ are already registered in the ledger. The protocol proceeds as follows:
+Scrape is run between $n$ parties $P_1, ..., P_n$ who have access to a public ledger (a la public bulletin board model) where they can post information for later verification. At a high level, the protocol is an improvement over commit-reveal such that the concept of reconstruction can prevent the last revealer attack in case any committed inputs are not revealed later. A PVSS protocol is used as a subprotocol, and it is assumed that the Setup phase is already done and the public keys $pk_i$ of each party $P_i$ are already registered in the ledger. In detail, the protocol proceeds as follows:
 
 \begin{enumerate}
 \item \textbf{Commit:} For $1 \leq j \leq n$, party $P_j$ executes the Distribution phase of the PVSS subprotocol as the Dealer with threshold $t = \frac{n}{2}$, publishing the encrypted shares and the verification information $PROOF_D^j$ on the public ledger, and also learning the random secret $h^{s^j}$ and $s^j$. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^j, r_j)$ (with fresh randomness $r_j \leftarrow \mathbb{Z}_q$), for $1 \leq j \leq n$.
