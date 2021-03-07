@@ -200,10 +200,22 @@ The idea is that the verifier does not have to compute $t$ exponentiations via $
 % Note on tradeoff: "high probability"; availability of the dual code -> but then we are able to make things O(n) b/c verif is not on per share basis but share vector
 
 \subsection{Verifiable Delay Function}
-\subsubsection{Wesolowski's}
-\subsubsection{Pietrzak's}
-\subsubsection{Group Instantiation}
-RSA group vs class group of $\mathbb{Q}(\sqrt{p})$ (non-trusted setup)
+% Reword start
+A verifiable delay function (VDF) is a function that takes a prescribed time to compute, even on a parallel computer. However once computed, the output can be quickly verified by anyone. Moreover, every input must have a unique valid output as per a function. A VDF can be represented by a tuple of three algorithms:
+\begin{itemize}
+\item $Setup(\lambda, T) \rightarrow pp$ is a randomized algorithm that takes a security parameter $\lambda$ and a time bound $T$, and outputs public parameters $pp$.
+\item $Eval(pp, x) \rightarrow (y, \pi)$ takes an input $x$ and outputs $y$ and a proof $\pi$.
+\item $Verify(pp, x, y, \pi) \rightarrow \{accept, reject\}$ outputs $accept$ if $y$ is the correct evaluation of the VDF on input $x$.
+\end{itemize}
+
+A VDF must satisfy the following three properties:
+\begin{itemize}
+\item $\epsilon$-evaluation time. $Eval(pp, x)$ runs in time at most $(1 + \epsilon) T$, for all $x$ and all $pp$ output by $Setup(\lambda, T)$.
+\item Sequentiality. A parallel algorithm $\mathcal{A}$, using at most $poly(\lambda)$ processors, that runs in time less than $T$ cannot compute the function. Specifically, for a random $x$ and $pp$ output by $Setup(\lambda, T)$, if $(y, \pi) \leftarrow Eval(pp, x)$ then $Pr[\mathcal{A}(pp, x) = y]$ is negligible.
+\item Uniqueness. For an input $x$, exactly one $y$ will be accepted by $Verify$. Specifically, let $\mathcal{A}$ be an efficient algorithm that given $pp$ as input, outputs $(x, y, \pi)$ such that $Verify(pp, x, y, \pi) = accept$. Then $Pr[Eval(pp, x) \neq y]$ is negligible.
+\end{itemize}
+
+Intuitively, one can understand VDF as a computational task that cannot be sped up by parallelism as a result. Exponentiation in a group of unknown order is believed to have this property and was used by Rivest, Shamir, and Wagner to construct a time-lock puzzle. The two well-regarded VDF proposals, i.e. one due to Pietrzak and the other due to Wesolowski, similarly make use of the serial nature of this task.
 
 \section{Protocols}
 \subsection{PVSS-based}
@@ -295,10 +307,10 @@ The following delineates RandPiper's SMR protocol, which happens largely in 4 st
 
 While GRandPiper is essentially an improvement over HydRand employing the above SMR protocol, BRandPiper offers a slightly different approach to distributed randomness, motivated to provide a guarantee of absolute unpredictability rather than probabilistic unpredictability. The key difference is that BRandPiper makes use of $n$ secrets (one from each node) per round as opposed to one (from the round leader) like GRandPiper or HydRand. Similar to Scrape, this in fact requires $n^2$ secret shares ($n$ shares per secret) per round. To perform better than Scrape's quartic worst-case communication complexity, however, BRandPiper fine-tunes its public bulletin board during the protocol such that the number of messages posted on the public bulletin board (realized by the BFT SMR protocol) is minimized.
 
-The main idea is that a leader commits to $n$ secrets (corresponding to the next $n$ rounds) in one round at once as opposed to committing to one secret on a per-round basis. It is in this way that one has access to $n$ secret shares (each corresponding to a different secret, one from each node) per round such that a homomorphic sum of those shares followed by a reconstruction phase with other nodes should yield a value shared by the entire group in that round a la DKG. Nonetheless, the tradeoff is an additional multiplicative factor of $O(f)$ in total communication complexity, i.e. $O(f n^2)$, which becomes cubic in the worst case when $f = O(n)$ but remains quadratic in the best case when $f = O(1)$.
+The main idea is that a leader commits to $n$ secrets (corresponding to the next $n$ rounds) in one round at once as opposed to committing to one secret on a per-round basis. It is in this way that each node (leader or non-leader) should have access to $n$ secret shares (each corresponding to a different secret, one from each node) per round such that a homomorphic sum of those shares followed by a reconstruction phase with other nodes should yield the randomness shared by the entire group in that round a la DKG. Nonetheless, the tradeoff is an additional multiplicative factor of $O(f)$ in total communication complexity, i.e. $O(f n^2)$, which becomes cubic in the worst case when $f = O(n)$ but remains quadratic in the best case when $f = O(1)$.
 
 \subsubsection{SPURT}
-While similar to BRandPiper in achieving absolute unpredictability (rather than probabilistic) by utilizing $n$ secrets (whose homomorphic sum becomes the round's randomness) per round, SPURT takes a different approach where those $n$ secrets every round are taken not from a leader (from any rounds including previous rounds), but from all the non-leader nodes in a round. A leader, on the other hand, effectively functions to facilitate the overall communication among nodes, lowering the total communication complexity from that in Scrape where all nodes need to broadcast messages of size $O(n)$ every round.
+While similar to BRandPiper in achieving absolute unpredictability (rather than probabilistic) by utilizing $n$ secrets (whose sum becomes the group secret) per round, SPURT takes a different approach where those $n$ secrets every round are taken not from a leader (from any rounds including previous rounds), but from all the non-leader nodes in a round. A leader, on the other hand, effectively functions to facilitate the overall communication among nodes, lowering the total communication complexity from that in Scrape where all nodes need to broadcast messages of size $O(n)$ every round.
 
 Given a round leader selected in a round-robin fashion, SPURT proceeds in four phases: commitment, aggregation, agreement, and reconstruction.\\
 
@@ -316,7 +328,7 @@ Each node $i$, upon receiving the cryptographic digest over the broadcast channe
 \textbf{4. Reconstruction.} When the agreement phase terminates, i.e. all honest nodes agree on the cryptographic digest broadcast by $L_r$, every honest node who received the valid shares from $L_r$ multicasts its aggregated share along with the NIZK proof of its correctness. If the agreement phase terminates successfully, then at least $t + 1$ honest nodes hold valid shares of the aggregated polynomial $\tilde{p}(x)$. Also, all nodes will be able to prove the correctness of their aggregated shares. Moreover, all these nodes start the reconstruction phase within three messages transmission delays. Hence, during the reconstruction phase, every honest node will receive at least $t + 1$ valid shares of $\tilde{p}(x)$, along with their correctness proofs. As a result, every honest node will be able to successfully reconstruct the polynomial via $h^{\tilde{p}(x)}$, and hence the output of the randomness beacon for this round.\\
 % Reword end
 
-Besides the fact that SPURT takes a different approach (secrets are received from non-leader nodes rather than leader nodes) to achieve the same goal (absolute unpredictability via $n$ secrets per round) as BRandPiper, it is noteworthy that bits of data that are broadcasted are minimized ($O(\lambda)$ instead of $O(\lambda n)$) in SPURT. As a result, the total communication complexity is $O(\lambda n^2)$ in the best case. In the worst case, the additional cost in communication complexity can occur during the reconstruction phase, e.g. when some honest nodes might not have received the corresponding messages from the round leader, in which case other non-leader nodes might have to be queried for a Merkle path of size $O(\log n)$ and the list of signers of size $O(n)$. Thus, the worst-case communication complexity is $O(\lambda n^2 \log n + n^3)$.
+Besides the fact that SPURT takes a different approach (secrets are received from non-leader nodes rather than leader nodes) to achieve the same goal (absolute unpredictability via $n$ secrets per round) as BRandPiper, it is noteworthy that bits of data that are broadcasted (as opposed to sent privately) are minimized ($O(\lambda)$ instead of $O(\lambda n)$) in SPURT. As a result, the total communication complexity is $O(\lambda n^2)$ in the best case. In the worst case, the additional cost in communication complexity can be incurred during the reconstruction phase, e.g. when some honest nodes might not receive the correct messages from the round leader, in which case other non-leader nodes might have to be queried for a Merkle path of size $O(\log n)$ and the list of signers of size $O(n)$. Thus, the worst-case communication complexity is $O(\lambda n^2 \log n + n^3)$.
 
 \subsection{DVRF-based}
 Distributed verifiable random function (DVRF) is quite naturally a distributed version of VRF, where the VRF's secret key is distributed among a group of participants.
