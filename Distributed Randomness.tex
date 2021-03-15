@@ -54,15 +54,21 @@
 
 \section{Introduction}
 % Computational / communication / adversarial models
-\subsection{Perfectly Synchronous Distributed Randomness}
+\subsection{Perfect Synchrony}
 Suppose $n$ participants attempt to source a common random number in a distributed yet agreeable manner. In an ideal world where the communication model is perfectly synchronous such that all participants are able to successfully send and receive their random shares $s_i$ (which will make up the common random number) to and from all other participants at the exact same time, each participant can simply add all shares involved and call $s = \sum s_i$ to be the randomness produced in that round. Reminiscent of rock-paper-scissors (which can facilitate quick decision-making in real life), such protocol would be not only simple, but also agreeable by all participants, as there is no room to cheat (e.g. predict the randomness in advance).
 
-While the problem of distributed randomness is trivial in this setting, situations can change dramatically in practical settings where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers can try to predict or bias the randomness to their benefit. Namely, consider the following scenario without perfect synchrony: three participants ($P_1, P_2, P_3$) coordinate to produce a common random number $s = s_1 + s_2 + s_3$ where each $P_i$ sends $s_i$, and suppose $P_3$ already obtains the knowledge of $s_1$ and $s_2$ before sending $s_3$ to $P_1$ and $P_2$ as the last step of the protocol. Then $P_3$ is able to set $s$ to be whichever value he desires, as he can choose his $s_3$ depending on $s_1$ and $s_2$. Effectively, this protocol becomes a centralized randomness protocol as a result.
+While the problem of distributed randomness is trivial in this setting, situations can change dramatically in practical settings where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers can try to predict or bias the randomness to their benefit. Namely, consider the following simple scenario without perfect synchrony: three participants ($P_1, P_2, P_3$) coordinate to produce a common random number $s = s_1 + s_2 + s_3$ where each $P_i$ sends $s_i$, and suppose $P_3$ already obtains the knowledge of $s_1$ and $s_2$ before sending $s_3$ to $P_1$ and $P_2$ as the last step of the protocol. Then $P_3$ is able to set $s$ to be whichever value he desires, as he can choose his $s_3$ depending on $s_1$ and $s_2$. Effectively, this protocol becomes centralized by $P_3$ as a result.
 
 \subsection{Commit-Reveal}
-In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret random number and then adding all shares (revealed later) from all nodes to compute the final random number of a round. The problem with this is that the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output, biasing the distributed randomness. This is called the \textit{last revealer attack}.
+A strawman solution to the above issue, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret share and then waiting until all shares are committed before revealing them and summing them to compute the final randomness of a round. Due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever value he desires. Nonetheless, note that the problem of biasing still exists, as the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output. This is called the \textit{last revealer attack}.
 
 \subsection{Desired Properties of Distributed Randomness}
+\begin{enumerate}
+\item Unpredictability
+\item Bias Resistance
+\item Liveness
+\item Public Verifiability
+\end{enumerate}
 
 \section{Building Blocks}
 \subsection{Verifiable Secret Sharing}
@@ -218,10 +224,6 @@ Intuitively, one can understand VDF as a computational task that cannot be sped 
 
 \section{Protocols}
 \subsection{PVSS-based}
-
-\subsubsection{RandHound}
-One-off protocol
-
 \subsubsection{Scrape}
 % Reword start
 Scrape is run between $n$ parties $P_1, ..., P_n$ who have access to a public ledger (a la public bulletin board model) where they can post information for later verification. At a high level, the protocol is an improvement over commit-reveal such that the concept of reconstruction can prevent the last revealer attack in case any committed inputs are not revealed later. A PVSS protocol is used as a subprotocol, and it is assumed that the Setup phase is already done and the public keys $pk_i$ of each party $P_i$ are already registered in the ledger. In detail, the protocol proceeds as follows:
@@ -391,7 +393,7 @@ Syta, Ewa, et al. ``Scalable bias-resistant distributed randomness." 2017 IEEE S
 Cascudo, Ignacio, and Bernardo David. ``SCRAPE: Scalable randomness attested by public entities." International Conference on Applied Cryptography and Network Security. Springer, Cham, 2017.
 
 \bibitem{HydRand}
-Schindler, Philipp, et al. ``Hydrand: Efficient continuous distributed randomness." 2020 IEEE Symposium on Security and Privacy (SP). IEEE, 2020.
+Schindler, Philipp, et al. ``HydRand: Efficient continuous distributed randomness." 2020 IEEE Symposium on Security and Privacy (SP). IEEE, 2020.
 
 \bibitem{Kate}
 Kate, Aniket, Gregory M. Zaverucha, and Ian Goldberg. ``Constant-size commitments to polynomials and their applications." International conference on the theory and application of cryptology and information security. Springer, Berlin, Heidelberg, 2010.
@@ -439,12 +441,12 @@ Kiayias, Aggelos, et al. ``Ouroboros: A provably secure proof-of-stake blockchai
 David, Bernardo, et al. ``Ouroboros praos: An adaptively-secure, semi-synchronous proof-of-stake blockchain." Annual International Conference on the Theory and Applications of Cryptographic Techniques. Springer, Cham, 2018.
 
 \bibitem{Bitcoin}
-Nakamoto, Satoshi. ``A peer-to-peer electronic cash system." https://bitcoin.org/bitcoin.pdf (2008).
+Nakamoto, Satoshi. ``A peer-to-peer electronic cash system." \seqsplit{https://bitcoin.org/bitcoin.pdf} (2008).
 
 \bibitem{Aleph}
-Gągol, Adam, et al. ``Aleph: Efficient atomic broadcast in asynchronous networks with byzantine nodes." Proceedings of the 1st ACM Conference on Advances in Financial Technologies. 2019.
+Gagol, Adam, et al. ``Aleph: Efficient atomic broadcast in asynchronous networks with byzantine nodes." Proceedings of the 1st ACM Conference on Advances in Financial Technologies. 2019.
 
 \bibitem{PoD}
-Bünz, Benedikt, Steven Goldfeder, and Joseph Bonneau. ``Proofs-of-delay and randomness beacons in ethereum." IEEE Security and Privacy on the blockchain (IEEE S&B) (2017).
+Bünz, Benedikt, Steven Goldfeder, and Joseph Bonneau. ``Proofs-of-delay and randomness beacons in ethereum." IEEE Security and Privacy on the blockchain (IEEE S\&B) (2017).
 \end{thebibliography}
 \end{document}
