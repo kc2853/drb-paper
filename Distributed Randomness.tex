@@ -52,16 +52,19 @@
 \tableofcontents
 \pagebreak
 
-\section{Building Blocks}
+\section{Introduction}
 % Computational / communication / adversarial models
 \subsection{Perfectly Synchronous Distributed Randomness}
-Suppose $n$ participants attempt to source a common random number in a distributed yet agreeable manner. In an ideal world where the communication model is perfectly synchronous such that all participants are able to successfully send and receive their random shares $s_i$ (which will make up the common random number) to and from all other participants at the same time, each participant can simply add all shares involved and call $s = \sum s_i$ to be the randomness produced in that round. Such protocol would be not only simple, but also agreeable, as its nature in fact parallels that of rock-paper-scissors, which many play in real life as part of a quick decision-making process. While distributed randomness is hardly a hard problem in this setting, situations can change dramatically in practical settings where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers that maliciously try to predict or bias the randomness to their benefit can exist.
+Suppose $n$ participants attempt to source a common random number in a distributed yet agreeable manner. In an ideal world where the communication model is perfectly synchronous such that all participants are able to successfully send and receive their random shares $s_i$ (which will make up the common random number) to and from all other participants at the exact same time, each participant can simply add all shares involved and call $s = \sum s_i$ to be the randomness produced in that round. Reminiscent of rock-paper-scissors (which can facilitate quick decision-making in real life), such protocol would be not only simple, but also agreeable by all participants, as there is no room to cheat (e.g. predict the randomness in advance).
 
-% Before dealing with all these issues at once, we start with the most basic issue that arises in a non-ideal setting: asynchrony in communication. Namely, some participants, in a communication model that is not perfectly synchronous
+While the problem of distributed randomness is trivial in this setting, situations can change dramatically in practical settings where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers can try to predict or bias the randomness to their benefit. Namely, consider the following scenario without perfect synchrony: three participants ($P_1, P_2, P_3$) coordinate to produce a common random number $s = s_1 + s_2 + s_3$ where each $P_i$ sends $s_i$, and suppose $P_3$ already obtains the knowledge of $s_1$ and $s_2$ before sending $s_3$ to $P_1$ and $P_2$ as the last step of the protocol. Then $P_3$ is able to set $s$ to be whichever value he desires, as he can choose his $s_3$ depending on $s_1$ and $s_2$. Effectively, this protocol becomes a centralized randomness protocol as a result.
 
 \subsection{Commit-Reveal}
 In the case of a strawman solution, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret random number and then adding all shares (revealed later) from all nodes to compute the final random number of a round. The problem with this is that the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output, biasing the distributed randomness. This is called the \textit{last revealer attack}.
 
+\subsection{Desired Properties of Distributed Randomness}
+
+\section{Building Blocks}
 \subsection{Verifiable Secret Sharing}
 The issue with the classical Shamir's secret sharing scheme is that either the dealer or other participants could in fact be acting maliciously, e.g. Alice (a participant) needs to trust that she has received her share correctly from the dealer while she also needs to trust that other participants' revealed shares are correct.
 
@@ -106,7 +109,7 @@ Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^{a_0}$
 % Limitations of VSS?: 1. not leaderless -> DKG; 2. not publicly verifiable -> PVSS
 
 \subsection{Distributed Key Generation}
-The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner such that any threshold $t$ number of participants should be able to recover the same group secret. The basic idea is that each participant becomes a dealer (i.e. leader) for a VSS, in which case the protocol deals with $n$ random polynomials in mod $q$ $\{f_i\}_{i = 1, ..., n}$ as opposed to one. Though not computed explicitly, the implicit group polynomial $f = \sum f_i$ then embeds the group secret in the form of $f(0)$ (denoted by $x$) as well as the corresponding public key $g^{f(0)}$ (denoted by $y$) via commitments to coefficients of $f_i$ as per each VSS. Notably, this facet is the one that allows a leaderless configuration where there does not exist a leader for $f$ even if each participant $P_i$ remains a leader for $f_i$ with the knowledge of $f_i(0)$. As a result, it is only collectively (i.e. with the collaboration of at least $t$ number of nodes in a group) that the group can make use of $x$ and $y$ in the typical sense of asymmetric cryptography (e.g. signing a message) after performing a DKG.
+The motivation for distributed key generation (DKG), which basically comprises $n$ parallel instances of a VSS (run by each participant), is to achieve and utilize a group secret in a leaderless manner such that any threshold $t$ number of participants should be able to recover the same group secret. The basic idea is that every participant becomes a leader for a VSS (hence achieving the leaderless property), in which case the protocol deals with $n$ random polynomials $\{f_i\}_{i = 1, ..., n}$ mod $q$ as opposed to one. Though not computed explicitly, the implicit group polynomial $f = \sum f_i$ then embeds the group secret in the form of $f(0)$ (denoted by $x$) as well as the corresponding public key $g^{f(0)}$ (denoted by $y$) via commitments to coefficients of $f_i$ as per each VSS. Notably, this facet is the one that allows a leaderless configuration where there does not exist a leader for $f$ even if each participant $P_i$ remains a leader for $f_i$ with the knowledge of $f_i(0)$. As a result, it is only collectively (i.e. with the collaboration of at least $t$ number of nodes in a group) that the group can make use of $x$ and $y$ in the typical sense of asymmetric cryptography (e.g. signing a message) after performing a DKG.
 
 Before delineating the process of a DKG, we include what it means for a DKG to be uniformly secure. Namely, a uniformly secure DKG should satisfy the following three correctness properties and one secrecy property.
 
@@ -126,11 +129,7 @@ In the setting where at most $t - 1$ nodes can be controlled by an attacker with
 \end{enumerate}
 \end{definition}
 
-% Need to understand SIM above better? Potentially reword!
-The third correctness property is the one that motivates the .........
-
-
-As the goal in practical terms is to use 
+Without the third correctness property, we call a DKG \textit{secure}. The reason behind this minor distinction is that Joint-Feldman DKG, which is most commonly used in practice, is secure but not uniformly secure while Joint-Pedersen offers uniform security. Simultaneously, however, it has been shown that a DKG protocol that is secure but not uniformly secure in fact suffices in the context of using DKG as a subprotocol for distributed randomness, even if the lack of uniform security does seem insufficient a priori in the context of DKG itself.
 
 % Clarify meaning of "share" later?
 
