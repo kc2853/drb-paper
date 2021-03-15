@@ -186,7 +186,7 @@ where $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ is a Lagrange coefficient.
 
 Note that the participants do not need nor learn the values of the exponents $p(i)$. Only the related values $S_i = G^{p(i)}$ are required to complete the reconstruction of the secret value $S = G^s$. Also, note that participant $P_i$ does not expose its private key $x_i$; consequently participant $P_i$ can use its key pair in several runs of the PVSS scheme. The type of encryption used for the shares has been optimized for performance; however, if desired, it is also possible to use standard ElGamal encryption instead. 
 
-Clearly, the scheme is homomorphic. For example, given the dealer’s output for secrets $G^{s_1}$ and $G^{s_2}$, the combined secret $G^{s_1 + s_2}$ can be obtained by applying the reconstruction protocol to the combined encrypted shares $Y_{i1} Y_{i2}$.
+Clearly, the scheme is homomorphic. For example, given the dealer's output for secrets $G^{s_1}$ and $G^{s_2}$, the combined secret $G^{s_1 + s_2}$ can be obtained by applying the reconstruction protocol to the combined encrypted shares $Y_{i1} Y_{i2}$.
 % Reword end
 
 \subsubsection{Scrape's Variations}
@@ -359,12 +359,92 @@ Taking some closing stock price or a block hash + VDF
 A VDF chain involving a group of trapdoor VDFs
 
 \newpage
-\begin{thebibliography}{20}
+\begin{thebibliography}{50}
 \bibitem{Feldman}
 Feldman, Paul. ``A practical scheme for non-interactive verifiable secret sharing." 28th Annual Symposium on Foundations of Computer Science (sfcs 1987). IEEE, 1987.
 
+\bibitem{Pedersen}
+Pedersen, Torben Pryds. ``A threshold cryptosystem without a trusted party." Workshop on the Theory and Application of of Cryptographic Techniques. Springer, Berlin, Heidelberg, 1991.
+
+\bibitem{Gennaro}
+Gennaro, Rosario, et al. ``Secure distributed key generation for discrete-log based cryptosystems." International Conference on the Theory and Applications of Cryptographic Techniques. Springer, Berlin, Heidelberg, 1999.
+
+\bibitem{Gennaro2}
+Gennaro, Rosario, et al. ``Revisiting the distributed key generation for discrete-log based cryptosystems." RSA Security'03.
+
 \bibitem{Dodis}
 Dodis, Yevgeniy, and Aleksandr Yampolskiy. ``A verifiable random function with short proofs and keys." International Workshop on Public Key Cryptography. Springer, Berlin, Heidelberg, 2005.
-\end{thebibliography}
 
+\bibitem{Dfinity}
+Hanke, Timo, Mahnush Movahedi, and Dominic Williams. ``Dfinity technology overview series, consensus system." arXiv preprint arXiv:1805.04548 (2018).
+
+\bibitem{ETHDKG}
+Schindler, Philipp, et al. ``ETHDKG: Distributed Key Generation with Ethereum Smart Contracts." IACR Cryptol. ePrint Arch. 2019 (2019): 985.
+
+\bibitem{Schoenmakers}
+Schoenmakers, Berry. ``A simple publicly verifiable secret sharing scheme and its application to electronic voting." Annual International Cryptology Conference. Springer, Berlin, Heidelberg, 1999.
+
+\bibitem{RandHerd}
+Syta, Ewa, et al. ``Scalable bias-resistant distributed randomness." 2017 IEEE Symposium on Security and Privacy (SP). Ieee, 2017.
+
+\bibitem{Scrape}
+Cascudo, Ignacio, and Bernardo David. ``SCRAPE: Scalable randomness attested by public entities." International Conference on Applied Cryptography and Network Security. Springer, Cham, 2017.
+
+\bibitem{HydRand}
+Schindler, Philipp, et al. ``Hydrand: Efficient continuous distributed randomness." 2020 IEEE Symposium on Security and Privacy (SP). IEEE, 2020.
+
+\bibitem{Kate}
+Kate, Aniket, Gregory M. Zaverucha, and Ian Goldberg. ``Constant-size commitments to polynomials and their applications." International conference on the theory and application of cryptology and information security. Springer, Berlin, Heidelberg, 2010.
+
+\bibitem{Galindo}
+Galindo, David, et al. ``Fully Distributed Verifiable Random Functions and their Application to Decentralised Random Beacons." IACR Cryptol. ePrint Arch. 2020 (2020): 96.
+
+\bibitem{Timed}
+Boneh, Dan, and Moni Naor. ``Timed commitments." Annual international cryptology conference. Springer, Berlin, Heidelberg, 2000.
+
+\bibitem{RandRunner}
+Schindler, Philipp, et al. ``RandRunner: Distributed randomness from trapdoor vdfs with strong uniqueness." Cryptology ePrint Archive, Report 2020/942.
+
+\bibitem{RandPiper}
+Bhat, Adithya, et al. ``RandPiper: Reconfiguration-Friendly Random Beacons with Quadratic Communication." Cryptology ePrint Archive, Report 2020/1590.
+
+\bibitem{Bitcoin}
+Bonneau, Joseph, Jeremy Clark, and Steven Goldfeder. ``On Bitcoin as a public randomness source." IACR Cryptol. ePrint Arch. 2015 (2015): 1015.
+
+\bibitem{HERB}
+Cherniaeva, Alisa, Ilia Shirobokov, and Omer Shlomovits. ``Homomorphic Encryption Random Beacon." IACR Cryptol. ePrint Arch. 2019 (2019): 1320.
+
+\bibitem{SPURT}
+Das, Sourav, et al. ``SPURT: Scalable Distributed Randomness Beacon with Transparent Setup." Cryptology ePrint Archive, Report 2021/100. https://eprint.iacr.org/2021/100, 2021.
+
+\bibitem{Cachin}
+Cachin, Christian, Klaus Kursawe, and Victor Shoup. ``Random oracles in Constantinople: Practical asynchronous Byzantine agreement using cryptography." Journal of Cryptology 18.3 (2005): 219-246.
+
+\bibitem{RandChain}
+Han, Runchao, et al. ``RandChain: Decentralised Randomness Beacon from Sequential Proof-of-Work." Cryptology ePrint Archive, Report 2020/1033, 2020. https://eprint.iacr.org/2020/1033.
+
+\bibitem{MPC}
+Lindell, Yehuda. ``Secure Multiparty Computation (MPC)." IACR Cryptol. ePrint Arch. 2020 (2020): 300.
+
+\bibitem{Algorand}
+Chen, Jing, and Silvio Micali. ``Algorand." arXiv preprint arXiv:1607.01341 (2016).
+
+\bibitem{Caucus}
+Azouvi, Sarah, Patrick McCorry, and Sarah Meiklejohn. ``Winning the caucus race: Continuous leader election via public randomness." arXiv preprint arXiv:1801.07965 (2018).
+
+\bibitem{Ouroboros}
+Kiayias, Aggelos, et al. ``Ouroboros: A provably secure proof-of-stake blockchain protocol." Annual International Cryptology Conference. Springer, Cham, 2017.
+
+\bibitem{OuroborosP}
+David, Bernardo, et al. ``Ouroboros praos: An adaptively-secure, semi-synchronous proof-of-stake blockchain." Annual International Conference on the Theory and Applications of Cryptographic Techniques. Springer, Cham, 2018.
+
+\bibitem{Bitcoin}
+Nakamoto, Satoshi. ``A peer-to-peer electronic cash system." https://bitcoin.org/bitcoin.pdf (2008).
+
+\bibitem{Aleph}
+Gągol, Adam, et al. ``Aleph: Efficient atomic broadcast in asynchronous networks with byzantine nodes." Proceedings of the 1st ACM Conference on Advances in Financial Technologies. 2019.
+
+\bibitem{PoD}
+Bünz, Benedikt, Steven Goldfeder, and Joseph Bonneau. ``Proofs-of-delay and randomness beacons in ethereum." IEEE Security and Privacy on the blockchain (IEEE S&B) (2017).
+\end{thebibliography}
 \end{document}
