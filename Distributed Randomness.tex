@@ -63,11 +63,13 @@ While the problem of distributed randomness is trivial in this setting, situatio
 A strawman solution to the above issue, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret share and then waiting until all shares are committed before revealing them and summing them to compute the final randomness of a round. Due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever value he desires. Nonetheless, note that the problem of biasing still exists, as the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output. This is called the \textit{last revealer attack}.
 
 \subsection{Desired Properties of Distributed Randomness}
+Clearly, we should prevent anyone from biasing the distributed randomness in any way. Assuming a distributed randomness beacon (DRB) setting in which a distributed randomness protocol is conducted in successive rounds in a continuous manner, we furthermore require the following properties:
 \begin{enumerate}
-\item Unpredictability
-\item Bias Resistance
-\item Liveness
-\item Public Verifiability
+\item Unpredictability. Any number of nodes should not be able to precompute and predict a future random beacon output.
+\item Bias Resistance. Any number of nodes should not be able to bias and influence a future random beacon output.
+% Guaranteed output delivery?
+\item Liveness. Any number of nodes should not be able to prevent progress of the beacon.
+\item Public Verifiability. For the purpose of a public beacon, any third party should be able to verify the beacon values even if not partaking in the generation of those values.
 \end{enumerate}
 
 \section{Building Blocks}
