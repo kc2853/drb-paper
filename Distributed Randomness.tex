@@ -63,14 +63,22 @@ While the problem of distributed randomness is trivial in this setting, situatio
 A strawman solution to the above issue, the classical commit-reveal provides an intuitive way to source a random number from a group of nodes by first allowing each node to commit (in the cryptographic sense) to a secret share and then waiting until all shares are committed before revealing them and summing them to compute the final randomness of a round. Due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever value he desires. Nonetheless, note that the problem of biasing still exists, as the last person to reveal his share can in fact check the round's output faster than others and hence can decide not to reveal his number if he doesn't like the round's output. This is called the \textit{last revealer attack}.
 
 \subsection{Desired Properties of Distributed Randomness}
-Clearly, we should prevent anyone from biasing the distributed randomness in any way. Assuming a distributed randomness beacon (DRB) setting in which a distributed randomness protocol is conducted in successive rounds in a continuous manner, we furthermore require the following properties:
+Clearly, we should prevent anyone from biasing the distributed randomness in any way. Assuming a distributed randomness beacon (DRB) setting in which a distributed randomness protocol is conducted in successive rounds in a continuous manner, we can define overall security of a DRB by requiring the following properties.
+
+% Reword
+\begin{definition}[$d$-unpredictability]
+A DRB protocol is said to be \textit{unpredictable} with absolute bound $d$ for $d \geq 1$ if the probability of an adversary $\mathcal{A}$ predicting the honest output for round $r + d$ (where $r$ denotes the current round) is a negligible function $\mathsf{negl}(\kappa)$.
+\end{definition}
+
+\begin{definition}[Secure distributed randomness beacon]
+A DRB protocol is said to be \textit{$d$-secure} if it satisfies the following conditions:
 \begin{enumerate}
-\item Unpredictability. Any number of nodes should not be able to precompute and predict a future random beacon output.
-\item Bias Resistance. Any number of nodes should not be able to bias and influence a future random beacon output.
-% Guaranteed output delivery?
-\item Liveness. Any number of nodes should not be able to prevent progress of the beacon.
-\item Public Verifiability. For the purpose of a public beacon, any third party should be able to verify the beacon values even if not partaking in the generation of those values.
+\item Bias Resistance. Let $\mathcal{O}$ be the output of the beacon for some round $r$. No computationally bounded adversary $\mathcal{A}$ can bias the output of the beacon, i.e. fix $c$ bits of $\mathcal{O}$ for any round $r > 1$ with probability greater than $\frac{1}{2^c} + \mathsf{negl}(\kappa)$.
+\item Unpredictability. The protocol satisfies $d$-unpredictability.
+\item Guaranteed Output Delivery. For every round $r \geq 1$, the protocol outputs a value.
+\item Public Verifiability. Any third party should be able to verify the beacon values even if not partaking in the generation of those values.
 \end{enumerate}
+\end{definition}
 
 \section{Building Blocks}
 \subsection{Verifiable Secret Sharing}
