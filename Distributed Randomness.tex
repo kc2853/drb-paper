@@ -174,7 +174,18 @@ Without the third correctness property, we call a DKG \textit{secure}. The reaso
 % ETHDKG example?
 
 \subsection{Publicly Verifiable Secret Sharing}
-While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, the verification process of a VSS is not public. Publicly verifiable secret sharing (PVSS), on the other hand, assumes a public setup where the verification process can be achieved publicly (e.g. by bystanders) such that the messages exchanged during the protocol are modified accordingly in order to reflect the fact that some information kept private in a typical VSS can be public in a PVSS. Naturally, this added facet of public verifiability is useful and desirable in models such as the public bulletin board model (e.g. for blockchains). We delineate Schoenmakers' PVSS scheme and Scrape's variations of it here.
+While VSS allows verification of the involved shares, the fact of the matter is that such verification can only be done by the involved participants in the secret sharing process. In other words, the verification process of a VSS is not public. Publicly verifiable secret sharing (PVSS), on the other hand, assumes a public setup where the verification process can be achieved publicly (e.g. by bystanders) such that the messages exchanged during the protocol are modified accordingly in order to reflect the fact that some information kept private in a typical VSS can be public in a PVSS. Naturally, this added facet of public verifiability is useful and desirable in models such as the public bulletin board model (e.g. for blockchains). A PVSS can be represented by the following tuple of algorithms.
+% Reword start
+\begin{itemize}
+\item $Setup(\lambda) \rightarrow pp$. Generates the scheme parameters $pp$, an implicit input to all other algorithms.
+\item $KeyGen(\lambda) \rightarrow (pk, sk)$. Generate PVSS key-pair $(pk, sk)$ used for share encryption and decryption.
+\item $Enc(pk, m) \rightarrow c$ and $Dec(sk, c) \rightarrow m$. The encryption and decryption algorithms used to send shares to all, and obtain private share respectively. The invariant $Pr[Dec(Enc(m)) = m] = 1$ must always hold true for all $m$ in the message domain.
+\item $ShareGen(s) \rightarrow (S, E, \pi)$. Typically, executed by the dealer with secret $s$ to generate secret share vector $S = (s_1, ..., s_n)$ and encryption vector of shares $E = (Enc(s_1), ..., Enc(s_n))$ for all nodes $P$, and a cryptographic proof $\pi$ committing to $s$ which guarantees any node with $\geq t$ shares reconstruct a unique $s$.
+\item $ShareVerify(E, \pi) \rightarrow \{0, 1\}$. Verify if the sharing is correct. A successful verification guarantees that its share is correct and $t$ nodes reconstruct a unique $s$. 0 indicates a failure whereas 1 indicates a success.
+\item $Recon(S) \rightarrow s$. Reconstruct the shared secret $s$ from the collection of shares $S \subset \{s_1, ..., s_n\}^{t}$.
+\end{itemize}
+
+Implementing the above interface, Schoenmakers' PVSS scheme and Scrape's variations of it are delineated in the following.
 
 % Reword start
 \subsubsection{Schoenmakers}
@@ -200,7 +211,7 @@ $$\prod_{i = 1}^{t} S_i^{\lambda_i} = \prod_{i = 1}^{t} \left(G^{p(i)}\right)^{\
 where $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ is a Lagrange coefficient.
 \end{enumerate}
 
-Note that the participants do not need nor learn the values of the exponents $p(i)$. Only the related values $S_i = G^{p(i)}$ are required to complete the reconstruction of the secret value $S = G^s$. Also, note that participant $P_i$ does not expose its private key $x_i$; consequently participant $P_i$ can use its key pair in several runs of the PVSS scheme. The type of encryption used for the shares has been optimized for performance; however, if desired, it is also possible to use standard ElGamal encryption instead. 
+Note that the participants do not need nor learn the values of the exponents $p(i)$. Only the related values $S_i = G^{p(i)}$ are required to complete the reconstruction of the secret value $S = G^s$. Also, note that participant $P_i$ does not expose its private key $x_i$; consequently participant $P_i$ can use its key pair in several runs of the PVSS scheme. The type of encryption used for the shares has been optimized for performance; however, if desired, it is also possible to use standard ElGamal encryption instead.
 
 Clearly, the scheme is homomorphic. For example, given the dealer's output for secrets $G^{s_1}$ and $G^{s_2}$, the combined secret $G^{s_1 + s_2}$ can be obtained by applying the reconstruction protocol to the combined encrypted shares $Y_{i1} Y_{i2}$.
 % Reword end
