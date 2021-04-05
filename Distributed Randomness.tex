@@ -67,13 +67,13 @@ Clearly, we should prevent anyone from biasing the distributed randomness in any
 
 % Reword
 \begin{definition}[$d$-unpredictability]
-A DRB protocol is said to be \textit{unpredictable} with absolute bound $d$ for $d \geq 1$ if the probability of an adversary $\mathcal{A}$ predicting the honest output for round $r + d$ (where $r$ denotes the current round) is a negligible function $\mathsf{negl}(\kappa)$.
+A DRB protocol is said to be \textit{unpredictable} with absolute bound $d$ for $d \geq 1$ if the probability of an adversary $\mathcal{A}$ predicting the honest output for round $r + d$ (where $r$ denotes the current round) is a negligible function $\mathsf{negl}(\lambda)$.
 \end{definition}
 
 \begin{definition}[Secure distributed randomness beacon]
 A DRB protocol is said to be \textit{$d$-secure} if it satisfies the following conditions:
 \begin{enumerate}
-\item Bias Resistance. Let $\mathcal{O}$ be the output of the beacon for some round $r$. No computationally bounded adversary $\mathcal{A}$ can bias the output of the beacon, i.e. fix $c$ bits of $\mathcal{O}$ for any round $r > 1$ with probability greater than $\frac{1}{2^c} + \mathsf{negl}(\kappa)$.
+\item Bias Resistance. Let $\mathcal{O}$ be the output of the beacon for some round $r$. No computationally bounded adversary $\mathcal{A}$ can bias the output of the beacon, i.e. fix $c$ bits of $\mathcal{O}$ for any round $r > 1$ with probability greater than $\frac{1}{2^c} + \mathsf{negl}(\lambda)$.
 \item Unpredictability. The protocol satisfies $d$-unpredictability.
 \item Guaranteed Output Delivery. For every round $r \geq 1$, the protocol outputs a value.
 \item Public Verifiability. Any third party should be able to verify the beacon values even if not partaking in the generation of those values.
@@ -184,6 +184,15 @@ While VSS allows verification of the involved shares, the fact of the matter is 
 \item $ShareVerify(E, \pi) \rightarrow \{0, 1\}$. Verify if the sharing is correct. A successful verification guarantees that its share is correct and $t$ nodes reconstruct a unique $s$. 0 indicates a failure whereas 1 indicates a success.
 \item $Recon(S) \rightarrow s$. Reconstruct the shared secret $s$ from the collection of shares $S \subset \{s_1, ..., s_n\}^{t}$.
 \end{itemize}
+
+\begin{definition}[PVSS security]
+Let $L \in P$ be the dealer with secret $s$ and $\lambda$ be the security parameter. A secure PVSS scheme must provide the following guarantees:
+\begin{enumerate}
+\item \textbf{Secrecy.} If $L$ is honest, then the adversary's view during the sharing phase reveals no information about the dealer's secret $s$ with probability better than $\mathsf{negl}(\lambda)$.
+\item \textbf{Correctness.} If $L$ is honest, then the honest nodes output the secret $s$ at the end of the reconstruction phase with high probability $1 - \mathsf{negl}(\lambda)$.
+\item \textbf{Public Verifiability.} If the check in verification algorithm returns 1, then with high probability $1 - \mathsf{negl}(\lambda)$, the encryptions are valid shares of some secret.
+\end{enumerate}
+\end{definition}
 
 Implementing the above interface, Schoenmakers' PVSS scheme and Scrape's variations of it are delineated in the following.
 
