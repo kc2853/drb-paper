@@ -362,22 +362,20 @@ Each node $i$, upon receiving the cryptographic digest over the broadcast channe
 Besides the fact that SPURT takes a different approach (secrets are received from non-leader nodes rather than leader nodes) to achieve the same goal (absolute unpredictability via $n$ secrets per round) as BRandPiper, it is noteworthy that bits of data that are broadcasted (as opposed to sent privately) are minimized ($O(\lambda)$ instead of $O(\lambda n)$) in SPURT. As a result, the total communication complexity is $O(\lambda n^2)$ in the best case. In the worst case, the additional cost in communication complexity can be incurred during the reconstruction phase, e.g. when some honest nodes might not receive the correct messages from the round leader, in which case other non-leader nodes might have to be queried for a Merkle path of size $O(\log n)$ and the list of signers of size $O(n)$. Thus, the worst-case communication complexity is $O(\lambda n^2 \log n + n^3)$.
 
 \subsection{DVRF-based}
-Distributed verifiable random function (DVRF) is quite naturally a distributed version of VRF, where the VRF's secret key is distributed among a group of participants.
+Distributed verifiable random function (DVRF) is a distributed version of VRF, where the VRF's secret key is distributed among a group of participants. In the current setting, such distribution can be done via DKG such that a threshold $t$ number of participants is needed to recover the DVRF output from $t$ DVRF shares. Then the idea is that each DVRF output from a DVRF phase (preceded by a DKG phase) is defined to be each round's randomness, where the input to the DVRF can be a hyperparameter (e.g. which can be set to the current timestamp, DVRF output from the previous round, etc.) to the protocol.
 
-Hash of VUF $\rightarrow$ VRF
+Note that DVRF generalizes the idea of unique (i.e. at most one signature is accepted by the verification algorithm for every message and public key) threshold signature schemes such that protocols like Dfinity (which involves threshold BLS) can be bucketed under this interpretation. The reason is that a unique digital signature is a VUF (verifiable unpredictable function), which can be hashed to yield a VRF in the random oracle model.
 
-Threshold signature can be interpreted under this bucket
+% TODO
+\subsubsection{drand}
 
-\subsubsection{RandHerd}
-Involves threshold Schnorr + CoSi (collective signing = multisig aggregation + communication tree) in a fairly complicated way
 
-\subsubsection{Dfinity}
-League of Entropy's drand
-
-Stalling the network? 100\% eventual liveness assumption?
-% Just knowing vs biasing
 \subsubsection{DDH-DVRF}
 Does not use pairings
+
+% TODO: RandHerd
+% \subsubsection{RandHerd}
+% Involves threshold Schnorr + CoSi (collective signing = multisig aggregation + communication tree) in a fairly complicated way
 
 \subsection{VDF-based}
 \subsubsection{Extending Commit-Reveal}
