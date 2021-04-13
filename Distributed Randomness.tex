@@ -368,7 +368,9 @@ Note that DVRF generalizes the idea of unique (i.e. at most one signature is acc
 
 % TODO
 \subsubsection{drand}
+drand and Dfinity adopt a similar mechanism to output random numbers. As outlined above, the idea is the following. After the DKG phase, nodes enter the beacon phase, each round of which involves each node creating a signature on the common message (i.e. derived from the previous round's beacon output) under its corresponding secret share. Then these individual signatures are interpolated into one group signature (verifiable by group public key) via Lagrange interpolation, after which the group signature is hashed to yield the round's output. BLS signature scheme is used throughout.
 
+Afterwards, nodes proceed to the next round and reiterate the above process such that the resulting architecture of the protocol is basically a chain of DVRFs.
 
 \subsubsection{DDH-DVRF}
 Does not use pairings
