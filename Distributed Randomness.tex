@@ -380,10 +380,11 @@ Does not use pairings
 % Involves threshold Schnorr + CoSi (collective signing = multisig aggregation + communication tree) in a fairly complicated way
 
 \subsection{VDF-based}
-\subsubsection{Extending Commit-Reveal}
-Unicorn: pre-VDF
+Lastly, one could devise a distributed randomness beacon using VDFs. As aforementioned, the idea of VDF is that computing the function takes time while verifying it can happen quickly. It is precisely this aspect that prevents the last revealer attack in a typical commit-reveal, described below. Additionally, VDFs can be employed to extend some preexisting public randomness that can be manipulated into one that cannot be manipulated, or to construct an entirely new protocol (like RandRunner) altogether. These three approaches are summarized in the following.
 
-RANDAO + VDF
+\subsubsection{Extending Commit-Reveal}
+In commit-reveal, the issue is that the last revealer is able to compute the final output earlier than others and hence can choose to not reveal his share to his benefit in order to bias the randomness. The idea to prevent this biasing attack via VDF is simple. Namely, the protocol could make it a requirement that the output from the reveal phase of the protocol has to be run through a VDF before outputting the final randomness. Because of the fact that computing a VDF takes substantial time, the last revealer would not be able to precompute the final randomness of the round before others and hence would have to conform to the protocol (i.e. cooperate by revealing his share that was previously committed).
+
 % Where does timed commitment fit in?
 \subsubsection{Extending Public Randomness}
 Taking some closing stock price or a block hash + VDF
