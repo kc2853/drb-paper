@@ -382,19 +382,20 @@ Does not use pairings
 % Involves threshold Schnorr + CoSi (collective signing = multisig aggregation + communication tree) in a fairly complicated way
 
 \subsection{VDF-based}
-Lastly, one could devise a distributed randomness beacon using VDFs. As aforementioned, the idea of VDF is that computing the function takes time while verifying it can happen quickly. It is precisely this aspect that prevents the last revealer attack in a typical commit-reveal, described below. Additionally, VDFs can be employed to extend some preexisting public randomness that can be manipulated into one that cannot be manipulated, or to construct an entirely new protocol (like RandRunner) altogether. These three approaches are summarized in the following.
+Lastly, one could devise a distributed randomness beacon using VDFs. As aforementioned, the idea of VDF is that computing the function takes time while verifying it can happen quickly. It is precisely this aspect that can prevent the last revealer attack in a typical commit-reveal. Additionally, VDFs can be employed to extend some preexisting public randomness that can be manipulated into one that cannot be manipulated, or to construct an entirely new protocol (like RandRunner) altogether. These three approaches are summarized in the following.
 
 \subsubsection{Extending Commit-Reveal}
-In commit-reveal, the issue is that the last revealer is able to compute the final output earlier than others and hence can choose to not reveal his share to his benefit in order to bias the randomness. The idea to prevent this biasing attack via VDF is simple. Namely, the protocol could make it a requirement that the output from the reveal phase of the protocol has to be run through a VDF before outputting the final randomness. Because of the fact that computing a VDF takes substantial time, the last revealer would not be able to precompute the final randomness of the round before others and hence would have to conform to the protocol (i.e. cooperate by revealing his share that was previously committed).
+In commit-reveal (like RANDAO), the issue is that the last revealer is able to compute the final output earlier than others and hence can choose to not reveal his share to his benefit in order to bias the randomness. The idea to prevent this biasing attack via VDF is simple. Namely, the protocol could make it a requirement that the output from the reveal phase of the protocol has to be run through a VDF before declaring it as the final randomness. Because of the fact that computing a VDF takes substantial time, the last revealer would not be able to precompute the final randomness of the round before others and hence would have to conform to the protocol (i.e. cooperate by revealing his share that was previously committed).
 
 % Where does timed commitment fit in?
 \subsubsection{Extending Public Randomness}
-Taking some closing stock price or a block hash + VDF
+VDFs can also be utilized to extend a preexisting public source of randomness that by itself could be subject to manipulation. Namely, we can consider some closing stock price (or some block hash of Bitcoin) as our unextended randomness, in which case it is possible for malicious traders (or Bitcoin miners) to temporarily manipulate the market (or the Bitcoin network via block withholding attack) in order to manipulate the randomness. Similar to applying VDF to commit-reveal, the solution to this problem is to run the output through a VDF before declaring it as our final randomness. In other words, the output from the final VDF layer is defined to be the randomness of the protocol as opposed to the original output (closing price or block hash) itself. The reason is that a malicious actor would not have enough time to decide whether or not to manipulate the protocol in the first place due to the fact that VDF computation must take substantial time.
+
 \subsubsection{RandRunner}
 A VDF chain involving a group of trapdoor VDFs
 
 \newpage
-\begin{thebibliography}{50}
+\begin{thebibliography}{100}
 \bibitem{Feldman}
 Feldman, Paul. ``A practical scheme for non-interactive verifiable secret sharing." 28th Annual Symposium on Foundations of Computer Science (sfcs 1987). IEEE, 1987.
 
