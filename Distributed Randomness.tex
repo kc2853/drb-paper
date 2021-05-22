@@ -392,7 +392,12 @@ In commit-reveal (like RANDAO), the issue is that the last revealer is able to c
 VDFs can also be utilized to extend a preexisting public source of randomness that by itself could be subject to manipulation. Namely, we can consider some closing stock price (or some block hash of Bitcoin) as our unextended randomness, in which case it is possible for malicious traders (or Bitcoin miners) to temporarily manipulate the market (or the Bitcoin network via block withholding attack) in order to manipulate the randomness. Similar to applying VDF to commit-reveal, the solution to this problem is to run the output through a VDF before declaring it as our final randomness. In other words, the output from the final VDF layer is defined to be the randomness of the protocol as opposed to the original output (closing price or block hash) itself. The reason is that a malicious actor would not have enough time to decide whether or not to manipulate the protocol in the first place due to the fact that VDF computation must take substantial time.
 
 \subsubsection{RandRunner}
-A VDF chain involving a group of trapdoor VDFs
+RandRunner represents a novel way to utilize VDFs (aside from simply attaching a VDF layer to some preexisting protocol) in order to derive distributed randomness. Namely, it involves a chain of trapdoor VDFs with the strong uniqueness property. Trapdoor VDFs are VDFs where the initial Setup algorithm also outputs a trapdoor (secret key) $sk$ such that the party initiating it is able to use the trapdoor to compute the VDF in a more timely manner than others. Anyone knowing $sk$ can in fact achieve the same. On the other hand, strong uniqueness not only implies uniqueness (which is true by default for a VDF), but also uniqueness given the possibility of generation of VDF's public parameters by an adversary -- a property that does not hold true in the case of Wesolowski's VDF.
+
+% Add TrapdoorEval definition and Definition 3
+
+Achieving the strong uniqueness property with Pietrzak's VDF instead, RandRunner constitutes a chain of VDFs such that there are $n$ VDFs involved given $n$ participants (each offering a VDF). As a result, it can be interpreted that the chain is "interleaved" (or juxtaposed) with $n$ VDFs where each round of randomness is spearheaded by one leader's VDF. In other words, the protocol proceeds with a leader corresponding to a VDF on a per-round basis.
+%The idea is that the leader of a round computes its VDF
 
 \newpage
 \begin{thebibliography}{100}
