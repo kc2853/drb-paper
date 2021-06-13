@@ -321,7 +321,7 @@ New York University
 
 \begin{document}
 \maketitle
-% \tableofcontents
+\tableofcontents
 \pagebreak
 
 \section{Introduction}
@@ -657,8 +657,7 @@ Afterwards, nodes proceed to the next round and reiterate the above process such
 Lastly, one could devise a distributed randomness beacon using VDFs. As aforementioned, the idea of VDF is that computing the function takes time while verifying it can happen quickly. It is precisely this aspect that can prevent the last revealer attack in a typical commit-reveal. Additionally, VDFs can be employed to extend some preexisting public randomness that can be manipulated into one that cannot be manipulated, or to construct an entirely new protocol (like RandRunner) altogether. These three approaches are summarized in the following.
 
 \subsubsection{Extending Commit-Reveal}
-In commit-reveal (like RANDAO), the issue is that the last revealer is able to compute the final output earlier than others and hence can choose to not reveal his share to his benefit in order to bias the randomness. The idea to prevent this biasing attack via VDF is simple. Namely, the protocol could make it a requirement that the output from the reveal phase of the protocol has to be run through a VDF before declaring it as the final randomness. Because of the fact that computing a VDF takes substantial time, the last revealer would not be able to precompute the final randomness of the round before others and hence would have to conform to the protocol (i.e. cooperate by revealing his share that was previously committed).
-% Unicorn protocol
+In commit-reveal (like RANDAO), the issue is that the last revealer is able to compute the final output earlier than others and hence can choose to not reveal his share to his benefit in order to bias the randomness. The idea to prevent this biasing attack via VDF is simple. Namely, the protocol could make it a requirement that the output from the reveal phase of the protocol has to be run through a VDF before declaring it as the final randomness. Because of the fact that computing a VDF takes substantial time, the last revealer would not be able to precompute the final randomness of the round before others and hence would have to conform to the protocol (i.e. cooperate by revealing his share that was previously committed). Originally proposed as part of the Unicorn protocol in \cite{lenstra2015random}, the idea can successfully prevent the last revealer attack.
 
 % Where does timed commitment fit in?
 \subsubsection{Extending Public Randomness}

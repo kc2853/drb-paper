@@ -229,6 +229,18 @@ https://eprint.iacr.org/2021/100.pdf
 
 20. Random Oracles in Constantinople: Practical Asynchronous Byzantine Agreement using Cryptography
 https://allquantor.at/blockchainbib/pdf/cachin2000random.pdf
+• BA in asynchronous setting via cryptography (e.g. non-interactive threshold RSA sig, random-access coin-tossing scheme, etc.)
+• Security in ROM
+• Rabin & Ben-Or: presented randomization (i.e. common coin) to overcome FLP impossibility?
+• Dual-threshold sig scheme: need k to sign where k > t + 1 instead of k = t + 1; better security but harder to construct; lead to lower communication complexity; can be based on DH
+• Companion papers: Practical threshold signatures by Shoup, Optimistic asynchronous Byzantine agreement by Kursawe
+• Previous coin tossing schemes: issues with a "Rabin dealer" (1. coins get exhausted at some point; 2. somehow need to associate coins with transactions)
+• Random-access coin-tossing scheme: distributed function mapping the "name" of a coin to its value
+• Dealer assumptions: no dealer; one-time dealer; Rabin dealer
+• 
+• 
+• 
+• 
 
 21. RANDCHAIN: Decentralised Randomness Beacon from Sequential Proof-of-Work
 https://eprint.iacr.org/2020/1033.pdf
@@ -254,3 +266,12 @@ https://securecomputation.org/docs/pragmaticmpc.pdf
 • Some techniques turning semi-honest security into malicious security: cut-and-choose, GMW compiler, MPC in the head (state-of-the-art?)
 • For outputting an arithmetic sum: #3 (BGW) is relatively more efficient? -> basically repeated iterations of DKG
 
+23. A random zoo: sloth, unicorn, and trx
+https://eprint.iacr.org/2015/366.pdf
+• Sloth (pronounced slow-th) -> unicorn (random beacon) -> trx (application to ECC)
+• Section 2: mentions perfect synchrony -> commit-reveal -> last revealer attack
+• Mentions RSW time-lock puzzle, time capsules by Bellare/Goldwasser, timed commitments by Boneh/Naor
+• Need permutation function (not just modular square roots) in order to prevent potential shortcut?!
+• Output of sloth = (initial commitment to input, output, witness)
+• Permutation function (in practice) = swap with its neighbor (+/- 1) OR block cipher
+• Unicorn: publicize c (commitment to s = s₀ + s₁) -> publicize (s, sloth output, witness); s₀ gathers from crowd; s₁ independently generated (jpg image?!); gives rise to commit-reveal + VDF combo
