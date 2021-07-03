@@ -1,0 +1,60 @@
+Section 2: Building Blocks:
+
+* DKG
+Extensions to DKG (other than Joint Feldman by Pedersen)
+ 
+1. (in paper) Gennaro’s extension or Joint Pedersen (https://link.springer.com/content/pdf/10.1007%2F3-540-48910-X_21.pdf)
+2. Neji’s extension (https://onlinelibrary.wiley.com/doi/epdf/10.1002/sec.1651). Joint Feldman + Neji extension is used in ETHDKG(https://eprint.iacr.org/2019/985.pdf)
+3. HybridDKG: Failure resistant, asynchronous DKG, listed as possible improvement for drand (https://eprint.iacr.org/2012/377.pdf) 
+
+* Timed Commitments (https://www.iacr.org/archive/crypto2000/18800237/18800237.pdf)
+
+* VRFs: Various VUF based digital signature schemes such as
+1. Micali VRF- RSA hardness (https://dash.harvard.edu/bitstream/handle/1/5028196/Vadhan_VerifRandomFunction.pdf?sequence=2)
+2. Lysyanskaya VRF- Decisional Diffie-Hellman separation (http://cs.brown.edu/research/pubs/pdfs/2002/Lysyanskaya-2002-USV.pdf)
+3. Dodis VRF- Decisional bilinear Diffie-Hellman inversion assumption (https://eprint.iacr.org/2004/310.pdf)
+4. Hofheinz VRF - Decision Linear Assumption (https://eprint.iacr.org/2015/1048.pdf)
+
+
+Section 3: Protocols
+
+* PVSS based protocols 
+1. Ouroboros: basis of Cardano, uses Schoenmakers’ PVSS ? (https://eprint.iacr.org/2016/889.pdf)
+2. RandShare/RandHound/RandHerd (https://eprint.iacr.org/2016/1067.pdf)
+3. Caucus: modified SCRAPE (https://arxiv.org/pdf/1801.07965.pdf)
+4. SecRand: another variation of SCRAPE (https://www.readcube.com/articles/10.1109%2Faccess.2020.3036698)
+
+* VRF/DVRF
+1. Dfinity : threshold BLS signature (https://dfinity.org/pdf-viewer/pdfs/viewer?file=../library/dfinity-consensus.pdf)
+2. Algorand (https://algorandcom.cdn.prismic.io/algorandcom%2Fece77f38-75b3-44de-bc7f-805f0e53a8d9_theoretical.pdf)
+3. drand
+4. DDH-DVRF, GLOW-DVRF (https://eprint.iacr.org/2020/096.pdf)
+
+* VRF + VDF
+1. Harmony: VRF+VDF+BFT (https://harmony.one/whitepaper.pdf)
+2. Vixify: https://arxiv.org/pdf/2008.10189.pdf
+
+* Homomorphic encryption based
+1. HERB: uses threshold homomorphic encryption scheme, guaranteed output delivery (https://www.researchgate.net/profile/Ilia-Shirobokov/publication/337548820_Homomorphic_Encryption_Random_Beacon/links/5ddd9ea0a6fdcc2837ed8126/Homomorphic-Encryption-Random-Beacon.pdf)
+2. Nguyen-Van DRB:  HE+ VRF (https://www.ginar.io/sdrngbohe.pdf)
+
+* Public randomness/VDF/Time locks
+1. RandChain (https://eprint.iacr.org/2020/1033.pdf)
+2. Bitcoin as a public randomness source (https://eprint.iacr.org/2015/1015.pdf)
+3. sloth, unicorn, trx (https://eprint.iacr.org/2015/366.pdf)
+
+Section 4: Comparison
+
+Comparison criteria (based on HydRand):
+1. Communication model (syn/semi syn/asyn)
+2. Liveness/Failure probability/Guaranteed output delivery
+3. Communication complexity
+4. Unpredictability
+5. Bias-Resistance
+6. Computational complexity(per participant)
+7. Verification complexity (per verifier)
+8. Cryptographic primitives/assumptions
+9. Trusted dealer/DKG
+10. Proof size
+11. Scalability (number of participants which need to perform certain operations)
+12. Interactive (multiple rounds) vs Non-Interactive
