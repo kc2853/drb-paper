@@ -48,6 +48,9 @@ General notes
 35. APSS: Proactive Secret Sharing in Asynchronous Systems
 36. BanFEL: A Blockchain based Smart Contract for Fair and Efficient Lottery Scheme
 37. Probabilistic Smart Contracts: Secure Randomness on the Blockchain
+38. How to Share Secret Efficiently over Networks
+39. Distributed Key Generation in the Wild
+40. Schindler's Randomness for Blockchains
 
 1. Feldman's VSS paper
 https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
@@ -616,3 +619,35 @@ https://arxiv.org/ftp/arxiv/papers/1902/1902.07986.pdf
 • Idea: ∃fee paid by the client (third party requesting randomness) for nodes to perform RBG
 • ∃confiscation of deposit mechanism
 • Final output = XOR of all the bits (hence limited randomness as is)
+
+38. How to Share Secret Efficiently over Networks
+https://www.hindawi.com/journals/scn/2017/5437403/
+• Uses AVSS' bivariate poly to also establish pairwise key exchange (for symmetric encryption)
+
+39. Distributed Key Generation in the Wild
+https://eprint.iacr.org/2012/377.pdf
+```
+• We present a VSS scheme (HybridVSS) that works in our system model (Section 4). Observing the necessity of a protocol for agreement on a set for asynchronous DKG, we define and prove a practical DKG protocol (HybridDKG) for use over the Internet (Section 5). We use a leader-based agreement scheme in our DKG, as we observe a few pragmatic issues with the usually suggested randomized agreement schemes
+• Compromising the unconditional security assumption, Cachin et al. [9] (AVSS), Zhou et al. [50] (APSS), and more recently Schultz et al. [45] (MPSS) suggested more practical asynchronous VSS schemes. Of these, the APSS protocol is impractical for any reasonable system size, as it uses a combinatorial secret sharing scheme by Ito, Saito and Nishizeki [27], which leads to an exponential(n t ) factor in its message complexity. MPSS, on the other hand, is developed for a more mobile setting where set of the system nodes has to change completely between two consecutive phases to maintain the secrecy and correctness properties
+• AVSS is the most general and practical scheme in the asynchronous communication model against Byzantine adversaries, but it does not handle crash recoveries
+• thus, a protocol with o(n2) message complexity does not seem to be possible. Therefore, AVSS, with its optimal message complexity, forms the basis for our HybridVSS and HybridDKG protocols
+• On the other hand, all of the protocols in the literature that are proven secure only against a static adversary have remained unattacked by an adaptive adversary for the last 25 years. Gaining some confidence from this fact and giving importance to efficiency, we stick to protocols provably secure only against a static adversary in our work
+• We achieve a constant-factor reduction in the protocol complexities using symmetric bivariate polynomials
+• we use DLog commitments instead of the Pedersen commitments used in the original AVSS protocol and achieve VSS-wS secrecy (as defined in Section 3.1). It is easily possible to use Pedersen commitments instead and achieve VSS-S secrecy
+• Definition 4.1. In session (Pd,τ), protocol VSS in our hybrid model (HybridVSS) having an asynchronous network of n ≥ 3t + 2f + 1 nodes with a t-limited Byzantine adversary and f-limited crashes and network failures satisfies the following conditions
+• Cachin et al. [9] solve a similar agreement problem in their proactive refresh protocol using a multi-valued validated Byzantine agreement (MVBA) protocol. Known (expected) constant-round MVBA protocols [10] require threshold signature and threshold coin-tossing primitives [11]. The algorithms suggested for both of these primitives in [11] require either a dealer or a DKG. As we aim to avoid the former (dealer) in this work and the latter (DKG) is our aim itself, we cannot use their MVBA protocol
+• Canetti and Rabin [13] define a dealerless distributed coin tossing protocol without DKG; however, their protocol requires n2 VSSs for each coin toss and is consequently inefficient. Therefore, we refrain from using randomized agreement
+• We use a leader-initiated reliable broadcast system with a faulty-leader change facility, inspired by Castro and Liskov’s view-change protocol
+```
+• DKG properties: correctness, secrecy, weak correctness, weak secrecy
+• Symmetric bivariate poly
+• HybridVSS -> HybridDKG
+• Idea: dealing with asynchrony
+• Cachin's MVBA requires distributed randomness (so no use) <-> leader-based BFT view-change protocol (weakly async though?)
+• HybridDKG: leader-initiated DKG to agree on which VSS instances
+
+40. Schindler's Randomness for Blockchains
+https://sec.cs.univie.ac.at/fileadmin/user_upload/i_sec/docs/teaching/thesis/pschindler_randomness_for_blockchains.pdf
+• Protocol based on hash chain: a la Caucus; leader selection based on "random sampling" (prone to DoS) rather than f < target (prone to withholding)
+• Section 6 = HydRand
+• Extension to HydRand: quorum share distribution (distribute PVSS shares to a quorum/subset rather than all); chained PVSS (PVSS-hash chain s.t. no need to commit-reveal per leadership, but just reveal -> reveal -> ...)
