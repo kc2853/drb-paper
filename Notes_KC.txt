@@ -12,6 +12,44 @@ General notes
 • 
 
 1. Feldman's VSS paper
+2. Pedersen's paper (DKG)
+3. Gennaro's DKG (based on Pedersen)
+4. Dfinity
+5. Gennaro's DKG Revisited paper
+6. ETHDKG paper
+7. Schoenmakers PVSS paper
+8. RandHerd paper
+9. Scrape paper (Cardano?)
+10. HydRand
+11. Dodis VRF
+12. Kate poly commitment
+13. DVRF-DRB
+14. Timed Commitments
+15. RandRunner
+16. RandPiper
+17. On Bitcoin as a public randomness source
+18. Homomorphic Encryption Random Beacon
+19. SPURT: Scalable Distributed Randomness Beacon with Transparent Setup
+20. Random Oracles in Constantinople: Practical Asynchronous Byzantine Agreement using Cryptography
+21. A random zoo: sloth, unicorn, and trx
+22. A Pragmatic Introduction to Secure Multi-Party Computation
+23. Winning the Caucus Race: Continuous Leader Election via Public Randomness
+24. Scalable distributed random number generation based on homomorphic encryption
+25. SecRand: A Secure Distributed Randomness Generation Protocol With High Practicality and Scalability
+26. RANDCHAIN: Decentralised Randomness Beacon from Sequential Proof-of-Work
+27. RandChain: Practical Scalable Decentralized Randomness Attested by Blockchain
+28. Economically Viable Randomness
+29. Rational Threshold Cryptosystems
+30. Secure Multiparty Computations on Bitcoin
+31. Fair Two-Party Computations via Bitcoin Deposits
+32. Zero-Collateral Lotteries in Bitcoin and Ethereum
+33. Secure and Efficient Asynchronous Broadcast Protocols
+34. Asynchronous Verifiable Secret Sharing and Proactive Cryptosystems
+35. APSS: Proactive Secret Sharing in Asynchronous Systems
+36. BanFEL: A Blockchain based Smart Contract for Fair and Efficient Lottery Scheme
+37. Probabilistic Smart Contracts: Secure Randomness on the Blockchain
+
+1. Feldman's VSS paper
 https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
 • Probabilistic encryption
 • y_0 is not a commitment to s?
@@ -163,7 +201,7 @@ https://eprint.iacr.org/2020/096.pdf
 • 1. DDH-DVRF: DistKG (secret key is share on group poly) -> PartialEval (hash to the power of secret key, proof is DLEQ NIZK) -> Combine (check NIZK) -> Verify
 • 2. GLOW-DVRF: DistKG (intro of g_2 and pairing a la Neji for Verify public key later) -> PartialEval (hash ^ secret, NIZK) -> Combine (NIZK) -> Verify (pairing)
 • Difference in Dfinity-VRF: Combine also uses pairing to prove => less efficient
-• Modified BLS (more efficient): GLOW-DVRF - last step's hash
+• Side result: modified BLS (more efficient) = GLOW-DVRF - last step's hash
 • Algorand DRB is not strongly pseudorandom?
 • Harmony: uses VDF?!
 • HERB (homomorphic encryption random beacon): uses ElGamal encryption
@@ -229,21 +267,16 @@ https://eprint.iacr.org/2021/100.pdf
 
 20. Random Oracles in Constantinople: Practical Asynchronous Byzantine Agreement using Cryptography
 https://allquantor.at/blockchainbib/pdf/cachin2000random.pdf
-• BA in asynchronous setting via cryptography (e.g. non-interactive threshold RSA sig, random-access coin-tossing scheme, etc.)
-• Security in ROM
-• Rabin & Ben-Or: presented randomization (i.e. common coin) to overcome FLP impossibility?
-• Dual-threshold sig scheme: need k to sign where k > t + 1 instead of k = t + 1; better security but harder to construct; lead to lower communication complexity; can be based on DH
-• Companion papers: Practical threshold signatures by Shoup, Optimistic asynchronous Byzantine agreement by Kursawe
-• Previous coin tossing schemes: issues with a "Rabin dealer" (1. coins get exhausted at some point; 2. somehow need to associate coins with transactions)
-• Random-access coin-tossing scheme: distributed function mapping the "name" of a coin to its value
-• Dealer assumptions: no dealer; one-time dealer; Rabin dealer
-• 
-• 
-• 
-• 
 
-21. RANDCHAIN: Decentralised Randomness Beacon from Sequential Proof-of-Work
-https://eprint.iacr.org/2020/1033.pdf
+21. A random zoo: sloth, unicorn, and trx
+https://eprint.iacr.org/2015/366.pdf
+• Sloth (pronounced slow-th) -> unicorn (random beacon) -> trx (application to ECC)
+• Section 2: mentions perfect synchrony -> commit-reveal -> last revealer attack
+• Mentions RSW time-lock puzzle, time capsules by Bellare/Goldwasser, timed commitments by Boneh/Naor
+• Need permutation function (not just modular square roots) in order to prevent potential shortcut?!
+• Output of sloth = (initial commitment to input, output, witness)
+• Permutation function (in practice) = swap with its neighbor (+/- 1) OR block cipher
+• Unicorn: publicize c (commitment to s = s₀ + s₁) -> publicize (s, sloth output, witness); s₀ gathers from crowd; s₁ independently generated (jpg image?!); gives rise to commit-reveal + VDF combo
 
 22. A Pragmatic Introduction to Secure Multi-Party Computation
 https://securecomputation.org/docs/pragmaticmpc.pdf
@@ -266,12 +299,320 @@ https://securecomputation.org/docs/pragmaticmpc.pdf
 • Some techniques turning semi-honest security into malicious security: cut-and-choose, GMW compiler, MPC in the head (state-of-the-art?)
 • For outputting an arithmetic sum: #3 (BGW) is relatively more efficient? -> basically repeated iterations of DKG
 
-23. A random zoo: sloth, unicorn, and trx
-https://eprint.iacr.org/2015/366.pdf
-• Sloth (pronounced slow-th) -> unicorn (random beacon) -> trx (application to ECC)
-• Section 2: mentions perfect synchrony -> commit-reveal -> last revealer attack
-• Mentions RSW time-lock puzzle, time capsules by Bellare/Goldwasser, timed commitments by Boneh/Naor
-• Need permutation function (not just modular square roots) in order to prevent potential shortcut?!
-• Output of sloth = (initial commitment to input, output, witness)
-• Permutation function (in practice) = swap with its neighbor (+/- 1) OR block cipher
-• Unicorn: publicize c (commitment to s = s₀ + s₁) -> publicize (s, sloth output, witness); s₀ gathers from crowd; s₁ independently generated (jpg image?!); gives rise to commit-reveal + VDF combo
+23. Winning the Caucus Race: Continuous Leader Election via Public Randomness
+http://www0.cs.ucl.ac.uk/staff/S.Azouvi/papers/caucus.pdf
+
+24. Scalable distributed random number generation based on homomorphic encryption
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8946121
+```
+• see Pennsylvania Lottery scandal, https://bit.ly/2TXTKZq
+• The protocol is divided into rounds with respect to a Requester. In each round, each party runs an instance of a VRF to determine if he is eligible to become a contributor. Afterwards, a contributor encrypts his contribution using the public key of the Requester before publicizing it. We take advantage of the homomorphic property of the El- Gamal cryptosystem on elliptic curve [2] to make it possible for anyone to calculate the sum of all encrypted contributions without performing any decryption. Finally, the Requester uses his private key to decrypt the tallied contribution once and gets the random beacon. He also generates a proof of proper decryption to prove that the random beacon was properly decrypted form the tallied contribution
+• A ticket T with respect to the Requester and the received nonce is computed. This ticket is used to determined which parties are eligible (these are called contributors) to contribute to generating random numbers. This stage can be performed by running a smart contract on the PDL
+• On input the ticket T, each party runs an instance of VRF functions to check if he is eligible for that ticket and sends a Proof-of-Eligibility (PoE) to the PDL
+• Our protocol specifies a threshold T to determine the expected number of parties selected for a ticket. In section VI, we will discuss in more detail about how to choose a proper threshold for a specific expected number of contributors
+• contributor Pi has to: choose a value Mi to contribute; use the public key of the Requester to encrypt Mi; sign his contribution with his secret key ski; generate a proof for his contribution PoC as described in line 5 of the algorithm
+```
+• NV = HERB - key holders + Requester - entropy providers + VRF winners
+• Q. can a participant grind through secret keys (b/c not committed beforehand unlike Algorand)?
+• HERB says NV doesn't include non-malleability check (NIZK proof of correct encryption)
+• Focus on computational complexity
+• Misleading communication complexity b/c assumes a blockchain
+
+25. SecRand: A Secure Distributed Randomness Generation Protocol With High Practicality and Scalability
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9252080
+```
+• To the best of our knowledge, this is the first work to build a security model for DRG protocols,which can be used as a general framework for security analysis of DRG protocols
+• evaluation of SecRand by deploying it on a laptop with a Windows 10 environment in the C language
+• Experimentaldata showed that SecRand-ZK had a higher space occu-pation and a lower computing resource occupation forthe underlying public bulletin board, whereas SecRand-Pairing was the opposite
+• Weconsider static adversaries that will corrupt a certain numberof participants before the protocol execution begins
+• Honest participants follow the protocol strictly and willnot reveal any private data to anyone else. They make upa majority of all participants, i.e.,n≥2t−1, which isusually referred to as the honest majority assumption
+• Corrupted participants have three types of maliciousbehaviors, namely, refusing to participate in the proto-col, sending invalid data during the execution process,and revealing private data and colluding to perform acoordinated attack
+• SecRand consists of three phases, namely, Distribution,Verification, and Reconstruction
+• GenPf() andVerPf() denote the generation andverification process of the data validity proof, respectively.The final output computation is denoted asFinalOpt()
+```
+• SecRand = variant of Scrape = commit-recovery instead of commit-reveal-recovery
+• Assumes public bulletin board (blockchain) while deprecating point-to-point messaging channels
+• 2 constructions: SecRand-ZK and SecRand-Pairing a la Scrape
+• Their PBB includes some calculation functionality (Verify)
+• Uses advantage (interesting definition) to define availability and others
+• Guaranteed output delivery also defined BUT meaning seems different (more like consistency)?!
+• (g, h) = (Schoenmakers G, Schoenmakers g)
+• Misleading communication complexity b/c assumes a blockchain
+
+26. RANDCHAIN: Decentralised Randomness Beacon from Sequential Proof-of-Work
+https://eprint.iacr.org/2020/1033.pdf
+```
+• Unlike existingDRB protocols where nodes arecollaborative, i.e., contribut-ing local entropy and aggregating them to a single output,nodes inRANDCHAINarecompetitive
+• To propose a random output, a nodeneeds to solve a SeqPoW puzzle derived from the last randomoutput and the node’s identity
+• With Nakamoto con-sensus,RANDCHAINdoes not rely on trustworthy leadersor lock-step synchrony, and achieves linear communicationcomplexity
+• DRG-based DRBs sufferfrom two limitations, namelyround synchronisationand highcommunication overhead; In addition,to agree on random outputs, nodes have to make all-to-allbroadcasts, leading to communication complexity of at least O(n2)
+• However, in order to collaborate, nodes shouldcontinuously broadcast messages to and synchronise with eachother. The former incurs at least quadratic communicationcomplexity, and the latter introduces the round synchronisationproblem
+• All extra designs incorporated with DRG – e.g., usingleaders [41–43, 49, 54, 64, 67, 68, 72, 95], sharding [68, 95],cryptographic sortition [67], Byzantine consensus [67, 93],and erasure coding [42, 43] – aim at reducing the impact ofthe above two limitations. However, since all of them are inthe collaborative design, they inherently suffer from the twolimitations and cannot address them completely
+• As 1) nodes cannotpredict who will become the next leader, 2) the leader cannotpredict random outputs produced by itself, and 3) before beingreplaced by a new leader, the leader can only produce a limitednumber of random outputs (following the Poisson distributionlike in Nakamoto consensus [66, 80, 91]), random outputs re-main unpredictable and unbiasible
+• Unlike existing time-sensitive cryptographic primitives such as Proofof Sequential Work (PoSW) [51, 78] and Verifiable DelayFunctions (VDFs) [34, 87, 98], SeqPoW takes a random andunpredictable (rather than fixed) number of steps
+• This makes SeqPoW useful for constructing other protocolssuch  as  leader  election  and  Proof-of-Stake  (PoS)-basedconsensus
+• We introduce the concept of SeqPoW, including formal-isation, two  constructions  based on  VDFs  [87, 98]  andSloth
+• we show that in a cluster with up to1024nodes, a random output can be propagated to the majorityof nodeswithin 1.3 seconds
+• VDFs are usually constructed from an iteratively sequentialfunction (ISF) and a succinct proof attesting the ISF’s execu-tion results
+• Compared to existing PoSW constructions [51, 78] whereproofs are not unique,SeqPoWSlothprovides unique outputs
+• Predictable PoS-based consensus is vul-nerable to a class of prediction-based attacks, and thereforetolerates less Byzantine mining power [29] than PoW-basedconsensus. To make PoS-based consensus unpredictable,one can randomise the process of selecting block proposers.SeqPoW can provide such functionality: each node solvesa SeqPoW with its identity, the last block, and the difficultyparameter  inversely  proportional  to  its  stake  as  input,and the first node solving its SeqPoW becomes the blockproposer
+• Verification is fasterthan computing: on cyclic groupG, squaring isO(log|G|)times  faster than  square  rooting
+• To make the solutionunique,SeqPoWSlothonly treats the first solution satisfyingthe difficulty as valid. When verifyingSi, if the verifier findsan intermediate outputSj(j<i) satisfying the difficulty, thenSiis considered invalid
+• The advantage of IVC-based SeqPoW is that it supports anyISFs. This means IVC-based SeqPoW can be more egalitarianby  using  ISFs  that  are  hard  to  parallelise  and  optimise.However,  IVC  is  usually  constructed  from  complicatedcryptographic primitives, such as SNARKs [33, 37, 38, 81, 96],making it inefficient and challenging to implement
+• IfInit(·),Solve(·)andProve(·)take the public key rather than the secret key as input,then the construction cannot preventoutsourcing
+• As long as secret keys are kept in secret, the adversary cannot execute VRFHash(·) for other nodes. This modification introducesnegligible   overhead  toSeqPoWVDF,  but  non-negligibleoverhead toSeqPoWSloth, as the verifier should verify all VRFoutputs and proofs for assuring no prior solution satisfies thedifficulty. More efficient non-outsourceable unique SeqPoWconstructions are considered as future work
+• Nodepkruns  two  rou-tines:  the  synchronisation  routineSyncRoutine(·)and themining routineMineRoutine(·)
+• RANDCHAIN, for the first time, achieves miningnon-parallelisable. This is because 1) each node has a uniqueinput of the PoW puzzle, and 2) the PoW puzzle is sequential
+• Similar  toPoSpace-based Nakamoto consensus, the optimal attack onRANDCHAINis thegrinding attack: the adversary allocatesa processor to mine on each of existing blocks. Comparedto  51%  attacks  on  PoW-based consensus, grinding  attackamplifies the adversary’s mining power by up to e
+• We  implement  the  the  SeqPoW  con-structions in Rust. We use therug[6] crate for big integerarithmetic, and implement the RSA group with 1024-bit keys
+• A network is lock-step synchronous ifthe protocol executes in rounds and all messages are deliveredbefore the end of each round; is synchronous if messages aredelivered within a known finite time-bound; is asynchronousif messages are delivered without a known time-bound; or ispartially synchronous [58] if messages are delivered within aknown finite time-bound with some clock drift
+```
+• Table 1: collaborative vs competitive (RandChain)
+• SeqPoW (!= PoSW): not necessary (i.e. RandChain can be instantiated with PoW)
+• Permissioned network rather than permissionless
+• Table 3: SeqPoW vs other similar primitives
+• (SeqPoW_VDF, SeqPoW_Sloth) = (non-unique output, unique)
+• LS synchrony = lock-step synchrony
+• ISF: iteratively sequential function
+• Valid tuple = honest tuple + is indeed a solution
+• SeqPoW properties: completeness, soundness, hardness, sequentiality, uniqueness (optional)
+• Interesting framework: say (probabilistic/deterministic, parallelizable/sequential) = (0/1, 0/1) -> [PoW, PoSW, VDF, SeqPoW] = [(0, 0), (0, 1), (1, 1), (0.5, 1)]
+• SeqPoW is more "fair" compared to VDF?
+• Using VRF (to use sk) instead of H (with pk) can prevent outsourcing
+• Idea: replace nonce-incrementing part of PoW with VDF/Sloth
+• Figure 3: seems like every miner starts with different seed albeit same previous block hash
+• 2 sources of "entropy" (leading to fairness <-> monopoly): different seed & different hash(input) < target even if same VDF chain
+• 2 hash functions involved: target & randomness
+• DRB properties: consistency, liveness, fairness, uniform distribution, unpredictability
+• Says unbiasability is a special case of unpredictability (but seems not)?!
+• Grinding attack (also selfish mining) mentioned as the most optimal attack?
+• Seems vulnerable to withholding attack without incentive
+• Table 5: comparison of protocols
+• Classification of "DRBs from external entropy" is interesting, but claims that it's not publicly verifiable (it is?)
+
+27. RandChain: Practical Scalable Decentralized Randomness Attested by Blockchain
+https://eprint.iacr.org/2021/450.pdf
+```
+• We  propose  a  sharding-based  scheme,RandChain,  to  obtain  a  practical  scalable  distributedand   decentralized   randomness   attested   by   blockchain   in   large-scaleapplications.  In  RandChain,  we  eliminate  the  use  of  computation-heavycryptographic operations, e.g., Publicly Verifiable Secret Sharing (PVSS),in prevalent approaches. We build a sub-routine,RandGene, which utilizesacommit-then-revealstrategy  to  establish  a  local  randomness,  enforcedby efficient Verifiable Random Function (VRF). RandGene generates therandomness  based  on  statistical  approaches,  instead  of  cryptographicoperations, to eliminate computational operations
+• RandChain maintainsa two-layer hierarchical chain structure via a sharding scheme. The firstlevel  chain  is  maintained  by  RandGene  within  each  shard  to  provide  averifiable randomness source by blockchain. The second level chain usesthe  randomnesses  from  each  shard  to  build  a  randomness  chain
+• In  this  paper,  we  propose  to  utilize  blockchain  as  the“trusted entity” to generate good randomness
+• We assume the overall communicationnetwork is based on the synchrony, as defined in [11], in which thereexists  a  fixed  bound,∆,  on  a  message’s  traversal
+• We aim the RandChain, with a fixed number of participating nodes,at  a  permissioned  blockchain  setting  (e.g.,  requiring  authenticationand  authorization  for  membership).  Especially,  RandChain  uses  acommit-then-revealmechanism to generate randomness, with the helpof VRF, and it then uses a Byzantine Fault Tolerant (BFT) protocol tobuild a blockchain to secure the protocol’s output
+• The  participating  nodes  are  uniformly  shardedinto  distinct  committees  (alternatively  called  “shards”),  and  eachcommittee maintains its own local blockchain. The local blockchainruns  aRandGeneprotocol,  which  is  used  to  generate  a  “good”local  randomness
+• We have two types of epochs: one is the sub-epochewithin each shard(the basic unit for the second-layer blockchain, shard blockchain); theother  is  the  epochEfor  overall  shards  (the  basic  unit  for  the  first-layer  blockchain,  RandChain)
+• RandGene  protocol  itself  can  be  imple-mented  as  a  consensus  protocol  to  form  a  blockchain  to  record  therandomness. Our overall RandChain is used to provide a continuousrandomness beacon based on the local chain
+• adversary can perform a grindingattack [5] [15], in which an adversary can try multiple times to get asolution that can benefit its choice. For example, the adversary mayprepare multiple random valuesvij, and chooses the one which canbias  the  final  result.  Our  scheme  can  prevent  this  kind  of  attack  bythe  design  of  stringxijand  the  system  model
+• Ifa node receives multiple distinct random values from the same node,e.g.,sm,  with  a  correct  signature  for  one  sub-epoch,  then  the  nodewill discard all random values from the nodesm. When a node detectsthis  kind  of  attack,  it  can  optionally  mark  this  node  as  a  maliciousnode
+• To  reduce  thecommunication  overhead  among  shards,  we  need  to  elect  a  leader,as the representative of that shard, to participate in the formation ofthe  RandChain  among  distinct  shards.  Also,  we  need  a  consensusprotocol  to  achieve  an  agreement  between  them
+• In  our  shard-based  hierarchicalstructure, each shard as a whole can be considered as one participatingnode   of   RandChain
+• Our RandChain protocolis based on a BFT protocol, taking the advantages of instant finality
+```
+• 4 properties: public verifiability, bias-resistance, unpredictability, availability
+• Says VRF is a much more lightweight tool to use than VSS/PVSS (e.g. RandHound takes 6 steps)
+• Byzantine model: f < n / 3
+• Permissioned (similar to RandChain1)
+• 6 phases of RandGene: propose, pre-commit, release, re-commit, cast, commit
+• Q. what if hash mod k during cast does not yield distinct values?
+• Figure 1 (overview) & 2 (cast)
+• Commit phase's verification/consensus process doesn't seem robust
+• Mechanisms used: VRF -> min function -> XOR -> sharding & aggregation via BFT
+• Weak logic for sharding -> issues: leader election / consensus
+• Leader election per shard: lottery ticket via hashing involving node id
+• Final randomness (not clear though): randomness from shards after per-shard RandGene -> BFT on the lowest VRF values -> the VRF-winning randomness
+• Some probability proof for secure sharding (honest majority for each shard)
+• Failure probability analysis
+• Communication complexity: O(c * n) with each group size c
+• Modern BFT protocols: linear communication complexity?!
+• Idea (overall doesn't really use "commit-then-reveal"): many VRFs on known inputs -> take the min & XOR many minimums
+• RandChain = sharding + inefficient version of Algorand (epoch-based multi-round Algorand & XOR)
+
+28. Economically Viable Randomness
+https://arxiv.org/pdf/2007.03531.pdf
+```
+• An EVR sourceguarantees (i) secrecy, assuring that the random bits are kept se-cret until some predefined condition indicates that they are safeto reveal (e.g., the lottery’s ticket sale closes), and (ii) robustness,guaranteeing that the random bits are published once the condi-tion holds
+• We prove that following the protocol givesrise to a stable state, called Coalition-Proof Nash Equilibrium, fromwhich no coalition comprised of a subset of the players can agreeto deviate
+• The registered accounts’ owners are the players thatrealize the EVR source. We use an escrow-mediated distributedkey generation (DKG) protocol [61, 70] in order to achieve robust-ness for high-stake lotteries despite using small deposits
+• Our solution guarantees secrecy through a novelinforming mechanism that allows anyone who knows the randomvalue during the period when it should remain obscure to report iton the escrow contract for a substantial compensation, funded bythe players’ deposits
+• number of coins that player i ∈ [N ]deposited as ai ∈N; We further assume that a player i has ei ≥ 0 external coins,namely, coins that i owns independently of the ones she depositedin the service’s account; The decentralization assumptioncaptures this notion quantitatively:∀i ∈[N ],ei +ai ≤n/3
+• To keep the presentation concise,during most of this work, we discuss a single-shot version of the EVRsource. Later, in Section 6, we extend it to multi-shot EVR, in which asingle commitment corresponds to a sequence of random values
+• Formally, illicit profit is the quantity a user gains when an EVRsource is used on top of the legitimate profit that the user wouldhave gained if an ideal source were used instead. The EVR smartcontract, I, evaluates the bound on the illicit profit that the EVRsource can sustain and publishes it in a variable we denote by P
+• CU2. Fallback profit bound. If robustness breaks, the total illicitprofit gained by all users is less than P coins.CU3. Stealing bound. If (hiding) secrecy breaks, the total illicitprofit gained by all users is less than P coins
+• Escrow-DKG assumes aneconomic model where all players are rational. Additionally, as itsname hints, it assumes a trusted escrow service that substitutes andenhances the broadcast channel usually assumed in these protocols.While runs of traditional DKG protocols always succeed, Escrow-DKG might fail.An Escrow-DKG run begins with a permission-less registrationphase (as defined for a service in Section 2.2), where players deposit1 coin per secret share they stand to obtain.; These shares correspond to x , and X =дx is publishedas part of the run
+• P =n −t =n/3 is the bound on the illicit profitthat the EVR can sustain; ℓ=n is the informing reward
+• The pending phase. When the commit phase completes successfully,Genters the pending phase. This phase is the crux of the protocol,when only the informing function G.inform(x,acc)can be called
+• The informing mechanism nullifies this incentive by allowing any userwho knows x before cnd matures to publish it on G’s account for ahigh reward of ℓcoins (line 25)
+• This is another form of collective punishment that Gen-forces. Note that in order for this to happen, players holding at leastn −t shares must refrain from participating in the DKGreveal run
+• We note that in the DKGreveal run, players do not publish theirindividual shares on G. Rather, they exchange shares among them-selves off-chain, reconstruct x off-chain, and eventually publish xon G. The reason to do these steps off-chain is mostly a practicalone
+• Collective punishment is inevitable in case secrecy is violated as itis impossible to detect which players colluded in order to break secrecy.Regarding robustness, we chose to take the collective punishmentapproach due to practical considerations
+• Multi-Shot EVR Source; Following a commit run, the ith (successful) run of reveal computes σi =eval(SK,i)and publishes it on I
+• To realize Escrow-DKG in Ethereum, we use the open-source Eth-DKG library of Asayag et al. [4] (we chose to use this library ratherthan a similar one due to Schindler et al. [60]; Eth-DKG is able to steer most of thiscomputational burden off-chain by taking an optimistic approach:It proceeds assuming that all players follow the protocol and allowsaccounts to file disputes in case they detect a problem
+• The informing mechanism we propose in Sec-tion 4 is susceptible to front-running; To address this problem we employ a two phase commit-revealinforming mechanism
+• In Bitcoin-basedlotteries [1, 11], deposits are very high – O(n2)where the jackpotand the number of participants are both O(n). In contrast, ourdeposits are 1 coin for a jackpot of O(n)with n participants. Andwhile in Zero-Collateral Lotteries [48] there are no deposits, theyhave limited scalability, as they require players to actively interacton-chain in O(logn)rounds
+• A game-theoretic model wasalso considered in the context of Rational Secret Sharing (RSS)
+```
+• Idea: commit-inform-reveal
+• Inform (win l = n) vs steal (win P = n / 3)
+• Can deposit only one coin?
+• DKGcommit -> DKGreveal -- using DKG as a commit-reveal scheme
+• Figure 1: high-level "Markov chain" view of protocol
+• 2 properties: secrecy (guaranteed via informing) & robustness (guaranteed via Escrow-DKG)
+• Secrecy breaks -> informing -> collective punishment
+• Robustness breaks (no reveal) -> collective punishment
+• Limit n in order to limit P?!
+
+29. Rational Threshold Cryptosystems
+https://arxiv.org/pdf/1901.01148.pdf
+```
+• We propose a framework for threshold cryptosystems under a permissionless-economic model in which the participants are rational profit-maximizing entities. To date, threshold cryptosystems have been considered under permissioned settings with a limited adversary. Our framework relies on an escrow service that slashes and redistributes deposits to incentivize participants to adhere desired behaviors
+• Our countermeasure to collusion is framing
+• A rational threshold cryptosystem that has been widely studied is rational secret sharing [20,19,2,26,15]. There however, only a specific aspect of the problem is dealt with, namely that participants prefer to learn the secret alone. The objective of the protocol is to guarantee that all participants learn of the secret together. In particular, cooperation at unintended times is not an option under their model and is not considered
+• The system designer’s only tool in shaping the behavior of the participants is the escrow service, which (unlike the participants) follows prescribed rules in the protocol without deviations
+• In Satoshi’s example, collusion is manifested by reconstructing the secret while Satoshi is still alive
+```
+• Framing = informing
+• Need t + 1 to recover
+• Their assumption (adversary does not need to be limited by t) != usual threshold assumption
+• Collusion (for illicit profit) vs robustness (or lack thereof via no reveal)
+• ∃escrow service (& complaint mechanism -> slashing) in their model
+• Escrow-DKG might fail
+• Figure 1: Escrow-DKG (= DKG + extra commitment/verification/complaint steps + encryption of fᵢ(j) via each pk)
+• Idea: framing is better than colluding so nobody colludes
+• Table 1: details on complaints (more DKG-specific) and framing (more application-specific?)
+
+30. Secure Multiparty Computations on Bitcoin
+https://eprint.iacr.org/2013/784.pdf
+• Discussion of input scripts when redeeming txn
+• Idea1: commit-reveal-punish; need O(n^2) deposit
+• Timed commitment (their version): commit-reveal but $ goes to someone else if no reveal; hash-based implementation
+• Idea2: 2-party lottery via no deposit but automatic loss if no reveal + private channel (to blockchain) assumption
+
+31. Fair Two-Party Computations via Bitcoin Deposits
+https://www.ifca.ai/fc14/bitcoin/papers/bitcoin14_submission_10.pdf
+• Generalizes (e.g. to contract signing and more) by using Goldreich's MPC technique
+• Uses SCS (simultaneous commitment scheme) to aid
+• Still deposit-based
+• Assumes BIP + fix malleability
+
+32. Zero-Collateral Lotteries in Bitcoin and Ethereum
+https://arxiv.org/pdf/1612.05390.pdf
+• No deposit -> 2-party -> tournament style -> O(log n) rounds
+• Implementation in both Bitcoin and Ethereum
+• Note: random winner selection != DRB
+
+33. Secure and Efficient Asynchronous Broadcast Protocols
+https://www.iacr.org/archive/crypto2001/21390524.pdf
+```
+• In this paper, we present a modular approach for building robust broadcast protocols that provide reliability (all servers deliver the same messages), atomicity (a total order on the delivered messages), and secure causality (a notion that ensures no dishonest server sees a message before it is scheduled by the system)
+• We do not make any timing assumptions and work in a purely asynchronous model with a static set of servers and no probabilistic assumptions about message delay
+• In particular, there are randomized solutions that use only a constant expected number of asynchronous “rounds” to reach agreement [15, 7, 3]. Moreover, by employing modern, efficient cryptographic techniques and by resorting to the random oracle model, this approach has recently been extended to a practical yet provably secure protocol for cryptographic Byzantine agreement that withstands the maximal possible corruption
+• Two basic broadcast protocols are reliable broadcast (following Bracha and Toueg [4]), which ensures that all servers deliver the same messages, and a variation of it that we call consistent broadcast, which only provides agreement among the actually delivered messages
+• We propose a new multi-valued Byzantine agreement protocol with an external validity condition and show how it can be used for implementing atomic broadcast
+• The multi-valued Byzantine agreement protocol invokes only a constant expected number of binary Byzantine agreement sub-protocols on average and achieves this by using a cryptographic common coin protocol in a novel way
+• Our atomic broadcast protocol guarantees that a message from an honest party cannot be delayed arbitrarily by an adversary as soon as a minimum number of honest parties are aware of that message
+• We also define and implement a variation of atomic broadcast called secure causal atomic broadcast. This is a robust atomic broadcast protocol that tolerates a Byzantine adversary and also provides secrecy for messages up to the moment at which they are guaranteed to be delivered
+• Secure causal atomic broadcast works by combining an atomic broadcast protocol with robust threshold decryption
+• There is a trusted dealer that has distributed some cryptographic keys initially, but it is not used later
+• In short, the network is the adversary
+• Apart from ordinary digital signature schemes, we use collision-free hashing, pseudo-random generators, robust non-interactive dual-threshold signatures [18], threshold public-key encryption schemes [19], and a threshold pseudo-random function [13, 6]. Definitions can be found in the full version
+• Our multi-valued agreement protocol builds on top of a consistent broadcast protocol, which is a relaxation of Byzantine reliable broadcast [12]. Consistent broadcast provides a way for a distinguished party to send a message to all other parties such that two parties never deliver two conflicting messages for the same sender and sequence number
+• The standard notion of validity for Byzantine agreement implements a binary decision and requires that only if all honest parties propose the same value, this is also the agreement value. No particular outcome is guaranteed otherwise. Obviously, this still ensures that the agreement value was proposed by some honest party for the binary case. But it does not generalize to multi-valued Byzantine agreement, and indeed, all previous protocols for multi-valued agreement [15, 20, 14] may fall back to a default value in this case, and decide for a value that no honest party proposed. We solve this problem by introducing an external validity condition, which requires that the agreement value is legal
+• Theorem 1. Given a protocol for biased binary validated Byzantine agreement and a protocol for verifiable authenticated consistent broadcast, Protocol VBA provides multi-valued validated Byzantine agreement for n > 3t
+• Atomic broadcast guarantees a total order on messages such that honest parties deliver all messages with a common tag in the same order. It is well known that protocols for atomic broadcast are considerably more expensive than those for reliable broadcast because even in the crash-fault model, atomic broadcast is equivalent to consensus [8] and cannot be solved by deterministic protocols
+• Input causality can be achieved if the sender encrypts a message to broadcast with the public key of a threshold cryptosystem for which all parties share the decryption key [17]. The ciphertext is then broadcast using an atomic broadcast protocol; after delivering it, all parties engage in an additional round to recover the message from the ciphertext
+```
+• Consistent (< reliable) -> add authenticated -> add verifiable -> Thm 1 -> VBA (validated BA) -> atomic -> secure causal atomic
+• Protocol msg (auxiliary) vs payload msg (content)
+• Verifiable: delivers "proof" & also forces action?!
+• External validity: checks if agreement value is legal (not just fallback)
+
+34. Asynchronous Verifiable Secret Sharing and Proactive Cryptosystems
+https://eprint.iacr.org/2002/134.pdf
+```
+• Our protocol achieves message complexity O(n2) and communication complexity O(κn3), where κ is a security parameter, and optimal resilience n > 3t
+• Specifically, we assume hardness of the discrete-logarithm problem. Our protocol is reminiscent of Pedersen’s scheme [22], but the dealer creates a two-dimensional polynomial sharing of the secret. Then the servers exchange two asynchronous rounds of messages to reach agreement on the success of the sharing, analogous to the deterministic reliable broadcast protocol of Bracha
+• Finally, we propose an efficient proactive refresh protocol for discrete logarithm-based sharings. It builds on our verifiable secret sharing protocol and on a randomized asynchronous multi-valued Byzantine agreement primitive [3]. The refresh protocol achieves optimal resilience n > 3t and has expected message complexity O(n3) and communication complexity O(κn5)
+• We assume that every pair of servers is linked by a secure asynchronous channel that provides privacy and authenticity with scheduling determined by the adversary. (This is in contrast to [3], where the adversary observes all network traffic.)
+• We assume an adaptive adversary that may corrupt a server Pi at any point in time instead of activating it on an input message
+• Validated Byzantine agreement [3] extends this to arbitrary domains by means of a so-called external validity condition
+• The dealer computes a two-dimensional sharing of the secret by choosing a random bivariate polynomial f ∈ Zq[x,y] of degree at most k −1 with f(0,0) = s. It commits to f(x,y) =∑k−1 j,l=0 fjlxjyl using a second random polynomial f′ ∈ Zq[x,y] of degree at most k − 1 by computing a matrix C = {Cjl}with Cjl = gfjlhf′jl for j,l ∈[0,k −1]. Then the dealer sends to every server Pi a message containing the commitment matrix C as well as two share polynomials ai(y) := f(i,y) and a′i(y) := f′(i,y) and two sub-share polynomials bi(x) := f(x,i) and b′i(x) := f′(x,i), respectively
+• To this effect, Pi sends an echo message containing C, ai(j), a′i(j), bi(j), and b′i(j) to every server Pj
+• Upon receiving k echo messages that agree on C and contain valid points, every server Pi interpolates its own share and sub-share polynomials  ̄ai, ̄a′i, ̄bi, and  ̄b′i from the received points using standard Lagrange interpolation. (In case the dealer is honest, the resulting polynomials are the same as those in the send message.)
+• Once a server receives a total of k + t ready messages that agree on C, it completes the sharing. Its share of the secret is (si,s′i) = ( ̄ai(0), ̄a′i(0))
+• The reconstruction stage is straightforward. Every server Pi reveals its share (si,s′i) to every other server, and waits for k such shares from other servers that are consistent with the commitments C. Then it interpolates the secret f(0,0) from the shares
+• Intuitively, protocol AVSS performs a reliable broadcast of C using the protocol of Bracha [2], where every echo and ready message between two servers Pi and Pj additionally contains the values f(i,j), f(j,i), f′(i,j), and f′(j,i), which they have in common
+• The protocol uses O(n2) messages and has communication complexity O(κn4). The size of the messages is dominated by C; it can be reduced by a factor of n as shown in Section 3.4; The new protocol relies on a collision-resistant hash function
+• Further Improvements. Suppose instead of using just the two generators g and h of the group G, we use generators g1,...,gN, and h. Then, in order to share N secrets s1,...,sN, the dealer computes N + 1 bivariate polynomials f1,...,fN, and f′, and forms the entries of the verification matrix C as Cjl = gf1(j,l) 1 gf2(j,l) 2 ···gfn(j,l)n hf′(j,l). The rest of the protocol is carried out analogously to the protocol described above. As a result, we can have a dealer share N secrets at the cost of O(n2) messages and O(κn2(n + N)) communication
+• We stress that this works in the computational setting, whereas Canetti and Rabin [9] use an unconditional model. We also mention that in the so-called random-oracle model, a more efficient protocol exists, which is secure against a static adversary
+```
+• Idea (asynchrony): node doesn't receive his share from dealer -> gets it from others without compromising the group secret
+• Bivariate polynomials to achieve that
+• Also discusses mobile adversaries & proactive secret sharing
+
+35. APSS: Proactive Secret Sharing in Asynchronous Systems
+https://www.cs.cornell.edu/fbs/publications/apssTISS.pdf
+```
+• Secret sharing alone does not defend againstmobile adversaries[Ostrovskyand Yung 1991], which attack, compromise, and control one server for a limitedperiod before moving to another
+• PSS reduces thewindow of vulner-abilityduring which an adversary must compromise more thantservers inorder to learn the secret
+• Besides implementing secret sharing, APSS can be used forthresh-old cryptography
+• The particular secret sharing schemewe employ for APSS has the number of shares grow exponentially withtandis thus practical only iftis small
+• Safety  properties  for  protocols  designed  to  work  in  asynchronous  systemare necessarily independent of assumptions about timing. Furthermore, theperformance of such protocols depends only on actual message delivery delaysand server execution speeds—not on bounds for a worst-case scenario. However,there is a price: protocols for asynchronous systems often suffer from reducedfault-tolerance in comparison to their synchronous counterparts
+• Atmosttservers  are  compromised  within  eachwindow of vulnerability, where 3t+1≤nholds
+• To ensure thatsubsharings are generated from at leastt+1shares, at leastt+(t+1)=2t+1 subsharings must be generated from different shares on different servers be-cause up totservers might be compromised. Two problems must then be solvedto make share refreshing work
+• DISSEMINATIONPROBLEM.Because a compromised server might not follow theprotocol to generate and propagate a subsharing, there must be a mecha-nism (i) to determine the validity of subshares and (ii) to ensure that correctservers eventually get enough subshares to compute the new shares
+• CONSISTENCYPROBLEM.All correct servers must select and use subshares ofthe same set of subsharings in order to generate a new sharing for the samesecret as the old one
+• Fortunately, shares in an (n,t+1) secret sharing have intrinsicredundancy so that the secret can be reconstructed from anyt+1shares. Thesame holds for each subsharing generated in share refreshing. In Section 4,we show how to expose and leverage such redundancies in order to solve theDissemination Problem
+• It  might  seem  that  solving  the  Consistency  Problem  requires  consensusin  an  asynchronous  system—known  to  be  impossible  [Fischer  et  al.  1985]to  solve  with  any  deterministic  protocol.  Fortunately,  implementing  consen-sus  is  unnecessary
+• Each serverd,for each verifiable share(i,S[i],R[i]), wherei∈Id,performs asubsharing certification protocolto gen-erate and certify a verifiable sharing (Si,Ri,λi). The subsharing certificationprotocol is shown in Figure 4
+• A subsharing recovery protocol (see Figure 5) allows retrieval of thosesubshares
+• Solving the Consistency Problem requires that, for any new sharing gener-ated by execution of share refreshing, servers use the same set of subsharingsto construct their new shares. This would be easy to implement if there wereacoordinatorthat picks an old sharing (among possiblynold sharings) for re-freshing and selects a set of certified subsharings (from among the multiplecertified subsharings produced by the holders of each share) for each share inthe old sharing
+• Any server can be a coordinator
+• Correct servers delete old shares and subshares when new shares are gener-ated.  However,  deletion  must  wait  until  those  shares  and  subshares  are  nolonger needed—that is, untilt+1correct servers have constructed new sharesfor the sharing
+• communication complexity ofO(κnl), whereκis thesize ofp; herefore, the message complex-ity of the protocol isO(n3l)with communication complexity ofO(κn3l2)andcomputational cost ofO(n3l2); With the optimizations, the message complexity,communication complexity, and computational cost of the protocol are reducedtoO(nl),O(κnl2), andO(nl2), respectively
+```
+• Need t + 1 to recover
+• Some terms: mobile adversary, share refreshing, window of vulnerability
+• Goals (4 properties): secrecy, integrity (secret reconstruction returns correctly), availability (reconstruction terminates if subsequent share refreshing), progress (share refreshing terminates and deletes old shares for all correct servers)
+• Need to consider how share refreshing messes with secret reconstruction b/c async
+• Removing sync assumption means removing DoS attacks
+• Generic "split" & "reconstruct"
+• Idea: split share into subshares -> node receives subshares -> reconstruct (!= adding a la DKG = alternative mentioned in Section 6.4.1)
+• Atypical: (l, l) secret sharing (represents all VSS in the paper) & index sets
+• Main idea: (l, l)-style VSS allows recovery protocol (Section 4.4) s.t. recovers share/subshare only as opposed to secret/share itself
+• Solution to (dissemination, consistency) = (atypical VSS, concept of coordinator)
+• Not poly time though
+• Alternative: Cachin (says subsubshares?)
+• Protocol optimization: assuming one single honest leader (= coordinator)
+• O(n * l) for certifying (subsharing) one share
+• Herzberg's (canonical PSS): allows share recovery similar to main idea here but involves extra coordination among other nodes unlike APSS
+• Recent works allow O(1) PSS (but sync)?!
+
+36. BanFEL: A Blockchain based Smart Contract for Fair and Efficient Lottery Scheme
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8937559
+```
+• In this article, we first propose a [B]lockchain based sm[a]rt co[n]tract for [F]air and [E]fficient [L]ottery (BanFEL) scheme
+• Players send the commitment of ticket values before the deadline of purchasing, and open the commitment between the deadline of purchasing and the deadline of opening
+• Every participant submits a point (xi,yi) to a third party, the third party will calculate a polynomial f (x) = a0 + a1 x + a2 x2 + ... + an xn (1) that goes through all the points submitted by participants
+• Every player selects a number from 0 to 999 as the value of a purchased lottery ticket. If the number is the same as the winning number, the player wins the prize. If more than one player wins the prize, the money will be divided equally and if no one wins the prize, it will be used as the pool for the next round
+• The adversaries can be lottery center, players, or others who do not participant in the lottery
+• The lottery center treat all each (Hash(vi, si),vi) that submitted by players as a point (xi, yi). And the lottery center trys to get a polynomial f (x) = s0 + a1 x + a2 x2 + ... + an xn that goes through all the points
+• The lottery center publish the polynomial to all the participants. Since the coefficient of the polynomial is unpredictable and truly random, so it can be treated as the winning number. Lottery center sends result = s0mod1000 to the blockchain by smart contract. The result is the winning number of the lottery
+```
+• ∃lottery center -> deploys smart contract
+• Each player needs to register
+• Barycentric Lagrange interpolation?
+• Basically commit-reveal
+• Idea: other nodes can't see each other's reveal b/c encrypted with leader's pk
+• Seems vulnerable to last revealer (= leader) attack
+
+37. Probabilistic Smart Contracts: Secure Randomness on the Blockchain
+https://arxiv.org/ftp/arxiv/papers/1902/1902.07986.pdf
+```
+• We  provide  the  first  secure  and  well-incentivized  approach  for  generating  random  numbers  on  the blockchain.  We  do  this  by  defining  a  game  on  the blockchain that incentivizes its players to play randomly. This is the first approach that relies on incentives, and does not make any assumption about participants’ honesty
+• We use the game above to define a random bit generation  contract,  which  is  the  heart  of  our  approach
+• Otherwise, the output random bit that is returned to the client  is  the  XOR  of  all  the  bits  that  were  correctly  revealed by the participants
+```
+• Talks about game theoretic notions a la EVR
+• RBG (Random Bit Generation game): players need to choose a random bit & they get paid via utility function (which forces them to choose randomly)
+• Idea: ∃fee paid by the client (third party requesting randomness) for nodes to perform RBG
+• ∃confiscation of deposit mechanism
+• Final output = XOR of all the bits (hence limited randomness as is)
