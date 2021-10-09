@@ -51,6 +51,10 @@ General notes
 38. How to Share Secret Efficiently over Networks
 39. Distributed Key Generation in the Wild
 40. Schindler's Randomness for Blockchains
+41. Proof-of-Stake Longest Chain Protocols: Security vs Predictability
+42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
+43. Distributed ElGamal a la Pedersen - Application to Helios
+44. ALBATROSS: publicly AttestabLe BATched Randomness based On Secret Sharing
 
 1. Feldman's VSS paper
 https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
@@ -139,8 +143,8 @@ https://eprint.iacr.org/2016/1067.pdf
 • TSS: VSS (+ additional VSS for short-term secret / random number) -> sign with poly share of secret -> reconstruct via Lagrange?
 • RandShare: quasi-DKG but BA (Byzantine agreement) & computes all individual secrets (from individual poly) to compute group secret (sum of indiv secrets)
 • RandHound: PVSS groups (parallel PVSS within groups); final random = product of PVSS secrets (Schnorr only for intermediary steps)?!
-• RandHerd: RandHound for random permutation?; TSS groups; TSS-CoSi; group leader vs cothority; final random = Schnorr sig on timestamp
-• Leader election (dubious) via VRF possible
+• RandHound - sharding but retain leadership = SPURT (a la SecRand more than Scrape)
+• RandHerd: RandHound for random permutation?; TSS-CoSi; group leader vs cothority; final random = Schnorr sig on timestamp
 
 9. Scrape paper (Cardano?)
 https://eprint.iacr.org/2017/216.pdf
@@ -201,13 +205,14 @@ https://eprint.iacr.org/2020/096.pdf
 • 3-5x faster than Dfinity
 • Cryptographic lib: MCL, RELIC, Libsodium
 • DistKG -> PartialEval -> Combine -> Verify
-• 1. DDH-DVRF: DistKG (secret key is share on group poly) -> PartialEval (hash to the power of secret key, proof is DLEQ NIZK) -> Combine (check NIZK) -> Verify
-• 2. GLOW-DVRF: DistKG (intro of g_2 and pairing a la Neji for Verify public key later) -> PartialEval (hash ^ secret, NIZK) -> Combine (NIZK) -> Verify (pairing)
+• 1. DDH-DVRF: DistKG (secret key is share on group poly) -> PartialEval (hash^secret, proof is DLEQ NIZK) -> Combine (check NIZK) -> Verify
+• 2. GLOW-DVRF: DistKG (intro of g_2 and pairing a la Neji for Verify public key later) -> PartialEval (hash^secret, NIZK) -> Combine (NIZK) -> Verify (pairing)
 • Difference in Dfinity-VRF: Combine also uses pairing to prove => less efficient
 • Side result: modified BLS (more efficient) = GLOW-DVRF - last step's hash
 • Algorand DRB is not strongly pseudorandom?
 • Harmony: uses VDF?!
 • HERB (homomorphic encryption random beacon): uses ElGamal encryption
+• Verification key (vk) = g^f(i)
 
 14. Timed Commitments
 https://www.iacr.org/archive/crypto2000/18800237/18800237.pdf
@@ -306,7 +311,7 @@ https://securecomputation.org/docs/pragmaticmpc.pdf
 http://www0.cs.ucl.ac.uk/staff/S.Azouvi/papers/caucus.pdf
 
 24. Scalable distributed random number generation based on homomorphic encryption
-https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8946121
+https://www.ginar.io/sdrngbohe.pdf
 ```
 • see Pennsylvania Lottery scandal, https://bit.ly/2TXTKZq
 • The protocol is divided into rounds with respect to a Requester. In each round, each party runs an instance of a VRF to determine if he is eligible to become a contributor. Afterwards, a contributor encrypts his contribution using the public key of the Requester before publicizing it. We take advantage of the homomorphic property of the El- Gamal cryptosystem on elliptic curve [2] to make it possible for anyone to calculate the sum of all encrypted contributions without performing any decryption. Finally, the Requester uses his private key to decrypt the tallied contribution once and gets the random beacon. He also generates a proof of proper decryption to prove that the random beacon was properly decrypted form the tallied contribution
@@ -651,3 +656,77 @@ https://sec.cs.univie.ac.at/fileadmin/user_upload/i_sec/docs/teaching/thesis/psc
 • Protocol based on hash chain: a la Caucus; leader selection based on "random sampling" (prone to DoS) rather than f < target (prone to withholding)
 • Section 6 = HydRand
 • Extension to HydRand: quorum share distribution (distribute PVSS shares to a quorum/subset rather than all); chained PVSS (PVSS-hash chain s.t. no need to commit-reveal per leadership, but just reveal -> reveal -> ...)
+
+41. Proof-of-Stake Longest Chain Protocols: Security vs Predictability
+https://arxiv.org/pdf/1910.02218.pdf
+```
+• Proof-of-stake (PoS) protocols are an energy efficient alternative; however existing protocols adopting Nakamoto’s longest chain design achieve provable security only by al- lowing long-term predictability, subjecting the system to serious bribery attacks. In this paper, we prove that a natural longest chain PoS protocol with similar predictability as Nakamoto’s PoW protocol can achieve se- curity against any adversary with less than 1/(1+e) fraction of the total stake. Moreover we propose a new family of longest chain PoS protocols that achieve security against a 50% adversary, while only requiring short- term predictability. Our proofs present a new approach to analyzing the formal security of blockchains, based on a notion of adversary-proof con- vergence
+• There are broadly two families of PoS protocols: those derived from decades of research in Byzantine Fault Tolerant (BFT) protocols and those inspired by the Nakamoto longest chain protocol
+• Attempts at blockchain design via the BFT approach include Algorand [9,16] and Hotstuff
+• Motivated and inspired by the time-tested Nakamoto longest chain protocol are the PoS designs of Snow White [6] and the Ouroboros family of protocols
+• Further, as the size of each epoch is proportional to the security parameter κ (specifically, a block is confirmed if and only if it is more than κ blocks deep in the blockchain), higher security necessarily implies that the nodes can predict further ahead into the future
+• A straightforward PoS adoption of Nakamoto protocol, which in contrast to Ouroboros and Snow White can update randomness every block, runs as follows; we term the protocol as Nakamoto-PoS
+• Due to the NaS phe- nomenon, they showed the adversary can grow a private chain faster than just growing at the tip, as though its stake increases by a factor of e. This shows that the PoS longest chain protocol is secure against the private double spend against if the adversarial fraction of stake β < 1/(1 + e)
+• Methodological Contribution. In this paper, we show that, under a for- mal security model (§3), the Nakamoto-PoS protocol is indeed secure against all attacks, i.e., it has persistence and liveness whenever β < 1/(1 + e). One can view our result as analogous to what [15] proved for Nakamoto’s PoW protocol. However, how we prove the result is based on an entirely different approach. Specifically, the security proofs of [15] are based on counting the number of blocks that can be mined by the adversary over a long enough duration (see Fig. 1), and showing that the longest chain is secure because the number of such adversarial blocks is less than the number of honest blocks whenever β < 0.5. This proof approach does not give non-trivial security results for the PoS proto- col in question, because the number of adversarial blocks is exponentially larger than the number of honest blocks, due to the NaS phenomenon. Rather, our proof takes a dynamic view of the evolution of the blockchain, and shows that, whenever β < 1/(1 + e), there are infinite many time instances, which we call adversary-proof convergence times, in which no chains that the adversary can grow from the past can ever catch up to the longest chain any time in the fu- ture (see Fig. 1).1 Whenever such an event occurs, the current longest chain will remain as a prefix of any future longest chain
+• Right: Our proof technique. Race between main chain and adversarial trees: adversary-proof convergence happens at a honest block if none of the previous NaS trees can ever catch up with the main chain downstream of the honest block. Security is proven by showing these events occur at a non-zero frequency
+• In [14] and [13], modifications of the longest chain protocol (called g-greedy and D- distance-greedy) are proposed
+• New PoS Protocol Contribution. Taking a different direction, we propose a new family of simple longest chain PoS protocols that we call c-Nakamoto- PoS (§4); the fork choice rule remains the longest chain but the randomness update in the blockchain is controlled by a parameter c, the larger the value of the parameter c, the slower the randomness is updated. The common source of randomness used to elect a leader remains the same for c blocks starting from the genesis and is updated only when the current block to be generated is at a depth that is a multiple of c. When updating the randomness, the hash of that newly appended block is used as the source of randomness. The basic PoS Nakamoto protocol corresponds to c = 1, where the NaS attack is most effective. We can increase c to gracefully reduce the potency of NaS attacks and increase the security threshold. To analyze the formal security of this family of protocols, we combine our analysis for c = 1 with results from the theory of branching random walks [28]; this allows us to characterize the largest adversarial fraction β∗c of stake that can be securely tolerated. As c → ∞, β∗c → 1/2. We should point out that the Ouroboros family of protocols [2, 10] achieves security also by an infrequent update of the randomness; however, the update is much slower than what we are considering here, at the rate of once every constant multiple of κ, the security parameter. This is needed because the epoch must be long enough for the blockchain in the previous epoch to stabilize in order to generate the common randomness for the current epoch. Here, we are considering c to be a fixed parameter independent of κ, and show that this is sufficient to thwart the NaS attack
+• We note that in any PoS protocol with confirmation-depth κ (the number of downstream blocks required to confirm a given block), a simple bribing attack is possible, where a briber requests the previous block producers to sign an alternate block for each of their previous certificates. However, such attacks are overt and easily detectable, and can be penalized with slashing penalties. If the prediction window W is greater than the confirmation-depth κ, then the following covert (undetectable) attack becomes possible
+```
+• Ouroboros: epoch-based -> leader prediction implies predictable selfish mining & bribing attacks
+• NaS (nothing at stake): allows adversary to propose exponentially large number of blocks
+• Idea: update blockchain randomness (used for leader election) every c blocks (1 or much less than Ouroboros' security parameter κ)
+• Crux?: low c means higher NaS/grinding attack but less leader prediction <-> high c means lower NaS/grinding attack but more leader prediction
+• Considers: updating of common randomness (involving VRF, block header, time, etc.) & dynamic stake
+• Blocktree?
+• Figure 1: proof technique (different from PoW)
+• Figure 2: "Ouroboros is a bit overkill" -> can reach similar adversary threshold (1 / 2) with much less c than Ouroboros
+• Table 1: comparison with other work
+• Interplay between prediction window & confirmation delay (e.g. it's both small for Algorand)
+
+42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
+https://eprint.iacr.org/2014/452.pdf
+
+43. Distributed ElGamal a la Pedersen - Application to Helios
+https://dl.acm.org/doi/pdf/10.1145/2517840.2517852
+```
+• We describe a fully distributed (with no dealer) threshold cryptosystem suitable for the Helios voting system (in particular, suitable to partial decryption), and prove it secure under the Decisional Diffie-Hellman assumption. Sec- ondly, we propose a fully distributed variant of Helios, that allows for arbitrary threshold parameters `,t, together with a proof of ballot privacy when used for referendums
+• Yet none of the existing ballot privacy proofs [15, 7, 9, 11] for Helios considers a fully distributed setup phase with an arbitrary threshold t in the total number of trustees `. That is, a setup phase where trustees generate the election pub- lic and secret keys without a trusted dealer while affording an arbitrary t-out-of-` threshold parameters selection. We will refer to any variant of Helios enjoying this property as a fully distributed Helios, for short
+• we show in Section 3 that the well-known Pedersen’s [38] Distributed Key Generation (DKG) proto- col applied to ElGamal can be proven semantically secure under the Decision Diffie-Hellman assumption, even if the resulting public key can not be guaranteed to be uniformly distributed at random [26, 28]. We do so by employing the techniques used in [27, 3, 28] to prove a similar result for fully distributed Schnorr signatures in the Random Oracle Model
+• In addition to Helios, several private and verifiable voting schemes have been proposed, including e.g. Civitas [14] and FOO [22]. Helios is currently the most usable (and used) remote voting scheme in practice
+• The notion of ballot privacy or ballot secrecy has been extensively studied. Several privacy definitions for voting schemes have been proposed, from ballot privacy [30, 34, 7, 8, 9, 11] to coercion-resistance [31, 23, 33] and applied to voting schemes: Civitas has been shown to be coercion- resistant [14], while Helios has been shown to ensure ballot and vote privacy
+• As noted before, the currently implemented version of He- lios is subject to an attack against privacy [15]: an attacker may (re)submit the ballot of an honest voter on his behalf without knowing the actual vote. The result of the election then counts the honest vote twice, which provides a bias to the attacker
+• We know from previous work that ballot private Helios- like voting protocols are tightly related to NM-CPA cryp- tosystems [9, 10]. Next we state that any IND-CPA fully dis- tributed (t,`)-threshold cryptosystem can be converted into a NM-CPA Fully Distributed (t,`)-Threshold Cryptosystem by applying the transformation in [10, 9]
+```
+• Mentions attack against privacy / duplication of votes -> ciphertext weeding (but expensive) -> their Helios does better
+• Ballot privacy game
+• Need t + 1 to recover
+• IND-CPA security of threshold cryptosystem
+• DisjProof() seems similar to CE (correct encryption) except worse?
+• "Fully distributed": just no trusted dealer
+• Idea: DKG + ElGamal a la HERB
+
+44. ALBATROSS: publicly AttestabLe BATched Randomness based On Secret Sharing
+https://eprint.iacr.org/2020/644.pdf
+```
+• Our basic stand alone protocol is based on publicly verifiable secret sharing (PVSS) and is secure under in the random oracle model under the decisional Diffie-Hellman (DDH) hardness assumption. We also address the important issue of constructing Universally Composable randomness beacons, showing two UC versions of Albatross: one based on simple UC NIZKs and another one based on novel efficient “designated verifier” homomorphic commitments. Interestingly this latter version can be instantiated from a global random oracle under the weaker Com- putational Diffie-Hellman (CDH) assumption. An execution of ALBATROSS with n parties, out of which up to t = (1/2 −) ·n are corrupt for a constant  > 0, generates Θ(n2) uniformly random values, requiring in the worst case an amortized cost per party of Θ(log n) exponen- tiations per random value. We significantly improve on the SCRAPE protocol (Cascudo and David, ACNS 17), which required Θ(n2) exponentiations per party to generate one uniformly random value. This is mainly achieved via two techniques: first, the use of packed Shamir secret sharing for the PVSS; second, the use of linear t-resilient functions (computed via a Fast Fourier Transform-based algorithm) to improve the randomness extraction
+• proving that these commitments contain the same Shamir shares via discrete logarithm equality proofs, or DLEQs, and then having verifiers use a procedure to check that the shares are indeed evaluations of a low-degree polynomial. In this paper we will use a different proof, but we remark that the latter technique, which we call LocalLDEI test, will be of use in another part of our protocol (namely it is used to verify that hs is correctly reconstructed)
+• In ALBATROSS we assume that the adversary corrupts at most t parties where n −2t = l = Θ(n). The output of the protocol will be l2 elements of Gq
+• The key point is that every share is still one element of the field and therefore the sharing has the same computational cost (Θ(n) exponentiations) as using regular Shamir secret sharing. However, there is still a problem that we need to address: the complexity of the reconstruction of the secret vector from the shares increases by the same factor as the secret size (from Θ(n) to Θ(n2) exponentiations). To mitigate this we use the following strategy: each secret vector will be reconstructed only by a random subset of c parties (independently of each other)
+• In the original version of SCRAPE, parties then compute the final randomness as ∏|C| a=1 hsa, which is the same as h∑|C| a=1 sa; Instead, in ALBATROSS, we use a randomness extraction technique based on a linear t-resilient function, given by a matrix M, in such a way that the parties instead output a vector of random elements (hr1,...,hrm) where (r1,...,rm) = M(s1,...,s|C|). The resilient function has the property that the output vector is uniformly distributed as long as |C|−t inputs are uniformly distributed, even if the other t are completely controlled by the adversary. If in addition packed secret sharing has been used, one can simply use the same strategy for each of the l coordinates of the secret vectors created by the parties. In this way we can create l2 independently distributed uniformly random elements of the group
+• An obstacle to this randomness extraction strategy is that, in the presence of corrupted parties some of the inputs si may not be known if the dealers of these values have refused to open them, since PVSS reconstruction only allows to retrieve the values hsi. Then the computation of the resilient function needs to be done in the exponent which in principle appears to require either O(n3) exponentiations, or a distributed computation like in the PVSS reconstruction
+• Fortunately, in this case the following idea allows to perform this computation much more efficiently: we choose M to be certain type of Vandermonde matrix so that applying M is evaluating a polynomial (with coefficients given by the si) on several n-th roots of unity. Then we adapt the Cooley-Tukey fast Fourier transform algorithm
+• We further reduce the complexity of the PVSS used in ALBATROSS, with an idea which can also be used in SCRAPE [17]. It concerns public verification that a published sharing is correct, i.e. that it is of the form pkp(i) i for some polynomial of bounded degree, say at most k; We call this type of proof a low degree exponent interpolation (LDEI) proof
+• In addition, correctness of the shares is instead verified using the LDEI proof. This is different than in [17] where the dealer needed to commit to the shares using a different generator of the group, and correctness of the sharing was proved using a combination of DLEQ proofs and the LocalLDEI check, which is less efficient
+```
+• O(log n) exponentiation per party worst case; O(1) best case?
+• Two techniques: packed Shamir secret sharing (factor of l contribution) & linear (perfect) t-resilient function (factor of l contribution) -> l^2 outputs per round possible
+• Packed Shamir: p(0), p(-1), ..., p(-9) as 10 secrets at once; t + l to recover for some reason
+• Linear t-resilient: up to t sources of randomness could be Byzantine -> the result of M x would still be uniformly distributed
+• Thm 1: t-RF (resilient function) iff certain generator matrix (hence M is known & could be multiplied using FFT?)
+• Some broaching of UC framework
+• LDEI (low degree exponent interpolation) with {constant polynomial, constant generator (i.e. Local_LDEI)} = {DLEQ, Scrape's share verification a la dual code of RS}
+• Idea (LDEI): Scrape's O(n) exponentiations from O(nt) to verify n shares a la batching (need separate generator g, g^share, Local_LDEI, DLEQ) -> LDEI (no need for g, g^share, Local_LDEI, DLEQ) at the cost of "loose" polynomial p potentially?
+• Reconstruction phase of PPVSS (packed PVSS): uses Local_LDEI (addition to Scrape)
+• Figure 8 & 9: Albatross protocol
+• Subset selection (i.e. distributed computation protocol) if PVSS recovery: for reducing computational complexity
