@@ -94,6 +94,19 @@ A natural approach to distribute trust is to rely on a set of mutually-distrustf
 \todo{desired properties here}
 \todo{Need a basic setting description/notation. How many participants, what is assumed about them? What about the network?}
 
+% 1. Introduction
+% * recent randomness applications
+% * randomness beacon -- first formalized by Rabin
+% * NIST randomness beacon -- but we have to trust NIST
+% * how can we not trust NIST / avoid central point of failure? -> distribution of trust -> DRB
+% * In this paper: we do xyz
+
+% 2. "Formalization" Section
+% * Perfect Synchrony -> centralization issue
+% * commit-reveal -> last revealer attack issue
+% * definitions of ideal DRB
+% * formalization/system/adversary/notation model
+
 \section{Preliminaries}
 We delineate the necessary preliminaries in this section, starting with the introduction of a strawman ``rock-paper-scissors'' DRB protocol assuming a perfectly synchronous network (with zero latency in message delivery between the message sender and the receiver) as well as that of the classical commit-reveal. Identifying problems in both, we define the security of an ideal DRB and describe our system model (including threat model) relevant in all protocols portrayed in this paper (unless stated otherwise).
 
@@ -123,21 +136,20 @@ all of which can be repeated to prolong a DRB. If any of the preceding checks do
 Note that due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever desirable value. Nonetheless, the problem of biasing still exists, as the last participant $P_k$ to reveal its share can in fact compute and check $\mathcal{O}$ earlier than others and hence can decide not to reveal $(e_k, r_k)$ if $\mathcal{O}$ is not to its liking. This is called the \textit{last revealer attack}.
 
 \subsection{System Model}
+We consider a system model with $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ comprising $n$ participants (called nodes), also often denoted by $\mathcal{P} = \{1, 2, ..., n\}$ for the purpose of algebraic formulations without loss of generality. Out of $n$, up to $t$ faulty nodes (deemed \textit{Byzantine}) engage in incorrect behaviors during a protocol run, and an adversary $\mathcal{A}$ that controls such $t$ nodes is called \textit{$t$-limited}.
+
 \begin{itemize}
-\item $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ but wlog $\{1, 2, ..., n\}$
-\item $n$ participants, up to $t$ faulty nodes engaging in incorrect behaviors during a protocol run, $t$-limited
-\item honest, Byzantine, corrupted
+\item t-limited by default?
 \item adaptive/static
 \item point-to-point secure (providing authenticity and privacy) communication channel
 \item assume a standard public key infrastructure such that all nodes know each others' public keys
 \item messages are digitally signed by the sender; recipients first validate the received messages before proceeding
-\item $\mathcal{A}$: computationally bounded, cannot break hash function/digital sig/discrete log problem/etc.
+\item $\mathcal{A}$: computationally bounded (PPT), cannot break hash function/digital sig/discrete log problem/etc.
 \item 3 things: omitting a message in the protocol, sending invalid, colluding to coordinate an attack
-\item $g, h \in \mathbb{G}$
-\item $H(x)$ random oracle
 \item synchronous network by default and definition
-\item $\mathcal{O}_r$: beacon output in round $r$
 \end{itemize}
+
+Our computational model is parametrized by a security parameter $\lambda$. We call a function $negl(\lambda)$ \textit{negligible} if for all $c > 0$ there exists a $\lambda_0$ such that $negl(\lambda) < \frac{1}{\lambda^c}$ for all $\lambda > \lambda_0$. The group elements $g, h \in \mathbb{G}$ are generators of $\mathbb{G}$. Furthermore, we model any hash function $H(\cdot)$ as a random oracle. In the context of a distributed randomness beacon, we use $r$ to denote round number and $\mathcal{O}_r$ to denote the beacon output (i.e. the distributed randomness output) in round $r$.
 
 \subsection{Properties of an Ideal Distributed Randomness Beacon}
 Clearly, we should prevent anyone from tampering with (e.g. predicting, biasing, or delaying) the output of the distributed randomness beacon (DRB) in any way. Apart from this, the randomness should be verifiable by any third party. Based on these requirements, the overall security of a DRB can be defined as follows:
@@ -181,42 +193,40 @@ VDFs can be used to extend naive commit-reveal scheme to prevent last revealer a
 \joenote{is this last approach out of scope?}
 
 \subsection{Extending Commit-Reveal}
-The work of \cite{lenstra2015random} proposes a solution to the last revealer attack in commit-reveal schemes using the Sloth function (a VDF precursor involving modular square roots in modulo prime) via Unicorn, a protocol that could in fact be extended to Unicorn++ by utilizing a VDF in place of Sloth. In doing so, Unicorn++ desirably achieves an exponential gap between computation and verification times unlike Unicorn. Besides the tool used (VDF vs Sloth), Unicorn++ and Unicorn share the same fundamental concept. Namely, each participant can skip the commit step and post their $r_i$ directly such that $seed = H(r_1,\ldots, r_n)$ is passed through $VDF.Eval$. \todo{this should be spelled out as explicit protocol steps, this is way too informal} The final beacon outcome is the hash of the output of $VDF.Eval$, which is then posted and can be efficiently verified. As long as the delay parameter $T$ is longer than the time period during which the values may be submitted, \todo{need to tie this to the underlying network assumptions} even the last participant to submit their $r_i$ cannot predict the final beacon output. Such a beacon is unbiasable (and unpredictable) by an adversary that controls $n-1$ of the participants and uses only two rounds of communication. \joenote{Why? howis this proved?} This stands in contrast to other threshold based secret sharing schemes (discussed later) which require multiple rounds of communication and an honest majority.
+The work of \cite{lenstra2015random} proposes a solution to the last revealer attack in commit-reveal schemes using the Sloth function (a VDF precursor involving modular square roots in modulo prime) via Unicorn, a protocol that could in fact be extended to Unicorn++ by utilizing a VDF in place of Sloth. In doing so, Unicorn++ desirably achieves an exponential gap between computation and verification times unlike Unicorn. Besides the tool used (VDF vs Sloth), Unicorn++ and Unicorn share the same fundamental concept. Namely, each participant can skip the commit step and post their shares directly. It runs as follows.
+\begin{enumerate}
+    \item \textbf{Share:} Every participant $P_i$ broadcasts its share of randomness $r_i$. Once a consensus has been achieved on the shares, they are combined such that  $seed = H(r_1,\ldots, r_n)$.
+    \item \textbf{Evaluate:} $seed$ is passed through a VDF via $VDF.Eval$ with a chosen delay parameter $T$ to generate the evaluation $y$ along with a proof $\pi$. The final beacon output is calculated as $\mathcal{O} = H(y) $, which is then posted and can be efficiently verified using $\pi$ through $VDF.Verify$.
+\end{enumerate}
+\todo{this should be spelled out as explicit protocol steps, this is way too informal} 
+As long as $T$ is longer than the time period during which the values may be submitted including the bounded network delay (for synchronous communication model), \todo{need to tie this to the underlying network assumptions} even the last participant to submit their $r_i$ cannot predict the final beacon output because by the time a participant computes $VDF.Eval$, the Sharing phase would be over and would no longer be able to manipulate their shares. Such a beacon is unbiasable (and unpredictable) by an adversary that controls $n-1$ of the participants and uses only two rounds of communication when implemented over a public blockchain. \joenote{Why? how is this proved?} This stands in contrast to other threshold based secret sharing schemes (discussed later) which require multiple rounds of communication and an honest majority.
+
 \subsection{Extending Public Randomness}
 \joenote{this section might be better left out or treated separately, it's too informal and doesn't compare well to the other protocols}
 Public sources of randomness are susceptible to manipulation. For example, beacons that derive their randomness from stock prices could be manipulated by high frequency traders. Similarly, in beacons deriving their randomness from Bitcoin or Ethereum, powerful miners could potentially manipulate the beacon result by refusing to post blocks which produce an unfavorable output. These attacks are only feasible if the beacon output can be computed quickly. As proposed in \cite{bunz2017proofs}, using a VDF with suitably long delay to compute the beacon output, similar to applying VDF to commit-reveal, would prevent a malicious actor from determining the beacon output from a given source before it becomes stale. The length of delay parameter which would be sufficient to prevent attacks, remains an informal conjecture due to the lack of a complete game-theoretic model capturing miner incentives in Nakamoto-style consensus protocols.
+
 \subsection{RandRunner}
-RandRunner \cite{schindler2021randrunner} provides a novel way to use VDFs to derive distributed randomness. It builds a deterministic chain of VDF outputs on an initial random seed. Assuming the initial seed is unbiased, the deterministic nature of VDF makes the beacon output unbiasable and the sequential work needed to compute the VDF makes it unpredictable (for time given by delay parameter $T$). RandRunner uses \emph{strongly unique trapdoor VDFs}.\\\\
-\textbf{Trapdoor VDFs}\\
-Trapdoor VDFs, initially described in \cite{wesolowski2019efficient}, extends traditional VDFs by providing an alternate way to efficiently evaluate the VDF. Trapdoor VDFs has the following additional properties:
+In the VDF-based schemes discussed so far, the rate at which random numbers are generated is limited by the delay parameter $T$ and require consensus on the inputs to VDF. RandRunner \cite{schindler2021randrunner} tackles these issues by building a deterministic chain outputs (no consensus on ordering required) using a VDF design that allows the participant that sets up the VDF to quickly compute it (using a secret trapdoor) and broadcast the output. Only if the participant fails to do when required does other participants step in and eventually obtain the same result by evaluating the VDF without the trapdoor. This results in much lower communication overhead and shorter intervals between random outputs when the network is not under attack. Trapdoor VDFs, initially described in \cite{wesolowski2019efficient} can be used to realize this. Randrunner uses \emph{strongly unique trapdoor VDFs}, which ensures that the result obtained via the trapdoor and by evaluation are always equal.\\\\
+\textbf{Strongly Unique Trapdoor VDFs}\\
+A Strongly Unique Trapdoor VDF has the following properties:
 \begin{itemize}
     \item Any party who knows the trapdoor can efficiently evaluate the VDF, and those who do not would need to take preset sequential steps to evaluate VDFs.
     \item It provides uniqueness even when the public parameters for the VDF are generated by the adversary. This is called strong uniqueness. 
 \end{itemize}
-Trapdoor VDFs can be described by the algorithms $TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)$. See Appendix \ref{appendix:tvdf} for details. Wesolowski’s VDF \cite{wesolowski2019efficient} does not achieve strong uniqueness because knowing the trapdoor allows an adversary to forge ``valid'' proofs for different invalid output values, thus breaking uniqueness and sequentiality properties. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}.
+A Strongly Unique Trapdoor VDF can be described by the algorithms $TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)$. See Appendix \ref{appendix:tvdf} for details. Wesolowski’s VDF \cite{wesolowski2019efficient} does not achieve strong uniqueness because knowing the trapdoor allows an adversary to forge ``valid'' proofs for different invalid output values, thus breaking uniqueness and sequentiality properties. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}. RandRunner starts with a one-time Setup and Bootstrapping phase. It is followed by Execution phase which generates random outputs every round. The phases proceed as follows.
+\begin{enumerate}
+\item \textbf{Setup and Bootstrapping Phase:} During Setup, each participant $i$ executes $TVDF.Setup(\lambda,T)$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$. At the end every participant should have the same set of public parameters $\mathcal{P} = \{ pp_1, pp_2, \ldots pp_n \}$.  Each participant then verifies the exchanged parameters by executing $TVDF.VerifySetup(\lambda, pp_i)$ for all $pp_i \in \mathcal{P}$. This ensures that the assumptions uniqueness property of Pietrzak’s VDF \cite{pietrzak2018simple} are fulfilled, even if the parameters are generated adversarially. The protocol is then bootstrapped with an initial value $\mathcal{O}_0$ broadcast to all the participants which is used to select the leader for the first round and serves as the input to the first (leader’s) VDF being evaluated.
 
-RandRunner starts with a one-time Setup and Bootstrapping phase which proceeds as follows:\\
+\item \textbf{Execution Phase:} The execution of the protocol proceeds in rounds. Every round $r$ has a unique leader whose duty is to advance the protocol into the next round. A leader can be selected either in a round-robin style (i.e. taking turns in some permuted order based on $\mathcal{O}_0$) or in a way that involves randomized sampling (i.e. using the previous round’s randomness as seed). The implications of each will be discussed in Section \ref{subsubsection:public-subset-selection}. The execution can proceed in two ways depending on the honesty of the leader.
+\begin{itemize}
+    \item \textbf{Honest Leader (Common Case):} The leader advances the protocol into next round by using $TVDF.TrapdoorEval$ with its trapdoor secret key $sk_{l_r}$ to compute the output of VDF $y_r$ along with the proof $\pi_r$ and broadcasts it to everyone. As soon as such a message is received, the other participants checks the correctness of the received values using $TVDF.Verify$. If verified successfully, the beacon output for the round is computed as $\mathcal{O}_r = H(y_r)$, where $H$ is a hash function.
+    \item \textbf{Dishonest Leader:} In case the leader does not fulfill its duties as described, the participants make sure that round $r$ is completed with the same output. To achieve this, at the start of each round every non leader node starts computing the round’s VDF
+    output using $TVDF.Eval$ using the public parameters of the leader $pp_{l_r}$ in the background and share the output. Even though computing the VDF without the trapdoor takes at least $T$ sequential steps \joenote{VDF paper uses lowercase t} , it allows recovery in case the leader behaves maliciously. The strong uniqueness property guarantees that the resulting values are always equal to the ones computed by the leader.
+\end{itemize}
+\end{enumerate}
 
-\textbf{Setup:} Each participant $i$ executes $TVDF.Setup(\lambda,T)$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$. The public parameters are exchanged with each other while keeping the individual trapdoors secret. At the end, each participant should have the same set $\mathcal{P} = \{ pp_1, pp_2, \ldots pp_n \}$ containing the public parameters of all participants. Each participant then verifies the exchanged parameters by executing $TVDF.VerifySetup(\lambda, pp_i)$ for all $pp_i \in \mathcal{P}$. \joenote{what does this actually verify and why is it necessary?}
-
-\textbf{Bootstrapping:} After all the public parameters are set up, the protocol is bootstrapped with an initial random beacon value $\mathcal{O}_0$ broadcast to all the participants. It is used to select the leader for the first protocol round and serves as the input to the first (leader’s) VDF being evaluated.
-
-\textbf{Execution:} The execution of the protocol proceeds in rounds. Every round $r$ has a unique leader whose duty is to advance the protocol into the next round. A leader can be selected either in a round-robin style (i.e. taking turns in some permuted order based on $\mathcal{O}_0$) or in a way that involves randomized sampling (i.e. using the previous round’s randomness as seed). The implications of each will be discussed in Section \ref{subsubsection:public-subset-selection}.\joenote{what are the implications of each?} The execution can proceed in two ways depending on the honesty of the leader.
-
-    \textbf{Honest Leader (Common Case):} The leader advances the protocol into next round as follows:
-    \begin{itemize}
-        \item \joenote{this might be too much detail, this step} Previous random beacon value $\mathcal{O}_{r-1}$ is mapped to the input space of its VDF using a hash function $H_{in} : \{0,1\}^{256} \rightarrow \mathcal{X}_{l_r}$:
-        $$x_r = H_{in}(\mathcal{O}_{r - 1})$$
-        \item The leader uses its trapdoor secret key $sk_{l_r}$ to compute the output of VDF and broadcasts it along with the proof to everyone.
-        $$(y_r, \pi_r ) = TVDF.TrapdoorEval(pp_{l_r}, x_r, sk_{l_r})$$
-        \item As soon as such a message is received, a node checks the correctness
-        of the received values using $Verify(pp_{l_r}, x_r, y_r, \pi_r)$. If valid, the beacon output for round $r$ is computed using another hash function $H_{out} : {Y}_{l_r} \rightarrow \mathcal \{0,1\}^{256}$:
-        $$\mathcal{O}_r = H_{out}(y_r)$$
-        \joenote{I think the hash functions in/out can be skipped for simplicity}
-    \end{itemize}
-    
-    \textbf{Dishonest Leader:} In case the leader does not fulfill its duties as described, the participants make sure that round $r$ is completed with the same output. To achieve this, at the start of each round every non leader node immediately starts to compute the round’s VDF
-    output using $(y_r, \pi_r) \leftarrow TVDF.Eval(pp_{l_r}, x_r)$ in the background. Even though computing the VDF without the trapdoor takes at least $T$ sequential steps\joenote{VDF paper uses lowercase t} , it allows recovery in case the leader behaves maliciously. The strong uniqueness property guarantees that the resulting values are always equal to the ones computed by the leader.
+When the network is in good shape and the leaders are not malicious, RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity. Adversarial leaders and network delay increases the round duration, but is upper bounded by $T$. Communication complexity then depends on how the participants communicate with each other: $O(n^2)$ for reliable broadcast with low latency and $O(n \log n)$ for gossip based protocols with higher latency. Since the output of each round is deterministic and can be computed independently (even though with delay $T$), RandRunner retains liveness even when network connectivity breaks down completely. Assuming that the initial seed is not biased, the deterministic nature of RandRunner also prevents an adversary from manipulating the beacon outputs. However, RandRunner produces pseudorandom numbers (and not uniform random numbers) requiring periodic refreshes of initial seed and trails in terms of the quality of randomness when compared to other commit-reveal and VDF based schemes.
+% secure against covert adversary
 
 \joenote{This is way too detailed with no higher-level insight. What are the timing assumptions? Why can't an attacker manipulate the process?}
 % problem with VDF-ASICs and deciding T
@@ -224,22 +234,12 @@ RandRunner starts with a one-time Setup and Bootstrapping phase which proceeds a
 \section{Commit-Reveal-Punish}
 \joenote{I would put this right after commit-reveal}
 \label{section:commit-reveal-punish}
-A distributed randomness beacon realized using commit-reveal scheme should not allow any collusion among participants to be able to compute the final random output before the reveal phase (unpredictability) and no participant should be able to withhold their committed shares to bias the outcome of the beacon (unbiasability). Realizing this requires us to model the behavior of the participants and the adversary, which can be done as follows:
-\joenote{this needs to go way earlier and be general for all protocols}
-\begin{itemize}
-    \item \textbf{Honest participants and $t$-limited adversary:} The adversary is limited in the maximum number of participants (denoted by $t$) that it can corrupt. The honest participants follow the protocol exactly and only deviate from it if corrupted by the adversary. This model is used in most threshold based cryptosystems (discussed later), where the adversary can corrupt up to $t < n/2$ participants.
-    \item \textbf{Rational participants: } \joenote{this is the only part that is specific to this section} We abandon the assumption that participants can be trusted and instead are assumed to be rational profit-maximizing entities, colluding or withholding to increase their profits. This model is used in Commit-Reveal-Punish schemes.
-\end{itemize}
+Instead of assuming that the adversary is limited in the maximum number of participants  that it can corrupt by $t$ and rest of the participants follow the protocol exactly and only deviate from it if corrupted by the adversary, a more realistic approach is to assume that all the participants are rational profit-maximizing entities, colluding or withholding to increase their profits. 
 
-Commit-Reveal-Punish schemes assume that all participants are rational. It incentivizes participants to adhere to desired behavior by using an escrow to collect initial deposits from them as part of their commitment. Such an escrow can be realized, for example, as a smart contract in Ethereum \cite{david2020economically} or by using timed commitment in Bitcoin \cite{andrychowicz2014secure}. 
-Unpredictability and unbiasability can be achieved in two ways:
-\joenote{I would merge this into the next two sections, don't need this much intro text}
-\begin{enumerate}
-    \item Forcing every participant to reveal their shares by collecting large enough collateral \cite{youcai2017randao, andrychowicz2014secure} such that any malicious behavior would result in the deposits being slashed, making it unprofitable.
-    \item The other alternative is to use threshold secret sharing schemes to allow the shared secret to be recovered by a subset of participants. However, realizing this with rational participants (instead of a $t$-limited adversary) requires a mechanism to make colluding before the reveal phase or tampering the liveness by withholding unprofitable. Economically Viable Randomness (EVR) \cite{david2020economically} solves it by introducing a novel ``informing'' mechanism in addition to escrow. 
-\end{enumerate}
+Commit-Reveal-Punish schemes assume that all participants are rational. To incentivize such a participant into joining the service, we assume an intrinsic value associated with the system, called \emph{jackpot} tied to the required deposits needed to join such a service. An escrow is used to collect initial deposits from the participants as part of their commitment, which can be slashed if undesired behavior is detected. Such an escrow can be realized, for example, as a smart contract in Ethereum \cite{david2020economically} or by using timed commitments implemented using ``transaction scripts'' and ``time-locks'' in Bitcoin \cite{andrychowicz2014secure}.  Commit-Reveal-Punish schemes achieve unpredictability and unbiasability by using the escrow to either force every participant to reveal their shares \cite{youcai2017randao, andrychowicz2014secure} or by using threshold secret sharing schemes to allow the shared secret to be recovered by a subset of participants \cite{david2020economically}. 
 
-The two approaches are summarized in the following sections.
+These two approaches are summarized in the following sections.
+
 
 \subsection{Enforcing Every Reveal}
 RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow. Similar to a commit-reveal scheme, it proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ amount of ETH deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in their corresponding deposit of $m$ ETH being taken away. Finally, all the revealed secrets are combined and broadcast. Similar protocol is used for secure multiparty lotteries in Bitcoin \cite{andrychowicz2014secure}, which can also be extended to generate randomness. It implements the functionality of escrow using timed commitments. 
@@ -265,7 +265,7 @@ An $(t,n)$-secret sharing scheme allows a dealer to share a secret $s$ among a s
 VSS can be described by the algorithms $VSS = (Setup, ShareGen, ShareVerify, Recon)$. \todo{need to explain these algorithms-input output what they do etc.}
 See Appendix \ref{appendix:vss} for details.\\\\
 \textbf{Distributed Key Generation (DKG)}\\
-DKG protocol allows a set of $n$ participants to collectively generate the keys required for the scheme\joenote{for what scheme? Threshold crypto?} (i.e. the group public key, the individual secret keys, and the corresponding public keys) without the help of a trusted party. However, a DKG protocol is more than a secret sharing protocol and has the following properties:
+DKG protocol allows a set of $n$ participants to collectively generate the keys required for a threshold cryptosystem (i.e. the group public key, the individual secret keys, and the corresponding public keys) without the help of a trusted party. However, a DKG protocol is more than a secret sharing protocol and has the following properties:
 \todo{need algorithms-input output etc.}
 \begin{itemize}
     \item It typically uses multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. 
@@ -402,9 +402,7 @@ In HERB, each participant can play two roles: entropy providers and key holders.
 
 
 \todo{properties/performance of this scheme}
-HERB achieves a communication complexity of $O(n^3)$ without using a public blockchain ($O(n^2)$ with it) and requires each key holders to share constant amounts of data each round. The bottleneck lies in communication cost for achieving consensus on the $QUAL$ set. Optimizations such as Avalanche \cite{rocket2018snowflake} can be used to improve it to $O(n^2)$ leading to an overall lower communication complexity than threshold secret sharing schemes. Main disadvantage of HERB lies on its dependence on DKG for setup as every new key holder would require a rerun of DKG to establish the keys.
-
-When compared to DVRF based schemes (discussed later in Section \ref{section:dvrf}), HERB falls behind in terms of communication complexity. But it makes up for it in terms of quality of randomness produced in each round (uniform randomess vs pseudorandomness). Also, HERB allows the entropy providers to be independent of key holders. This makes it possible to collect entropy from a large and flexible set of sources while allowing the key holders set to be much smaller and sampled to contain at most $t$ malicious nodes.
+HERB achieves a communication complexity of $O(n^3)$ without using a public blockchain ($O(n^2)$ with it) and requires each key holders to share constant amounts of data each round. The bottleneck lies in communication cost for achieving consensus on the $QUAL$ set. Optimizations such as Avalanche \cite{rocket2018snowflake} can be used to improve it to $O(n^2)$ leading to an overall lower communication complexity than threshold secret sharing schemes. Main disadvantage of HERB lies on its dependence on DKG for setup as every new key holder would require a rerun of DKG to establish the keys. When compared to DVRF based schemes (discussed later in Section \ref{section:dvrf}), HERB falls behind in terms of communication complexity. But it makes up for it in terms of quality of randomness produced in each round (uniform randomess vs pseudorandomness). Also, HERB allows the entropy providers to be independent of key holders. This makes it possible to collect entropy from a large and flexible set of sources while allowing the key holders set to be much smaller and sampled to contain at most $t$ malicious nodes.
 
 
 \section{Subset-Based Protocols}
@@ -1166,7 +1164,7 @@ Via $\pi_{CE} = CE(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where $G \in \m
 \cmidrule(lr){11-12}
  & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{1} & Commitment  &  1  & \cmark   & All   &  \xmark  & \xmark    & \cmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & Bias & $O(1)$ \\ 
+Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment  &  1  & \cmark   & All   &  \xmark  & \xmark    & \cmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & Bias & $O(1)$ \\ 
 \midrule
 Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF  & $n$   & \cmark   & All   & 1   & \cmark    & \cmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & None & $O(1)$ \\ 
 Ext. Beacon+VDF &  & VDF  &  $n$  & \cmark  & External   & 1   & \cmark    & \cmark   & $O(1)$  &  $O(n)$  & $O(n)$  & None & $O(1)$ \\ 
