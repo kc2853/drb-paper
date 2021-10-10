@@ -77,35 +77,26 @@ New York University
 \tableofcontents
 
 \section{Introduction}
-Generating periodic trustworthy randomness is crucial to applications ranging from sampling ballots for recounts in electronic voting \cite{adida2008helios} and choosing winning numbers in gambling and lottery services \cite{bonneau2015bitcoin} to leader election in proof-of-stake blockchains \cite{gilad2017algorand, kiayias2017ouroboros}, blockchain sharding \cite{al2017chainspace, kokoris2018omniledger, luu2016secure} and selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}. The process of generating reliable randomness is nontrivial, as obtaining access to good sources of randomness, even in terms of entropy alone, can be difficult and prone to errors. \\\\
+Generating periodic trustworthy randomness is crucial to applications ranging from sampling ballots for recounts in electronic voting \cite{adida2008helios} and choosing winning numbers in gambling and lottery services \cite{bonneau2015bitcoin} to leader election in proof-of-stake blockchains \cite{gilad2017algorand, kiayias2017ouroboros}, blockchain sharding \cite{al2017chainspace, kokoris2018omniledger, luu2016secure} and selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}. The process of generating reliable randomness is nontrivial, as obtaining access to good sources of randomness, even in terms of entropy alone, can be difficult and prone to errors.
 % Randomness beacon
 \todo{This needs re-writing to cast beacons as an ideal concept first, then describe some approximations. Beacons are not necessarily third-party}
 \todo{Mention that this paper is not focusing on other beacons e.g. stock market}
 \todo{Need a clearer transition of what a distributed randomness beacon is} \joenote{beacon or protocol? I would argue it's a distributed randomness protocol that is used as a beacon.}
 
-\textbf{Randomness Beacons.} The concept of randomness beacon was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from  centralized approaches, relying on a single source or organization (such as the NIST beacon \cite{fischer2011public}) to distributed approaches, decentralizing the randomness generation among a set of nodes, are used to approximate it. 
+\textbf{Randomness Beacons.} The concept of randomness beacon was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from  centralized approaches, relying on a single source or organization to distributed approaches, decentralizing the randomness generation among a set of nodes, are used to approximate it. 
 
-While relying on a trusted third party like NIST or on external sources of randomness like stock-market data \cite{clark2010use} might be the simplest approaches to realize a beacon, it carries drawbacks typically associated with centralized services, in particular, risk of tampering, risk of benefit from prior knowledge of randomness and inability of the end-user to verify that the numbers they are getting from beacon are random. Users have to trust that the system is providing genuinely random numbers. For these reasons, we would strongly like to construct a beacon with no trusted parties or central point of failure. 
+\textbf{Centralized Beacons.} While centralized approaches like relying on a trusted third party like NIST \cite{fischer2011public} or on external sources of randomness like stock-market data \cite{clark2010use} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, in particular, risk of tampering, risk of benefit from prior knowledge of randomness and inability of the end-user to verify that the numbers they are getting from beacon are random. Users have to trust that the system is providing genuinely random numbers. For these reasons, we would strongly like to construct a beacon with no trusted parties or central point of failure. 
+
+\textbf{PoW based Beacons.} The other alternative is to  construct a beacon using PoW blockchains such as Bitcoin \cite{nakamoto2019bitcoin} which was formalized in \cite{bonneau2015bitcoin}. The decentralized nature and the large amount of computational work expended on maintaining such blockchains make them good sources of entropy. However, the security of such beacons are heavily dependent on the security of the underlying blockchain and the extent to which the miners can be bribed to withhold/discard competitor blocks. Delegating trust to  miners instead of a centralized authority becomes even more undesirable when the miners themselves are stakeholders in the output of the beacon.
 
 \textbf{Distributed Randomness Beacons.} 
-A natural approach to distribute trust is to rely on a set of mutually-distrustful nodes and use distributed protocols to generate randomness. The distributed randomness protocol can publish verifiable and unbiased random numbers periodically and be used as a beacon. We call such a beacon a Distributed Randomness Beacon (DRB). In this paper, we focus on distributed randomness protocols that can be used to realize a DRB.\\\\
+A natural approach to further distribute and decentralize trust is to rely on a set of mutually-distrustful nodes and use distributed protocols to generate randomness. The distributed randomness protocol can publish verifiable and unbiased random numbers periodically and be used as a beacon. We call such a beacon a Distributed Randomness Beacon (DRB). In this paper, we focus on distributed randomness protocols that can be used to realize a DRB.
+
+The goal of the paper is to systematize the current progress on the problem of generating reliable distributed randomness and devise a theoretical framework and generalization encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties and potential drawbacks and benefits, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. Drawing from a scattered body of knowledge, we identify two key components of a practical DRB's design --- selection of entropy providers and beacon output generation, which can be decoupled from each other. This enables a more insightful analysis of existing protocols which can also be extended to future protocols with similar design. Finally, we provide new insights and discussion on various techniques which can be used to improve existing protocols.
 
 \todo{need overview of scope, goals of the paper}
 \todo{desired properties here}
 \todo{Need a basic setting description/notation. How many participants, what is assumed about them? What about the network?}
-
-% 1. Introduction
-% * recent randomness applications
-% * randomness beacon -- first formalized by Rabin
-% * NIST randomness beacon -- but we have to trust NIST
-% * how can we not trust NIST / avoid central point of failure? -> distribution of trust -> DRB
-% * In this paper: we do xyz
-
-% 2. "Formalization" Section
-% * Perfect Synchrony -> centralization issue
-% * commit-reveal -> last revealer attack issue
-% * definitions of ideal DRB
-% * formalization/system/adversary/notation model
 
 \section{Preliminaries}
 We delineate the necessary preliminaries in this section, starting with the introduction of a strawman ``rock-paper-scissors'' DRB protocol assuming a perfectly synchronous network (with zero latency in message delivery between the message sender and the receiver) as well as that of the classical commit-reveal. Identifying problems in both, we define the security of an ideal DRB and describe our system model (including threat model) relevant in all protocols portrayed in this paper (unless stated otherwise).
@@ -136,20 +127,13 @@ all of which can be repeated to prolong a DRB. If any of the preceding checks do
 Note that due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever desirable value. Nonetheless, the problem of biasing still exists, as the last participant $P_k$ to reveal its share can in fact compute and check $\mathcal{O}$ earlier than others and hence can decide not to reveal $(e_k, r_k)$ if $\mathcal{O}$ is not to its liking. This is called the \textit{last revealer attack}.
 
 \subsection{System Model}
-We consider a system model with $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ comprising $n$ participants (called nodes), also often denoted by $\mathcal{P} = \{1, 2, ..., n\}$ for the purpose of algebraic formulations without loss of generality. Out of $n$, up to $t$ faulty nodes (deemed \textit{Byzantine}) engage in incorrect behaviors during a protocol run, and an adversary $\mathcal{A}$ that controls such $t$ nodes is called \textit{$t$-limited}.
+We consider a system model with $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ comprising $n$ participants (called nodes), also often denoted by $\mathcal{P} = \{1, 2, ..., n\}$ for the purpose of algebraic formulations without loss of generality. Out of $n$, up to $t$ faulty nodes (deemed \textit{Byzantine}) engage in incorrect behaviors during a protocol run, and an adversary $\mathcal{A}$ that controls such $t$ nodes is called \textit{$t$-limited}. Otherwise, nodes that are \textit{honest} abide by the specified protocol.
 
-\begin{itemize}
-\item t-limited by default?
-\item adaptive/static
-\item point-to-point secure (providing authenticity and privacy) communication channel
-\item assume a standard public key infrastructure such that all nodes know each others' public keys
-\item messages are digitally signed by the sender; recipients first validate the received messages before proceeding
-\item $\mathcal{A}$: computationally bounded (PPT), cannot break hash function/digital sig/discrete log problem/etc.
-\item 3 things: omitting a message in the protocol, sending invalid, colluding to coordinate an attack
-\item synchronous network by default and definition
-\end{itemize}
+Given a standard public key infrastructure such that all nodes know each others' public keys, we assume the nodes are connected via point-to-point secure (providing authenticity) communication channels. Accordingly, all messages exchanged by honest nodes are digitally signed by the sender, and the recipient always validates each message before proceeding. By default, we assume a \textit{synchronous} network, in which there exists some known finite message delay bound $\Delta$. This means that an adversary can delay a message by at most $\Delta$. We call a network \textit{asynchronous} if there is no such $\Delta$ (though we know a message is delivered eventually) and \textit{partially synchronous} if there exists such $\Delta$ that is however unknown. Another equivalent definition of partial synchrony \cite{dwork1988consensus} requires that there exists an unknown time $GST$ (global stabilization time) after which known $\Delta$ is enforced such that the network effectively oscillates between synchrony and asynchrony.
 
-Our computational model is parametrized by a security parameter $\lambda$. We call a function $negl(\lambda)$ \textit{negligible} if for all $c > 0$ there exists a $\lambda_0$ such that $negl(\lambda) < \frac{1}{\lambda^c}$ for all $\lambda > \lambda_0$. The group elements $g, h \in \mathbb{G}$ are generators of $\mathbb{G}$. Furthermore, we model any hash function $H(\cdot)$ as a random oracle. In the context of a distributed randomness beacon, we use $r$ to denote round number and $\mathcal{O}_r$ to denote the beacon output (i.e. the distributed randomness output) in round $r$.
+Moreover, we assume a computationally bounded adversary $\mathcal{A}$ runs in PPT (probabilistic polynomial time) and that $\mathcal{A}$ cannot break standard cryptographic constructions such as a hash function, digital signatures, the discrete log problem, etc. The three ways in which $\mathcal{A}$ can deviate from a protocol are omitting a message, sending invalid messages, and colluding to coordinate an attack based on private information shared among Byzantine nodes. By default, we assume a \textit{static} adversary that chooses nodes to be corrupted before a protocol run whereas an \textit{adaptive} adversary can choose nodes to be corrupted at any time during a protocol run (although we assume a model where nodes remain corrupted once corrupted).
+
+Our computational model is parametrized by a security parameter $\lambda$. We call a function $negl(\lambda)$ \textit{negligible} if for all $c > 0$ there exists a $\lambda_0$ such that $negl(\lambda) < \frac{1}{\lambda^c}$ for all $\lambda > \lambda_0$. The group elements $g, h \in \mathbb{G}$ are generators of $\mathbb{G}$. The notation $tuple[0]$ denotes the first element of $tuple$. Furthermore, we model any hash function $H(\cdot)$ as a random oracle. In the context of a distributed randomness beacon, we use $r$ to denote round number and $\mathcal{O}_r$ to denote the \textit{beacon output} (i.e. the distributed randomness output) in round $r$.
 
 \subsection{Properties of an Ideal Distributed Randomness Beacon}
 Clearly, we should prevent anyone from tampering with (e.g. predicting, biasing, or delaying) the output of the distributed randomness beacon (DRB) in any way. Apart from this, the randomness should be verifiable by any third party. Based on these requirements, the overall security of a DRB can be defined as follows:
@@ -236,13 +220,13 @@ When the network is in good shape and the leaders are not malicious, RandRunner 
 \label{section:commit-reveal-punish}
 Instead of assuming that the adversary is limited in the maximum number of participants  that it can corrupt by $t$ and rest of the participants follow the protocol exactly and only deviate from it if corrupted by the adversary, a more realistic approach is to assume that all the participants are rational profit-maximizing entities, colluding or withholding to increase their profits. 
 
-Commit-Reveal-Punish schemes assume that all participants are rational. To incentivize such a participant into joining the service, we assume an intrinsic value associated with the system, called \emph{jackpot} tied to the required deposits needed to join such a service. An escrow is used to collect initial deposits from the participants as part of their commitment, which can be slashed if undesired behavior is detected. Such an escrow can be realized, for example, as a smart contract in Ethereum \cite{david2020economically} or by using timed commitments implemented using ``transaction scripts'' and ``time-locks'' in Bitcoin \cite{andrychowicz2014secure}.  Commit-Reveal-Punish schemes achieve unpredictability and unbiasability by using the escrow to either force every participant to reveal their shares \cite{youcai2017randao, andrychowicz2014secure} or by using threshold secret sharing schemes to allow the shared secret to be recovered by a subset of participants \cite{david2020economically}. 
+Commit-Reveal-Punish schemes assume that all participants are rational. To incentivize such a participant into joining the service, we assume an intrinsic value associated with the system, called \emph{jackpot} tied to the required deposits needed to join such a service. An escrow is used to collect initial deposits from the participants as part of their commitment, which can be slashed and/or redistributed if undesired behavior is detected. Such an escrow can be realized, for example, as a smart contract in Ethereum \cite{youcai2017randao, david2020economically} or by using timed commitments \cite{boneh2000timed} in Bitcoin \cite{andrychowicz2014secure}.  Commit-Reveal-Punish schemes achieve unpredictability and unbiasability by using the escrow to either force every participant to reveal their shares \cite{youcai2017randao, andrychowicz2014secure} or by using threshold secret sharing schemes to allow the shared secret to be recovered by a subset of participants \cite{david2020economically}. 
 
 These two approaches are summarized in the following sections.
 
 
 \subsection{Enforcing Every Reveal}
-RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow. Similar to a commit-reveal scheme, it proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ amount of ETH deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in their corresponding deposit of $m$ ETH being taken away. Finally, all the revealed secrets are combined and broadcast. Similar protocol is used for secure multiparty lotteries in Bitcoin \cite{andrychowicz2014secure}, which can also be extended to generate randomness. It implements the functionality of escrow using timed commitments. 
+RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow realized using a smart contract in Ethereum \cite{wood2014ethereum}. Similar to a commit-reveal scheme, it proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ coins as deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in their corresponding deposit of $m$ coins being taken away. Finally, all the revealed secrets are combined and broadcast. \cite{andrychowicz2014secure} uses a similar protocol for secure multiparty lotteries in Bitcoin \cite{nakamoto2019bitcoin}, which can also be extended to generate randomness. The functionality of escrow is realized through timed commitments implemented using ``transaction scripts'' and ``time-locks'' in Bitcoin. 
 
 Both these protocols ensures everybody reveals their shares during the Reveal phase (unbiasability) by making any malicious behavior deviating from it unprofitable. This requires a high initial deposit of $O(n^2)$ per participant, where the jackpot and the number of participants are both $O(n)$.\joenote{what is jackpot? need to introduce model here. Also where does $n^2$ come from?}
 
@@ -276,7 +260,7 @@ A DKG protocol can be described by the algorithm $DKG$. See Appendix \ref{append
 Escrow-DKG \cite{david2019rational}, is variant of DKG in the Joint-Feldman
 family \cite{gennaro1999secure, gennaro3revisiting}. However, it differs from traditional DKG in its underlying model as follows:
 \begin{itemize}
-    \item Whereas traditional DKG protocols assume an adversary that corrupts up to $t$ servers, Escrow-DKG assumes an economic model where all players are rational.
+    \item Whereas traditional DKG protocols assume a $t$-limited adversary, Escrow-DKG allows an adversary to corrupt $>t$ servers. However, it assumes the participants are rational. Hence, any undesired action (withholding/colluding) detectable by the escrow and resulting in losses would not be performed by them which in turn has the same effect as having a $t$-limited adversary.
     \item It assumes a trusted escrow service that substitutes and enhances the broadcast channel usually assumed in traditional protocols.
     \item While runs of traditional DKG protocols always succeed, Escrow-DKG might fail.
 \end{itemize}
@@ -284,19 +268,23 @@ Escrow-DKG is usually used to generate keys for secret sharing. EVR adapts it to
 
 In EVR, a smart contract $\mathcal{G}$ plays the role of the escrow. It proceeds in five phases---Register, Setup, Commit, Inform, and Reveal.
 \begin{enumerate}
-    \item \textbf{Register:} It begins with a registration phase where the participants deposit 1 coin per secret share with the escrow $\mathcal{G}$ by executing $EDKG.EscrowEnroll$.
-    \item \textbf{Setup:} After registration, the set of participants is fixed. Based on the number of coins collected, the smart contract sets the parameters of the following.
+    \item \textbf{Register:} Every participant registers themselves with $\mathcal{G}$ by executing $EDKG.EscrowEnroll$ and depositing 1 coin per secret share.
+    \item \textbf{Setup:} After registration, the set of participants is fixed. Based on the number of coins collected (denoted by $n$), $\mathcal{G}$ sets the parameters of the following.
     \begin{itemize}
         \item $EDKG.Commit$: the total number of participants registered $n$ and threshold parameter $t = \frac{2n}{3}$.
-        \item EVR: the application's condition to trigger the reveal run $cnd$, the bound on the illicit profit that EVR can sustain $P=\frac{n}{3}$ and the informing reward $\ell = n$.
+        \item EVR: the application's condition to trigger the reveal run $cnd$, the bound on the illicit profit that EVR can sustain $P= n-t = \frac{n}{3}$ and the informing reward $\ell = n$.
     \end{itemize}
-    \item \textbf{Commit:} All the registered participants execute $EDKG.Commit$ during commit phase. Detection of any misbehavior during commit results in the escrow aborting the protocol and returning the deposits.
- \item \textbf{Inform:} If the commit phase completes successfully, it enters the inform phase where any participant who knows the group secret $x$ by colluding can inform the escrow and get high informing reward ($\ell$) for it. The reward comes from the participants’ deposits, which are all confiscated in this case. Otherwise, it enters into the reveal phase.
-    \item \textbf{Reveal:} The participants broadcast their shares and reconstruct $x$ using $EDKG.Reveal$. The reconstructed secret is verified by the escrow by executing $EDKG.EscrowVerify$. Participants get their deposits back if successfully verified. In case the players fail to reconstruct and publish $x$ in a timely manner, the escrow confiscates the deposits of all the participants.
+    \item \textbf{Commit:} The registered participants execute $EDKG.Commit$ to share their secrets. Detection of any misbehavior during Commit results in $\mathcal{G}$ aborting the protocol and returning the deposits.
+ \item \textbf{Inform:} If Commit completes successfully, it enters the Inform phase where any participant who knows the group secret $x$ by colluding can inform $\mathcal{G}$ and get high informing reward ($\ell$) for it. The reward comes from the participants’ deposits, which are all confiscated in this case. Otherwise, it enters into the Reveal phase.
+    \item \textbf{Reveal:} The participants broadcast their shares and reconstruct $x$ using $EDKG.Reveal$. The reconstructed secret is verified by $\mathcal{G}$ by executing $EDKG.EscrowVerify$. Participants get their deposits back if successfully verified. In case the players fail to reconstruct and publish $x$ in a timely manner, $\mathcal{G}$ confiscates the deposits of all the participants.
 \end{enumerate}
 
+Given $n$ total coins deposited during Register, EVR assumes that no participant owns more than $n/3$ of the coins, either deposited to escrow or externally (which is impractical in real world) and sets a bound on the maximum illicit profit that EVR can sustain (denoted by $P$). With these bounds in place, EVR makes any malicious behavior unprofitable. Since nothing can be gained from failing Commit, rational participants do not fail it. Hence, the malicious behavior of participants is limited to withholding shares to abort the protocol during Reveal or colluding to learn the secret before Reveal. With a threshold $t$, $n-t$ withholding participants can abort the protocol and can cause all $n$ coins being slashed by the escrow. Setting $P$ to $n-t$ makes withholding unprofitable to those participants. Setting the informing reward ($\ell$) to $n$ (taken from the deposits) makes informing more profitable than any illicit profit, preventing participants from colluding fearing another would inform. The high informing reward and limited coins owned by participants also makes coalitions enforced via external contracts impossible.
+
+Even though EVR works well within these bounds, enforcing them in real world can be tricky especially when the participants are pseudo-anonymous.
+
 \joenote{Could use a much more intuitive explanation}
-\todo{After introducing the scheme, need to explan why it has the properties it does/why attacks work or don't work}
+\todo{After introducing the scheme, need to explain why it has the properties it does/why attacks work or don't work}
 
 
 \section{Commit-Reveal-Recover Variants}
@@ -514,7 +502,7 @@ involves all VRF outputs from all respective slot leaders, where $epoch$ denotes
 \mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}
 \]
 such that it naturally follows its subset selection mechanism $H(h_r \oplus \mathcal{O}_{r - 1}) < target$.
-\item RandChain. Unique due to its competitive (rather than collaborative) network setting, RandChain forces participants to publish their first solution to the SeqPoW mining puzzle at the time of discovery. Effectively, this causes the first solution $S_i = g^i(S_0)$ with $g(S_j) = SeqPoW.Solve(pp, pk, S_j)[0]$ for $j \geq 0$ from the Appendix (note the notation $tuple[0]$ denoting the first element in $tuple$) to be the entropy provider's precommitted entropy. The beacon output is given by
+\item RandChain. Unique due to its competitive (rather than collaborative) network setting, RandChain forces participants to publish their first solution to the SeqPoW mining puzzle at the time of discovery. Effectively, this causes the first solution $S_i = g^i(S_0)$ with $g(S_j) = SeqPoW.Solve(pp, pk, S_j)[0]$ for $j \geq 0$ from the Appendix to be the entropy provider's precommitted entropy. The beacon output is given by
 \begin{align*}
 \mathcal{O}_r &= H_2(pk \mathbin\Vert g^i(S_0))\\
 &= H_2(pk \mathbin\Vert g^i(H(pk \mathbin\Vert h^-)))\\
@@ -534,7 +522,7 @@ While DRB protocols can have all nodes or some subset of nodes contribute entrop
 \[
 \mathcal{O}_r = DVRF.Combine(A, \{DVRF.PartialEval(sk_i, f(\mathcal{O}_{r - 1}))\}_{i \in A})[0]
 \]\endgroup
-where $sk_i$ denotes each node's secret key after a DKG, $A$ denotes the set of $t + 1$ nodes whose outputs of $DVRF.PartialEval(\cdot)$ pass the $DVRF.PartialVerify(\cdot)$ test, $f$ denotes some premeditated (mostly uncomplicated) function of the previous beacon output $\mathcal{O}_{r - 1}$ on which nodes compute a DVRF, and the notation $tuple[0]$ denotes the first element in $tuple$.
+where $sk_i$ denotes each node's secret key after a DKG, $A$ denotes the set of $t + 1$ nodes whose outputs of $DVRF.PartialEval(\cdot)$ pass the $DVRF.PartialVerify(\cdot)$ test, and $f$ denotes some premeditated (mostly uncomplicated) function of the previous beacon output $\mathcal{O}_{r - 1}$ on which nodes compute a DVRF.
 
 Equivalently, suppose there exists one imaginary node with the knowledge of $sk$ (which should not happen in a typical DVRF or a DKG to begin with) computing a VRF. Then
 \[
