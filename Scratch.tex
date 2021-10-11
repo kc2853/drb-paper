@@ -77,7 +77,7 @@ New York University
 \tableofcontents
 
 \section{Introduction}
-Generating periodic trustworthy randomness is crucial to applications ranging from sampling ballots for recounts in electronic voting \cite{adida2008helios} and choosing winning numbers in gambling and lottery services \cite{bonneau2015bitcoin} to leader election in proof-of-stake blockchains \cite{gilad2017algorand, kiayias2017ouroboros}, blockchain sharding \cite{al2017chainspace, kokoris2018omniledger, luu2016secure} and selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}. The process of generating reliable randomness is nontrivial, as obtaining access to good sources of randomness, even in terms of entropy alone, can be difficult and prone to errors.
+Generating periodic trustworthy randomness is crucial to applications ranging from sampling ballots for recounts in electronic voting \cite{adida2008helios} and choosing winning numbers in gambling and lottery services \cite{bonneau2015bitcoin} to leader election in proof-of-stake blockchains \cite{gilad2017algorand, kiayias2017ouroboros}, blockchain sharding \cite{al2017chainspace, kokoris2018omniledger, luu2016secure}, and selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}. The process of generating reliable randomness is nontrivial, as obtaining access to good sources of randomness, even in terms of entropy alone, can be difficult and prone to errors.
 % Randomness beacon
 \todo{This needs re-writing to cast beacons as an ideal concept first, then describe some approximations. Beacons are not necessarily third-party}
 \todo{Mention that this paper is not focusing on other beacons e.g. stock market}
@@ -85,7 +85,7 @@ Generating periodic trustworthy randomness is crucial to applications ranging fr
 
 \textbf{Randomness Beacons.} The concept of randomness beacon was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from  centralized approaches, relying on a single source or organization to distributed approaches, decentralizing the randomness generation among a set of nodes, are used to approximate it. 
 
-\textbf{Centralized Beacons.} While centralized approaches like relying on a trusted third party like NIST \cite{fischer2011public} or on external sources of randomness like stock-market data \cite{clark2010use} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, in particular, risk of tampering, risk of benefit from prior knowledge of randomness and inability of the end-user to verify that the numbers they are getting from beacon are random. Users have to trust that the system is providing genuinely random numbers. For these reasons, we would strongly like to construct a beacon with no trusted parties or central point of failure. 
+\textbf{Centralized Beacons.} While centralized approaches like relying on a trusted third party like NIST \cite{fischer2011public} or on external sources of randomness like stock-market data \cite{clark2010use} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, in particular, risk of tampering, risk of benefit from prior knowledge of randomness and inability of the end-user to verify that the numbers they are getting from beacon are random. Users have to trust that the system is providing genuinely random numbers. For these reasons, it is strongly desirable to construct a beacon with no trusted parties or central point of failure. 
 
 \textbf{PoW based Beacons.} The other alternative is to  construct a beacon using PoW blockchains such as Bitcoin \cite{nakamoto2019bitcoin} which was formalized in \cite{bonneau2015bitcoin}. The decentralized nature and the large amount of computational work expended on maintaining such blockchains make them good sources of entropy. However, the security of such beacons are heavily dependent on the security of the underlying blockchain and the extent to which the miners can be bribed to withhold/discard competitor blocks. Delegating trust to  miners instead of a centralized authority becomes even more undesirable when the miners themselves are stakeholders in the output of the beacon.
 
@@ -127,7 +127,7 @@ all of which can be repeated to prolong a DRB. If any of the preceding checks do
 Note that due to the additional commit step, it becomes impossible for one participant to centralize the process and set the final randomness to be whichever desirable value. Nonetheless, the problem of biasing still exists, as the last participant $P_k$ to reveal its share can in fact compute and check $\mathcal{O}$ earlier than others and hence can decide not to reveal $(e_k, r_k)$ if $\mathcal{O}$ is not to its liking. This is called the \textit{last revealer attack}.
 
 \subsection{System Model}
-We consider a system model with $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ comprising $n$ participants (called nodes), also often denoted by $\mathcal{P} = \{1, 2, ..., n\}$ for the purpose of algebraic formulations without loss of generality. Out of $n$, up to $t$ faulty nodes (deemed \textit{Byzantine}) engage in incorrect behaviors during a protocol run, and an adversary $\mathcal{A}$ that controls such $t$ nodes is called \textit{$t$-limited}. Otherwise, nodes that are \textit{honest} abide by the specified protocol.
+Before defining the security of an ideal DRB (e.g. which should not be subject to the last revealer attack), we describe our system model first. Namely, we consider a system model with $\mathcal{P} = \{P_1, P_2, ..., P_n\}$ comprising $n$ participants (called nodes), also often denoted by $\mathcal{P} = \{1, 2, ..., n\}$ for the purpose of algebraic formulations without loss of generality. Out of $n$, up to $t$ faulty nodes (deemed \textit{Byzantine}) engage in incorrect behaviors during a protocol run, and an adversary $\mathcal{A}$ that controls such $t$ nodes is called \textit{$t$-limited}. Otherwise, nodes that are \textit{honest} abide by the specified protocol.
 
 Given a standard public key infrastructure such that all nodes know each others' public keys, we assume the nodes are connected via point-to-point secure (providing authenticity) communication channels. Accordingly, all messages exchanged by honest nodes are digitally signed by the sender, and the recipient always validates each message before proceeding. By default, we assume a \textit{synchronous} network, in which there exists some known finite message delay bound $\Delta$. This means that an adversary can delay a message by at most $\Delta$. We call a network \textit{asynchronous} if there is no such $\Delta$ (though we know a message is delivered eventually) and \textit{partially synchronous} if there exists such $\Delta$ that is however unknown. Another equivalent definition of partial synchrony \cite{dwork1988consensus} requires that there exists an unknown time $GST$ (global stabilization time) after which known $\Delta$ is enforced such that the network effectively oscillates between synchrony and asynchrony.
 
@@ -135,26 +135,28 @@ Moreover, we assume a computationally bounded adversary $\mathcal{A}$ runs in PP
 
 Our computational model is parametrized by a security parameter $\lambda$. We call a function $negl(\lambda)$ \textit{negligible} if for all $c > 0$ there exists a $\lambda_0$ such that $negl(\lambda) < \frac{1}{\lambda^c}$ for all $\lambda > \lambda_0$. The group elements $g, h \in \mathbb{G}$ are generators of $\mathbb{G}$. The notation $tuple[0]$ denotes the first element of $tuple$. Furthermore, we model any hash function $H(\cdot)$ as a random oracle. In the context of a distributed randomness beacon, we use $r$ to denote round number and $\mathcal{O}_r$ to denote the \textit{beacon output} (i.e. the distributed randomness output) in round $r$.
 
-\subsection{Properties of an Ideal Distributed Randomness Beacon}
-Clearly, we should prevent anyone from tampering with (e.g. predicting, biasing, or delaying) the output of the distributed randomness beacon (DRB) in any way. Apart from this, the randomness should be verifiable by any third party. Based on these requirements, the overall security of a DRB can be defined as follows:
+\subsection{Ideal Distributed Randomness Beacon}
+Clearly, we should prevent anyone from tampering with (e.g. predicting, biasing, or delaying) each beacon output of a DRB in any way. Apart from this, the randomness should be verifiable by any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
 
-\begin{definition}[$d$-unpredictability]
-A DRB protocol is said to be \textit{$d$-unpredictable} with bound $d \in \mathbb{N}$ if the probability of an adversary $\mathcal{A}$ predicting the honest output for rounds greater than or equal to $r + d$ (where $r$ denotes the current round) is a negligible function $\mathsf{negl}(\lambda)$.
-\end{definition}
-\todo{What kind of adversary?}
-
-\todo{Why is this definition separate from, then re-included below? Better to merge below}
-
-\begin{definition}[Secure distributed randomness beacon]
-A DRB protocol is said to be \textit{$d$-secure} if it satisfies the following conditions:
+\begin{definition}[Ideal distributed randomness beacon]
+A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following four properties.
 \begin{enumerate}
-\item Bias Resistance. Let $\mathcal{O}$ be the output of the beacon for some round $r$. No computationally bounded adversary $\mathcal{A}$ can bias the output of the beacon, i.e. fix $c$ bits of $\mathcal{O}$ for any round $r > 1$ with probability greater than $\frac{1}{2^c} + \mathsf{negl}(\lambda)$.
-\item Unpredictability. The protocol satisfies $d$-unpredictability.
-\item Liveness. For every round $r \geq 1$, the protocol outputs a value.
-\item Public Verifiability. Any third party should be able to verify the beacon values even if not partaking in the generation of those values.
+\item Bias Resistance (or Unbiasability). No PPT adversary $\mathcal{A}$ can bias $\mathcal{O}_r$, i.e. fix $c$ bits of $\mathcal{O}_r$ with probability greater than $\frac{1}{2^c} + negl(\lambda)$.
+\item Unpredictability. The protocol satisfies \textit{$d$-unpredictability} for $d \in \mathbb{N}$, by which we mean the probability of $\mathcal{A}$ predicting the honest beacon output for any round greater than or equal to $r + d$ (where $r$ denotes the current round) is negligible.
+\item Liveness. A la game-based security, we can define the liveness property by requiring that the advantage of $\mathcal{A}$ in attacking liveness denoted by $Pr[\mathcal{O}_r = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of round $r$ is null) is negligible, given a DRB that runs among honest participants and $\mathcal{A}$.
+\item Public Verifiability. Any third party should be able to verify the beacon outputs based on public information. In other words, suppose the advantage of $\mathcal{A}$ in attacking public verifiability is given by
+\[
+\left\lvert 1 - Pr\left[b = b' \middle\vert \begin{array}{l}
+y_0 = \mathcal{O}_r;\\
+y_1 \leftarrow \mathcal{A}(priv_r, pub_r);\\
+b \leftarrow \{0, 1\};\\
+b' \leftarrow V(y_b, pub_r)
+\end{array}\right]
+\right\rvert
+\]
+where the protocol runs among honest participants and $\mathcal{A}$ (which has access to private information $priv_r$ in round $r$ as a $t$-limited participant), $pub_r$ denotes public information emitted in round $r$, and $V$ is a third party verifier. Then this advantage is negligible.
 \end{enumerate}
 \end{definition}
-\joenote{These definitions feel a little too informal. Need to specify a setting/what kind of power the adversary has. All of these properties are with respect to some adversary model}
 
 \todo{These all should be spelled out more explicitly}
 Additionally, communication and computational complexities, quality of randomness produced and the security of the underlying cryptographic primitives are important properties of a DRB. Different protocols assume different threat and communication models and rely on different cryptographic primitives to achieve these properties, with varying degrees of success. 
@@ -182,7 +184,6 @@ The work of \cite{lenstra2015random} proposes a solution to the last revealer at
     \item \textbf{Share:} Every participant $P_i$ broadcasts its share of randomness $r_i$. Once a consensus has been achieved on the shares, they are combined such that  $seed = H(r_1,\ldots, r_n)$.
     \item \textbf{Evaluate:} $seed$ is passed through a VDF via $VDF.Eval$ with a chosen delay parameter $T$ to generate the evaluation $y$ along with a proof $\pi$. The final beacon output is calculated as $\mathcal{O} = H(y) $, which is then posted and can be efficiently verified using $\pi$ through $VDF.Verify$.
 \end{enumerate}
-\todo{this should be spelled out as explicit protocol steps, this is way too informal} 
 As long as $T$ is longer than the time period during which the values may be submitted including the bounded network delay (for synchronous communication model), \todo{need to tie this to the underlying network assumptions} even the last participant to submit their $r_i$ cannot predict the final beacon output because by the time a participant computes $VDF.Eval$, the Sharing phase would be over and would no longer be able to manipulate their shares. Such a beacon is unbiasable (and unpredictable) by an adversary that controls $n-1$ of the participants and uses only two rounds of communication when implemented over a public blockchain. \joenote{Why? how is this proved?} This stands in contrast to other threshold based secret sharing schemes (discussed later) which require multiple rounds of communication and an honest majority.
 
 \subsection{Extending Public Randomness}
@@ -194,7 +195,7 @@ In the VDF-based schemes discussed so far, the rate at which random numbers are 
 \textbf{Strongly Unique Trapdoor VDFs}\\
 A Strongly Unique Trapdoor VDF has the following properties:
 \begin{itemize}
-    \item Any party who knows the trapdoor can efficiently evaluate the VDF, and those who do not would need to take preset sequential steps to evaluate VDFs.
+    \item Any participant who knows the trapdoor can efficiently evaluate the VDF, and those who do not would need to take preset sequential steps to evaluate VDFs.
     \item It provides uniqueness even when the public parameters for the VDF are generated by the adversary. This is called strong uniqueness. 
 \end{itemize}
 A Strongly Unique Trapdoor VDF can be described by the algorithms $TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)$. See Appendix \ref{appendix:tvdf} for details. Wesolowski’s VDF \cite{wesolowski2019efficient} does not achieve strong uniqueness because knowing the trapdoor allows an adversary to forge ``valid'' proofs for different invalid output values, thus breaking uniqueness and sequentiality properties. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}. RandRunner starts with a one-time Setup and Bootstrapping phase. It is followed by Execution phase which generates random outputs every round. The phases proceed as follows.
@@ -212,9 +213,6 @@ A Strongly Unique Trapdoor VDF can be described by the algorithms $TVDF = (Setup
 When the network is in good shape and the leaders are not malicious, RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity. Adversarial leaders and network delay increases the round duration, but is upper bounded by $T$. Communication complexity then depends on how the participants communicate with each other: $O(n^2)$ for reliable broadcast with low latency and $O(n \log n)$ for gossip based protocols with higher latency. Since the output of each round is deterministic and can be computed independently (even though with delay $T$), RandRunner retains liveness even when network connectivity breaks down completely. Assuming that the initial seed is not biased, the deterministic nature of RandRunner also prevents an adversary from manipulating the beacon outputs. However, RandRunner produces pseudorandom numbers (and not uniform random numbers) requiring periodic refreshes of initial seed and trails in terms of the quality of randomness when compared to other commit-reveal and VDF based schemes.
 % secure against covert adversary
 
-\joenote{This is way too detailed with no higher-level insight. What are the timing assumptions? Why can't an attacker manipulate the process?}
-% problem with VDF-ASICs and deciding T
-
 \section{Commit-Reveal-Punish}
 \joenote{I would put this right after commit-reveal}
 \label{section:commit-reveal-punish}
@@ -228,7 +226,7 @@ These two approaches are summarized in the following sections.
 \subsection{Enforcing Every Reveal}
 RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow realized using a smart contract in Ethereum \cite{wood2014ethereum}. Similar to a commit-reveal scheme, it proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ coins as deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in their corresponding deposit of $m$ coins being taken away and redistributed among the rest of the participants. Finally, if none of the participants withhold, all the revealed secrets are combined and broadcast. \cite{andrychowicz2014secure} uses a similar protocol for secure multiparty lotteries in Bitcoin \cite{nakamoto2019bitcoin}, which can also be extended to generate randomness. The functionality of escrow is realized through timed commitments implemented using ``transaction scripts'' and ``time-locks'' in Bitcoin. 
 
-To ensure that honest participants are fully compensated when a participant fails to reveal, both these protocols require a high initial deposit of $O(n^2)$ coins per participant, where the jackpot and the number of participants are both $O(n)$. This makes withholding highly unprofitable (looses $O(n^2)$ deposit) which is redistributed among the remaining honest participants (each receiving $O(n)$ coins as compensation). \joenote{what is jackpot? need to introduce model here. Also where does $n^2$ come from?}
+To ensure that honest participants are fully compensated when a participant fails to reveal, both these protocols require a high initial deposit of $O(n^2)$ coins per participant, where the jackpot and the number of participants are both $O(n)$. This makes withholding highly unprofitable (looses $O(n^2)$ deposit) which is redistributed among the remaining honest participants (each receiving $O(n)$ coins as compensation). 
 
 Zero-Collateral Lotteries \cite{miller2017zero} provides an alternative to realize multi-party lotteries without any deposits but comes at the cost of limited scalability, as they require participants to actively interact on-chain in $O(\log n)$ rounds. However, generating randomness from this lottery scheme would require non-trivial extensions to the protocol, as a lottery randomly outputs a winner whereas a DRB randomly outputs a value.\joenote{why is it non-trivial to take the value mod number of participants?}
 \todo{I think there are more follow-up citations here}
@@ -244,7 +242,7 @@ Unlike earlier commit-reveal-punish schemes, collective punishment is inevitable
 
 EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a Verifiable Secret Sharing (VSS) scheme \cite{feldman1987practical, pedersen1991non}.\\\\
 \textbf{Verifiable Secret Sharing (VSS)}\\
-An $(t,n)$-secret sharing scheme allows a dealer to share a secret $s$ among a set of $n$ participants in such a way that in the reconstruction phase any subset of $t+1$ or more honest participants can compute the secret $s$, but subsets of size $t$ or fewer cannot. However, a malicious dealer can provide incorrect shares. A Verifiable Secret Sharing (VSS) scheme solves this by providing the following additional property:
+A $(t, n)$-secret sharing scheme \cite{shamir1979share, blakley1979safeguarding} allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ among a set of $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that in the reconstruction phase any subset of $t+1$ or more honest participants can compute the secret $s$ via \textit{Lagrange interpolation} (Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot. However, a malicious dealer can provide incorrect shares. A Verifiable Secret Sharing (VSS) scheme solves this by providing the following additional property:
 \begin{itemize}
     \item Every participant can verify that the share they've received from the dealer is a valid piece of the secret without revealing the secret.
 \end{itemize}
@@ -285,8 +283,6 @@ Given $n$ total coins deposited during Register, EVR assumes that no participant
 Even though EVR works well within these bounds, enforcing them in real world can be tricky especially when the participants are pseudo-anonymous.
 
 \joenote{Could use a much more intuitive explanation}
-\todo{After introducing the scheme, need to explain why it has the properties it does/why attacks work or don't work}
-
 
 \section{Commit-Reveal-Recover Variants}
 \label{section:commit-reveal-recover}
@@ -294,7 +290,7 @@ Even though EVR works well within these bounds, enforcing them in real world can
 Extending the basic commit-reveal paradigm, commit-reveal-recover variants defend against the last revealer attack by providing a mechanism to recover or reconstruct the secret in case some participants refuse to reveal. This is achieved by using techniques based on threshold secret sharing or threshold encryption. These protocols assume $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct the secret such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while $t$ Byzantine nodes cannot collude to preemptively reconstruct the secret to their benefit. Guaranteeing availability as a result, the protocols allow the honest participants to reconstruct the secret by themselves even if all the corrupted participants decide to withhold.
 
 \subsection{Threshold Secret Sharing based}
-A $(t, n)$-threshold secret sharing scheme allows a dealer to share a secret among a set of $n$ participants in such a way that any subset of $t+1$ or more participants can reconstruct it. A Verifiable Secret Sharing (VSS) scheme \cite{feldman1987practical, pedersen1991non} adds protection from a dishonest dealer who might intentionally produce bad shares by allowing the participant to verify the correctness of the shares of secret that they've received from the dealer. A Publicly Verifiable Secret Sharing (PVSS) scheme \cite{schoenmakers1999simple, cascudo2017scrape} extends it further and allows any external party to verify the correctness of the sharing and reconstruction. Scrape \cite{cascudo2017scrape}, Albatross \cite{cascudo2020albatross}, and SecRand \cite{guo2020secRand} use PVSS whereas RandShare \cite{syta2017scalable} uses VSS (although it could be adapted to use PVSS as well).\\\\
+Threshold Secret Sharing based schemes use a $(t,n)$-threshold scheme to share a secret among a set of $n$ participants in such a way that any subset of $t+1$ or more participants can reconstruct it. To allow not only the participants but any external party to verify the correctness of the sharing and reconstruction, most threshold secret sharing schemes use Publicly Verifiable Secret Sharing (PVSS)  \cite{schoenmakers1999simple, cascudo2017scrape} instead of VSS as a subprotocol. Scrape \cite{cascudo2017scrape}, Albatross \cite{cascudo2020albatross}, and SecRand \cite{guo2020secRand} use PVSS whereas RandShare \cite{syta2017scalable} uses VSS (although it could be adapted to use PVSS as well).\\\\
 \joenote{already introduced VSS-be careful about repeats/order in which things are introduced}
 \textbf{Publicly Verifiable Secret Sharing (PVSS)}\\
 A Publicly Verifiable Secret Sharing (PVSS) scheme extends VSS by providing the following property:
@@ -313,9 +309,10 @@ force-opening and reconstructing only those secrets that that were withheld duri
 \todo{discuss inherent limitations/attacks}
 
 \textbf{Scrape}\\
+
 \joenote{is this a one-round protocol? General note-need a framework for one round vs. two round protocols?}
 \joenote{too much whitespace with this blank line after scheme name}
- \joenote{don't repeat this setup!} \joenote{would be better to formalize/abstract what the ledger is as a building block} The main building block of Scrape is a PVSS scheme that requires only $O(n)$ exponentiations to verify $n$ shares (see Appendix \ref{appendix:scrapePVSS} for details). This makes it scalable when compared to schemes \joenote{earlier? this is the first scheme being discussed here} that use Schoenmakers PVSS (see Appendix \ref{appendix:schoenmakersPVSS}) which require $O(n t)$ exponentiations, making them quadratic when $t = n/2$ (where $t$ is the threshold). The initial setup for Scrape requires generating public keys $pk_i$ for each of the $n$ participants using $PVSS.Setup$. 
+The main building block of Scrape is a PVSS scheme that requires only $O(n)$ exponentiations to verify $n$ shares (see Appendix \ref{appendix:scrapePVSS} for details). This makes it scalable when compared to schemes that use Schoenmakers PVSS (see Appendix \ref{appendix:schoenmakersPVSS}) which require $O(n t)$ exponentiations, making them quadratic when $t = n/2$ (where $t$ is the threshold). The initial setup for Scrape requires generating public keys $pk_i$ for each of the $n$ participants using $PVSS.Setup$. 
   The protocol then proceeds in five phases---Commit, Verify, Reveal, Recover, and Aggregate.
 \begin{enumerate}
 \item \textbf{Commit:} Every participant $P_j$ executes $PVSS.ShareGen(s^{(j)})$ as the Dealer D and publishes the encrypted shares $Enc(pk_i, s^{(j)}_i)$ for $1 \le i \le n$ and verification information $\pi_D^{(j)}$, also learning the random secret $h^{s^{(j)}}$. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^{(j)}, r_j)$ (with fresh randomness $r_j \leftarrow \mathbb{Z}_q$).
@@ -330,7 +327,7 @@ Note that what a participant $j$ can decrypt during the Recover phase is not rea
 \textbf{Albatross}\\
 
 \joenote{this overview is at a good level of detail, but start with spelling out exactly what the difference in properties/performance is}
-Albatross extends Scrape to provide an improved amortized computational complexity at the cost of suboptimal corruption tolerance. An execution of Albatross with $n$ participants, out of which up to $t = n/2 - \theta(n)$ may be corrupt (as compared to $t = n/2$ in Scrape), generates $\theta(n^2)$ uniformly random values at the end of each round (vs one uniformly random value in Scrape), requiring in the worst case an amortized cost per party of $\theta(\log n)$ exponentiations per random value (as compared to $\theta(n^2)$ exponentiations per party per random value required in Scrape). This is achieved via two techniques: first, packed Shamir secret sharing based PVSS to share $\ell$ secrets instead of 1 without increasing the computational cost; second, the use of linear $t$-resilient functions to extract more uniform randomness from a vector of group elements from which an adversary may control some of the values . 
+Albatross extends Scrape to provide an improved amortized computational complexity at the cost of suboptimal corruption tolerance. An execution of Albatross with $n$ participants, out of which up to $t = n/2 - \theta(n)$ may be corrupt (as compared to $t = n/2$ in Scrape), generates $\theta(n^2)$ uniformly random values at the end of each round (vs one uniformly random value in Scrape), requiring in the worst case an amortized cost per participant of $\theta(\log n)$ exponentiations per random value (as compared to $\theta(n^2)$ exponentiations per participant per random value required in Scrape). This is achieved via two techniques: first, packed Shamir secret sharing based PVSS to share $\ell$ secrets instead of 1 without increasing the computational cost; second, the use of linear $t$-resilient functions to extract more uniform randomness from a vector of group elements from which an adversary may control some of the values . 
 
 Similar to Scrape, Albatross also has Commit, Verify, Reveal and Recover phases. However, unlike Scrape, each participant shares $\ell$ secrets instead of 1, resulting in $n \times \ell$ total secrets shared at the end of Commit phase. Verify, Reveal and Recover phases proceed in a similar way as Scrape. After a subset of $(n-t) \times \ell$ secrets are revealed/recovered, instead of aggregating them to produce a single random output like in Scrape, we use a linear t-resilient function to extract final randomness of $\ell^2$ elements. See Appendix \ref{appendix:albatross} for more details about the protocol.\\
 
@@ -355,7 +352,7 @@ Instead of Scrape's process of revealing, reconstructing, and adding up all the 
 
 \textbf{SecRand}\\
 
-SecRand is also run among all $n$ participants and uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. Setup is done using $PVSS.Setup$ and the public keys $pk_i$ of each party is registered. 
+SecRand is also run among all $n$ participants and uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. Setup is done using $PVSS.Setup$ and the public keys $pk_i$ of each participant is registered. 
 
 SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r)$ during Share Distribution phase. The other two phases proceed as follows:
 \begin{enumerate}
@@ -377,8 +374,6 @@ SecRand proceeds in four phases---Share Distribution, Share Verification, Aggreg
 
 In HERB, each participant can play two roles: entropy providers and key holders. Entropy providers are active only for ciphertext generation whereas key holders participate in all protocol stages. The protocol proceeds in three phases---Setup, Publication, and Disclosure, where Setup is only done once at the beginning. They proceed as follows:
 
-\joenote{What happened to Dfinity's approach}
-
 \begin{enumerate}
     \item \textbf{Setup}: All the key holders together run $DKG(1^\lambda, t, n)$ to obtain keys for the threshold ElGamal cryptosystem. $pk$ is the global public key and $pk_i$ and $sk_i$ for $1 \le i \le n$ are the individual public and secret keys for each participant.
     
@@ -388,9 +383,6 @@ In HERB, each participant can play two roles: entropy providers and key holders.
     
     \item \textbf{Disclosure}: The key holders $k_i$ decrypt their shares $D_i = ThrElGamal.ShareDec(pk, sk_i, C)$ \joenote{Now back to generic notation} and publish it along with the NIZK of discrete log equality generated as $\pi_{DLEQ_{i}} = DLEQ(D_i, A, pk_i, G)$ to prove correctness of decryption (details in Appendix). These are then verified by the participants using $DLEQ\text{-}Verify$. When $t+1$ decryption shares are published and verified, participants use $ThrElGamal.Rec(pk, C, D_i, \ldots, D_{t+1})$ to reconstruct the final random number $M$ for the round.
 \end{enumerate}
-
-
-\todo{properties/performance of this scheme}
 HERB achieves a communication complexity of $O(n^3)$ without using a public blockchain ($O(n^2)$ with it) and requires each key holders to share constant amounts of data each round. The bottleneck lies in communication cost for achieving consensus on the $QUAL$ set. Optimizations such as Avalanche \cite{rocket2018snowflake} can be used to improve it to $O(n^2)$ leading to an overall lower communication complexity than threshold secret sharing schemes. Main disadvantage of HERB lies on its dependence on DKG for setup as every new key holder would require a rerun of DKG to establish the keys. When compared to DVRF based schemes (discussed later in Section \ref{section:dvrf}), HERB falls behind in terms of communication complexity. But it makes up for it in terms of quality of randomness produced in each round (uniform randomess vs pseudorandomness). Also, HERB allows the entropy providers to be independent of key holders. This makes it possible to collect entropy from a large and flexible set of sources while allowing the key holders set to be much smaller and sampled to contain at most $t$ malicious nodes.
 
 
@@ -599,14 +591,6 @@ On the other hand, there exists an attack without much countermeasure, namely wi
 
 Some possible remedies include the following. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message at any point would be indicative of some withholding. Naturally, this is costly in terms of communication complexity and thus not the most practical. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of any withholding attack. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen such that the identity of the leader will only be known to the chosen leader until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what separates SSLE from schemes like Algorand. It does not prevent withholding attack by itself, however.
 
-\subsection{Amount of Commitment to Data}
-\joenote{this is very simple/clear actually}
-Committing in advance as much as possible (e.g. BRandPiper's leader committing to n secrets at once, Caucus' hash chain, etc.)
-
-(+): better complexity (b/c batching)
-
-(-): hard to recover once hacked
-
 \subsection{Adaptive Security or Lack Thereof}
 * Adaptive security: either revelation of leadership coupled with entropy provision OR the size of subset (that adversary needs to adaptively corrupt) is big
 
@@ -656,7 +640,7 @@ Both of the proof system has its own strengths. Wesolowski's proof system has sh
 
 \subsection{Trapdoor VDF}
 \label{appendix:tvdf}
-Trapdoor VDFs \cite{wesolowski2019efficient, schindler2021randrunner} are an extension and modification of traditional VDFs in which the $Setup$ algorithm in addition to the public parameters $pp$ also outputs a trapdoor (secret key) $sk$ to the party invoking the algorithm.  The parameter $pp$ is published whereas $sk$ is kept secret. Furthermore, the algorithm $TrapdoorEval$ provides an alternate way to evaluate the VDF efficiently, i.e. within time $\phi{(poly{(\lambda)})}$ to participants which know the trapdoor $sk$. Participants without this knowledge can still use the $Eval$ algorithm to compute the output in $(1+\epsilon)T$ sequential steps.
+Trapdoor VDFs \cite{wesolowski2019efficient, schindler2021randrunner} are an extension and modification of traditional VDFs in which the $Setup$ algorithm in addition to the public parameters $pp$ also outputs a trapdoor (secret key) $sk$ to the participant invoking the algorithm.  The parameter $pp$ is published whereas $sk$ is kept secret. Furthermore, the algorithm $TrapdoorEval$ provides an alternate way to evaluate the VDF efficiently, i.e. within time $\phi{(poly{(\lambda)})}$ to participants which know the trapdoor $sk$. Participants without this knowledge can still use the $Eval$ algorithm to compute the output in $(1+\epsilon)T$ sequential steps.
 Trapdoor VDFs can be described by a set of four algorithms as follows.
 \begin{itemize}
     \item $Setup(\lambda) \rightarrow (pp, sk)$ is a randomized algorithm that takes a security parameter $\lambda$ and outputs public parameters $pp$ and a trapdoor secret key $sk$.
@@ -886,7 +870,7 @@ is also run.
 \label{appendix:albatross}
 
 \noindent\textbf{Packed Shamir Secret Sharing} \\
-Packed Shamir secret sharing is a generalization of Shamir secret sharing that allows to secret-share a vector of $\ell$ elements from a field rather than a single element. The key point is that every share is still one element of the field and therefore the sharing has the same computational cost of $\theta(n)$ exponentiations as regular Shamir secret sharing. This is accomplished by having the dealer choose a polynomial $f$ of degree $t+\ell-1$ uniformly at random and use a set of $\ell$ distinct points for secret sharing $\ell$ secrets, e.g. $(s_0, s_1, ..., s_{\ell - 1}) = (f(0), f(-1), ..., f(-(\ell - 1)))$, and another set of $n$ distinct points on the same polynomial for the shares sent by the dealer to each party, e.g. $(f(1), ..., f(n))$. Any subset of $t+\ell$ points can be used to reconstruct the secret polynomial via Lagrange interpolation and recover the $\ell$ secrets. Note that the usual Shamir secret sharing corresponds to when $\ell = 1$.\\
+Packed Shamir secret sharing is a generalization of Shamir secret sharing that allows to secret-share a vector of $\ell$ elements from a field rather than a single element. The key point is that every share is still one element of the field and therefore the sharing has the same computational cost of $\theta(n)$ exponentiations as regular Shamir secret sharing. This is accomplished by having the dealer choose a polynomial $p$ of degree $t+\ell-1$ uniformly at random and use a set of $\ell$ distinct points for secret sharing $\ell$ secrets, e.g. $(s_0, s_1, ..., s_{\ell - 1}) = (p(0), p(-1), ..., p(-(\ell - 1)))$, and another set of $n$ distinct points on the same polynomial for the shares sent by the dealer to each participant, e.g. $(p(1), ..., p(n))$. Any subset of $t+\ell$ points can be used to reconstruct the secret polynomial via Lagrange interpolation and recover the $\ell$ secrets. Note that the usual Shamir secret sharing corresponds to when $\ell = 1$.\\
 
 \noindent\textbf{Linear Perfect $t$-resilient functions}\\
 Instead of computing the final randomness from PVSS reconstructions as $\prod_{j \in \mathcal{C}} h^{s^j}$ like in Scrape, Albatross uses a $t$-resilient function for randomness extraction.\\
@@ -901,7 +885,7 @@ In Albatross we assume $n$ participants, of which the static adversary corrupts 
     \item \textbf{Recover} For each participant $P_a$ that do not open their secret during the Reveal phase, other participants publish the decrypted shares of the secret. Once $t+\ell$ valid shares are published, Lagrange interpolation is used to reconstruct the polynomial and recover the secrets $h^{s^{(a)}_{0}}, \ldots, h^{s^{(a)}_{\ell-1}}$. Then it proceeds to Case 2 of Output phase.
     \item \textbf{Output}
         \begin{itemize}
-            \item \textit{Case 1:} When all the participants in $\mathcal{C}$ have opened their secrets correctly, we have a $(n-t) \times \ell$ matrix $S$ with rows indexed by the participants  $P_a \in \mathcal{C}$ and each row corresponding to its $\ell$ opened secrets $(s^{(a)}_{0}, \ldots, s^{(a)}_{\ell-1})$. The final randomness $\mathcal{O}$ with $\ell^2$ elements is computed by each party as $\mathcal{O} = h^U$, where $U = M \cdot S \in \mathbb{Z}_q^{\ell \times \ell}$.
+            \item \textit{Case 1:} When all the participants in $\mathcal{C}$ have opened their secrets correctly, we have a $(n-t) \times \ell$ matrix $S$ with rows indexed by the participants  $P_a \in \mathcal{C}$ and each row corresponding to its $\ell$ opened secrets $(s^{(a)}_{0}, \ldots, s^{(a)}_{\ell-1})$. The final randomness $\mathcal{O}$ with $\ell^2$ elements is computed by each participant as $\mathcal{O} = h^U$, where $U = M \cdot S \in \mathbb{Z}_q^{\ell \times \ell}$.
             
             \item \textit{Case 2:} Otherwise, we have a $(n-t) \times \ell$ matrix $T$ with rows indexed by the participants  $P_a \in \mathcal{C}$ where the row corresponding to $P_a$ is $(h^{s^{(a)}_{0}}, \ldots, h^{s^{(a)}_{\ell-1}})$. The final $\ell \times \ell$ randomness matrix $\mathcal{O}$ is computed as $\mathcal{O} = M \diamond T$ by applying FFTE to each column $T^{(j)}$ of $T$ producing column $\mathcal{O}^{(j)}$ of $\mathcal{O}$.
         \end{itemize}
@@ -959,14 +943,14 @@ Furthermore, a VRF satisfies the following three properties:
 \item Pseudorandomness. The output is indistinguishable from a random number from a uniform distribution except with negligible probability. This can be written as follows.
 \[
 Pr\left[b = b' \middle\vert \begin{array}{l}
-(x, st) \leftarrow A^{Prove(\cdot)}_{1}(pk);\\
+(x, st) \leftarrow \mathcal{A}^{Prove(\cdot)}_{1}(pk);\\
 y_0 = F_{sk}(x);\\
 y_1 \leftarrow \{0, 1\}^{\ell_{VRF}};\\
 b \leftarrow \{0, 1\};\\
-b' \leftarrow A^{Prove(\cdot)}_{2}(y_b, st)
+b' \leftarrow \mathcal{A}^{Prove(\cdot)}_{2}(y_b, st)
 \end{array}\right] \leq \frac{1}{2} + negl(\lambda)
 \]
-for any probabilistic polynomial-time algorithm $\mathcal{A} = (A_1, A_2)$, which does not query the oracle on $x$.
+for any probabilistic polynomial-time algorithm $\mathcal{A} = (\mathcal{A}_1, \mathcal{A}_2)$, which does not query the oracle on $x$.
 \end{enumerate}
 
 \subsection{Verifiable Unpredictable Function (VUF)}
@@ -974,9 +958,9 @@ A VUF \cite{micali1999verifiable,dodis2005verifiable} is a VRF except the last p
 \begin{itemize}
 \item Unpredictability. The output is unpredictable except with negligible probability. In other words:
 \[
-Pr\left[y = F_{sk}(x) \middle\vert (x, y) \leftarrow A^{Prove(\cdot)}(pk)\right] \leq negl(\lambda)
+Pr\left[y = F_{sk}(x) \middle\vert (x, y) \leftarrow \mathcal{A}^{Prove(\cdot)}(pk)\right] \leq negl(\lambda)
 \]
-for any probabilistic polynomial-time algorithm $A$, which does not query the oracle on $x$.
+for any probabilistic polynomial-time algorithm $\mathcal{A}$, which does not query the oracle on $x$.
 \end{itemize}
 
 \subsection{DDH-DVRF}
@@ -1061,7 +1045,8 @@ Obviously, such secure box needs to be secure, satisfying the following two prop
 For further details (e.g. perfectly vs computationally binding and hiding), refer to \cite{damgaard1998commitment}.
 
 \subsection{Lagrange Interpolation}
-Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \mathbb{Z}_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \mathbb{Z}_q$ enable the equality $f(i) = \sum_{j \in A} f(j) \lambda_{i, j, A}$ for any polynomial $f \in \mathbb{Z}_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
+\label{appendix:lagrange}
+Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \mathbb{Z}_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \mathbb{Z}_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \mathbb{Z}_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
 
 \subsection{BLS Signature}
 Introduced by Boneh, Lynn, and Shacham in 2003, the BLS signature scheme \cite{boneh2001short} consists of the following tuple of algorithms given a key pair ($sk$, $pk$).
