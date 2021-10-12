@@ -161,11 +161,11 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 \end{enumerate}
 \end{definition}
 
-We next discuss various approaches to realizing an ideal DRB generally in decreasing order of number of nodes providing marginal entropy. The reasoning behind this is that while it is the most intuitive to require every node's marginal entropy (a la commit-reveal) for the sake of deriving a joint random number that all nodes can agree on, the narrative is often that a novel dose of cryptography can help eliminate the need for everyone's proactive generation of marginal entropy while maintaining the security of a DRB and therefore lead to better efficiency and scalability. We start with protocols based on verifiable delay functions.
+We next begin our discussion of various approaches to realizing an ideal DRB generally in decreasing order of number of nodes providing marginal entropy. The reasoning behind this is that while it is the most intuitive to require every node's marginal entropy (a la commit-reveal) for the sake of deriving joint randomness that all nodes can agree on, the narrative is often that a novel dose of cryptography can help eliminate the need for everyone's proactive generation of marginal entropy while maintaining the security of a DRB and therefore lead to better efficiency and scalability. We start with protocols based on verifiable delay functions.
 
 \section{VDF-Based Protocols}
 \label{section:vdf}
-One way to prevent last revealer attack is to add a delay function after collecting entropy, making it slow to compute the final beacon output. As long as the delay is suitably long, none of the participants would be able to determine the final output of the beacon and manipulate or withhold their shares to bias it. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this. \\\\
+One way to prevent the last revealer attack is to add a delay function after collecting entropy, making it slow to compute the final beacon output. As long as the delay is suitably long, none of the participants would be able to determine the final output of the beacon and manipulate or withhold their shares to bias it. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this. \\\\
 \textbf{Verifiable Delay Function (VDF)}\\
 A VDF is a function that is slow to compute and easy to verify. It has the following properties which makes it suitable to be used to add delay:
 \begin{itemize}
@@ -181,7 +181,7 @@ A VDF can be described via a set of three algorithms:
 \end{itemize}
  The two well-regarded VDF proposals, one due to Pietrzak \cite{pietrzak2018simple} and the other due to Wesolowski \cite{wesolowski2019efficient}, make use of the serial nature of exponentiation in a group of unknown order to implement a VDF. See Appendix \ref{appendix:vdf} for details.
 
-VDFs can be used to extend naive commit-reveal scheme to prevent last revealer attack. Additionally, VDFs can also be employed for constructing randomness beacons from public sources of randomness such as stock prices or proof-of-work blockchains (e.g. Bitcoin \cite{nakamoto2019bitcoin}, Ethereum \cite{wood2014ethereum}), or to construct an entirely new protocol (like RandRunner \cite{schindler2021randrunner}) altogether. These three approaches are summarized in the following sections.
+VDFs can be used to extend naive commit-reveal scheme to prevent the last revealer attack. Additionally, VDFs can also be employed for constructing randomness beacons from public sources of randomness such as stock prices or proof-of-work blockchains (e.g. Bitcoin \cite{nakamoto2019bitcoin}, Ethereum \cite{wood2014ethereum}), or to construct an entirely new protocol (like RandRunner \cite{schindler2021randrunner}) altogether. These three approaches are summarized in the following sections.
 \joenote{is this last approach out of scope?}
 
 \subsection{Extending Commit-Reveal}
