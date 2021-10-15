@@ -29,7 +29,6 @@
 \usepackage{braket}
 % start table
 \usepackage{tabularx,booktabs,multirow}
-% \usepackage{dingbat}
 \usepackage{diagbox}
 \newcolumntype{C}{>{\centering\arraybackslash}X} % centered version of "X" type
 \setlength{\extrarowheight}{1pt}
@@ -39,6 +38,7 @@
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
 \usepackage{threeparttable}
+\DeclareMathOperator*{\argmin}{argmin}
 % end table
 \AtBeginEnvironment{quote}{\singlespace\vspace{1em}\small}
 \AtEndEnvironment{quote}{\vspace{1em}\endsinglespace}
@@ -119,8 +119,8 @@ Consider the following simple scenario without perfect synchrony: three particip
 \label{subsection:commit-reveal}
 A classical improvement to the above issue, commit-reveal provides an intuitive way to source a joint random number from a group of participating nodes by introducing a cryptographic commit step before revealing. It runs as follows.
 \begin{enumerate}
-\item \underline{Commit.} Each participant $P_i$ broadcasts its cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy share $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r)$ denotes a cryptographic commitment to $x$ with hiding and binding properties (see Appendix \ref{appendix:commitment}).
-\item \underline{Reveal.} Once all participants have shared their corresponding commitments, each participant $P_i$ then opens the commitment by revealing the pair $(e_i, r_i) = \mathsf{Open}(e_i, r_i)$. In turn, $P_i$ verifies the received pair $(e_j, r_j)$ for $j \neq i$ by checking the equality $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\mathcal{O}$ can canonically be given by
+\item \underline{Commit}. Each participant $P_i$ broadcasts its cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy share $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r)$ denotes a cryptographic commitment to $x$ with hiding and binding properties (see Appendix \ref{appendix:commitment}).
+\item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens the commitment by revealing the pair $(e_i, r_i) = \mathsf{Open}(e_i, r_i)$. In turn, $P_i$ verifies the received pair $(e_j, r_j)$ for $j \neq i$ by checking the equality $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\mathcal{O}$ can canonically be given by
 \[
 \mathcal{O} = \sum_{i = 1}^n e_i
 \]
@@ -431,7 +431,7 @@ A second example is \textit{random selection} (RS), which uses a public source o
 \item Ouroboros \cite{kiayias2017ouroboros}. The follow-the-satoshi algorithm \cite{bentov2014proof,kiayias2017ouroboros}\joenote{I would omit this from the paper or reduce to one sentence. It's just another variant of random selection, the satoshi details don't matter} outputs the next slot leaders of an epoch (i.e. predefined collection of consecutive slots) given the previous beacon value as input by tracking the owners of specific ``satoshis'' or units of currency in order to derive a subset for the subsequent round. Note that we regard Ouroboros' epoch as one round in the context of DRB although Ouroboros' concept of a slot corresponds to a round in the blockchain context.
 \end{itemize}
 
-That RS is randomized incurs a side effect where some nodes may, in theory, never be selected and therefore may never be able to contribute their entropy to the beacon output even if actively participating in the protocol. A more realistic concern is that an adversary can attempt to bias, via grinding attack\joenote{not introduced yet}, the beacon output in order to bias the next entropy-providing subset to its benefit (which may in turn help the adversary bias the next beacon output again and so on). This is a notable tradeoff given RS, and thus protocols adopting RS need to take this facet into consideration.
+That RS is randomized incurs a side effect where some nodes may, in theory, never be selected and therefore may never be able to contribute their entropy to the beacon output even if actively participating in the protocol. A more realistic concern is that an adversary can attempt to bias, via grinding attack, the beacon output in order to bias the next entropy-providing subset to its benefit (which may in turn help the adversary bias the next beacon output again and so on). This is a notable tradeoff given RS, and thus protocols adopting RS need to take this facet into consideration.
 
 On the other hand, this is not an issue in RR, as its subset selection is naturally deterministic in a way that is independent of the preceding beacon output. Nonetheless, a tradeoff of RR is that DoS attack becomes a possibility since each subset is known in advance for every round publicly. To be noted is this interplay where we either, when choosing between RR and RS, gain unbiasability (due to determinism) at the cost of DoS attack or gain DoS attack defense (due to randomization) at the cost of grinding attack.\todo{this section should talk about adaptive corruption}
 
@@ -446,6 +446,7 @@ One requirement, due to the power delegated to the per-round leader, is that the
 The motivation for LS (as opposed to RR or RS) is clear\joenote{It's not clear ot me, you need to spell out what the advantage is} only if the underlying DRB protocol is already a leader-based one utilizing the concept of a leader as a facilitator of communication among nodes in order to lower the overall communication complexity. Otherwise, it naturally suffers from the same attacks impacting RR and RS (i.e. DoS attack and grinding attack, respectively) during the leader election step of LS while also potentially suffering from liveness issues related to leader failure (non-Byzantine or Byzantine). Hence, LS is generally less commonly used in practice.\joenote{Practice? are any of these used in practice?}
 
 \subsubsection{Private Subset Selection}
+\label{subsubsection:private-subset-selection}
 In a private subset selection, also known as private lottery, each node needs to input some private information (e.g. secret key) in order to check whether or not it has been selected into the entropy-providing subset (i.e. has won the lottery). The general formulation of a private lottery can be given by
 \todo{include private input in the description}
 \[
@@ -460,7 +461,7 @@ In Algorand \cite{gilad2017algorand} (as well as Ouroboros Praos \cite{david2018
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
-where $\mathcal{O}_{r - 1}$ denotes randomness from the previous round (while $role$ is some parameter specific to Algorand\joenote{Is role needed for a conceptula explanation?}). As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is in fact the node's secret key from some threshold number of rounds ago. While the size of the entropy-providing subset is expected to be one in Algorand (such that there is 1 expected winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ consecutive slots (such that there is 1 expected winner per lottery but $K$ per-slot lotteries per round, which is an epoch), as the protocol provides an epoch-based variant of Algorand. Fundamentally the same as that of Algorand, the per-slot lottery of Ouroboros Praos is given by
+where $\mathcal{O}_{r - 1}$ denotes randomness from the previous round (while $role$ is some parameter specific to Algorand). As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is in fact the node's secret key from some threshold number of rounds ago. While the size of the entropy-providing subset is expected to be one in Algorand (such that there is 1 expected winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ consecutive slots (such that there is 1 expected winner per lottery but $K$ per-slot lotteries per round, which is an epoch), as the protocol provides an epoch-based variant of Algorand. Fundamentally the same as that of Algorand, the per-slot lottery of Ouroboros Praos is given by
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target
 \]
@@ -482,9 +483,11 @@ involves a timely search of the private input $S_i$ that solves the mining puzzl
 Note the importance of competition in the security of RandChain's DRB. Without competition, the act of mining is in fact precisely the act of performing a grinding attack, which can lead to biasing of the randomness output. With competition, nodes are incentivized to broadcast and publicize a solution as soon as they find one, forcing them to commit to the first solution they find as their private input.
 
 \subsection{Step 2. Beacon Output Generation}
+\label{subsection:beacon-output-generation}
 Once given a subset of entropy-providing nodes, the issue then shifts to one dealing with the actual entropy generation process culminating in a beacon output. While a typical commit-reveal-recover run among the subset of entropy providers may be sufficient to realize a DRB, there can be other variations coupled with different tradeoffs as well. Largely, we classify these variations into two: one that requires \textit{fresh} (independently generated on the spot) per-node entropy and one that combines previous randomness (i.e. beacon output) with \textit{precommitted} (independently generated but precommitted, hence ungrindable) per-node entropy.
 
 \subsubsection{Fresh Per-Node Entropy}
+\label{subsubsection:fresh}
 The fresh per-node entropy generation process for subset-based protocols fundamentally resembles the aforementioned commit-reveal-recover variants such that each node independently generates and contributes its entropy to the beacon output every round and there exists a countermeasure based on PVSS or threshold encryption in case some nodes fail during a protocol run. Some protocols involving fresh per-node entropy each round and their implementation details are included in the following examples.\joenote{this is good-don't go into every detail. But do specify the high-level goals/challenges. Why do it one way and not another?}
 \begin{itemize}
 \item Ouroboros and RandHound. As each slot leader is a participant in the entropy-providing subset, all slot leaders of an epoch in Ouroboros perform a RandShare-style share-reconstruct-aggregate using PVSS. Similar is the chosen subset in RandHound while facilitated by a round leader.
@@ -493,6 +496,7 @@ The fresh per-node entropy generation process for subset-based protocols fundame
 \end{itemize}
 
 \subsubsection{Combining Previous Output and Precommitted Per-Node Entropy}
+\label{subsubsection:precommitted}
 There is room to optimize and lower a protocol's communication complexity if it's not a requirement that entropy providers need to generate fresh per-node entropy every single round. The canonical attempt at an optimization involves utilizing the beacon output from the previous round $\mathcal{O}_{r - 1}$ as a source of entropy. Nonetheless, the caveat in doing so is that grinding attack may become a possibility once $\mathcal{O}_{r - 1}$ becomes public, which is why we need to require per-node entropy to be precommitted before combining it with $\mathcal{O}_{r - 1}$ to output $\mathcal{O}_r$. Preventing grindability while taking advantage of the accessibility of $\mathcal{O}_{r - 1}$ as a source of entropy, such requirement can be observed in many subset-based protocols in the landscape and is indeed a commonality among them even if their implementation details may seem unrelated on the surface. We provide some examples as follows.
 \begin{itemize}
 \item HydRand and GRandPiper. Each round, an entropy provider (which is the round leader for both HydRand and GRandPiper) commits its entropy that becomes opened in the next round the same node is selected as the leader again. In other words, the round leader's precommitted entropy $e_{\tilde{r}}$ from the last round $\tilde{r}$ it was a leader is the one that becomes combined with $\mathcal{O}_{r - 1}$ in the form of $h^{e_{\tilde{r}}}$ (due to details related to PVSS recovery) to generate
@@ -531,8 +535,7 @@ where $i$ represents the effort of mining such that $i$ is the smallest natural 
 \section{Protocols With No Marginal Entropy}
 \label{section:dvrf}
 \subsection{DRB Based On Distributed Verifiable Random Function}
-\joenote{is marginal entropy defined?}
-While DRB protocols can have all nodes or some subset of nodes contribute entropy to the beacon output every round, it is possible to devise a protocol where no node produces any marginal entropy to prolong a beacon.\joenote{mention advantages/disadvantages} Guaranteeing randomness entirely via pseudorandomness rather than any per-node entropy on a marginal basis, such a protocol can be based on the concept of distributed VRF \cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF \cite{cascudomt})\joenote{is this defined anywhere?}, which is a distributed version of VRF. The idea is that a DKG allows $n$ nodes to share a global secret key $sk$ such that up to $t$ Byzantine nodes can be tolerated without compromising the protocol while any $t + 1$ honest nodes can cooperate to compute a VRF output (as well as its proof) as if the computation involves one node with the knowledge of $sk$.\\
+While DRB protocols can have all nodes or some subset of nodes contribute entropy to the beacon output every round, it is possible to devise a protocol where no node produces any marginal entropy to prolong a beacon.\joenote{mention advantages/disadvantages} Guaranteeing randomness entirely via pseudorandomness, such a protocol can be based on the concept of distributed VRF \cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF \cite{cascudomt}), which is a distributed version of VRF. In a DVRF setting, namely, the usual VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a VRF output (as well as its proof) as if the computation involves one node with the knowledge of $sk$.\\
 
 \noindent\textbf{Beacon output of a DVRF-based DRB.} With DVRF-related details included in the Appendix, each beacon output of a DVRF-based DRB is given by
 \begingroup\makeatletter\def\f@size{8}\check@mathfonts
@@ -593,7 +596,6 @@ For comparison, Dfinity, with its setup equal to that of GLOW-DVRF due to the us
 
 \section{Discussions}
 \subsection{Grinding Attack}
-\todo{definition of grinding attack}
 While grinding attack is not a threat in commit-reveal-recover variants (like Scrape and HERB) or protocols with no marginal entropy (like drand and RandHerd), it is indeed a valid concern in a class of subset-based protocols involving either random selection (RS) and private lottery in terms of subset selection mechanism or combining of precommitted per-node entropy with $\mathcal{O}_{r - 1}$ in terms of beacon output generation mechanism. The main idea is that an adversary can perform a grinding attack to produce a biased entropy-providing subset, a biased beacon output, or both unless a countermeasure is given by a DRB. In the worst case, it may even be a possibility that $\mathcal{O}_r$ can be adversarially generated (if ever) via grinding such that the entropy-providing subset for the next round would likewise be adversarially selected, resulting in a vicious cycle.
 
 To prevent this, the broached subset-based protocols offer the following (aforementioned but summarized here) mechanisms to counteract any potential grinding attack.
@@ -1137,30 +1139,49 @@ Via $\pi_{CE} = CE(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where $G \in \m
 \end{enumerate}
 
 \begin{table*}[pt]
+\aboverulesep=0ex
+\belowrulesep=0ex
+% \footnotesize
+\renewcommand{\arraystretch}{1}
+\begin{threeparttable}
 \caption{Subset-Based DRB Protocols}
 \label{table:subset-based}
-\begin{tabular}{@{}lllll@{}}
-                                          &                          &            & \multicolumn{2}{l}{Step 2: Beacon Output Generation}                  \\
-                                          &                          &            & Fresh per-node entropy & $\mathcal{O}_{r - 1}$ \& precommitted per-node entropy \\
-\multirow{6}{*}{Step 1: Subset Selection} & \multirow{3}{*}{Public}  & RR         & BRandPiper             &                                              \\
-                                          &                          & RS         & Ouroboros              & HydRand, GRandPiper                          \\
-                                          &                          & LS         & RandHound, SPURT       &                                              \\
-                                          & \multirow{3}{*}{Private} & VRF        & NV                     & Praos, Algorand                              \\
-                                          &                          & Hash chain &                        & Caucus                                       \\
-                                          &                          & SeqPoW     &                        & RandChain                                   
-\end{tabular}
+\begin{tabularx}{\textwidth}{|c|c|c|l|l|}
+\cmidrule{4-5}
+\multicolumn{3}{c|}{} & \multicolumn{2}{c|}{Step 2: Beacon Output Generation} \\
+\cmidrule{4-5}
+\multicolumn{3}{c|}{} & \multicolumn{1}{c|}{Fresh per-node entropy} & \multicolumn{1}{c|}{$\mathcal{O}_{r - 1}$ \& precommitted per-node entropy} \\
+\cmidrule{1-5}
+\multirow{6}{*}{\spheading[0.465\textwidth]{\mbox{Step 1: Subset Selection}}} & \multirow{3}{*}[-2.8cm]{Public} & RR & \begin{tabular}{@{}l@{}}\textbf{BRandPiper}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
+\cmidrule{3-5}
+& & RS & \begin{tabular}{@{}l@{}}\textbf{Ouroboros}\\\textit{Step 1}: Follow-the-satoshi \cite{bentov2014proof,kiayias2017ouroboros}\\\textit{Step 2}: Share-reconstruct-aggregate\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{HydRand}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$\\\\\textbf{GRandPiper}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(h^{e_{\tilde{r}}}, \mathcal{O}_{r - 1}, ..., \mathcal{O}_{r - t})$\end{tabular} \\
+\cmidrule{3-5}
+& & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
+\cmidrule{2-5}
+& \multirow{3}{*}[-1.2cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
+\cmidrule{3-5}
+& & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\\\textit{Step 1}: $H(h_r \oplus \mathcal{O}_{r - 1}) < target$\\\textit{Step 2}: $\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}$\end{tabular} \\
+\cmidrule{3-5}
+& & SeqPoW & & \begin{tabular}{@{}l@{}}\textbf{RandChain}\\\textit{Step 1}: $H(pk \mathbin\Vert S_i) < target$\\\textit{Step 2}: $\mathcal{O}_r = H_2(pk \mathbin\Vert g^i(S_0))$\\\phantom{\textit{Step 2}: $\mathcal{O}_r$ }$= H_2(pk \mathbin\Vert g^i(H(pk \mathbin\Vert H(H_2^{-1}(\mathcal{O}_{r - 1})))))$\end{tabular} \\
+\cmidrule{1-5}
+\end{tabularx}
+\begin{tablenotes}[para,flushleft]
+\item Note that public subset selection mechanisms (Section \ref{subsubsection:public-subset-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private subset selection can be found in Section \ref{subsubsection:private-subset-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}. While notations $n$, $\tilde{n}$, and $C$ denote, respectively, the number of participants, the number of participants eligible for leadership, and the configuration parameter, more details on notation and beacon output generation process can be found in Section \ref{subsection:beacon-output-generation}.
+\end{tablenotes}
+\end{threeparttable}
 \end{table*}
 
 \begin{table*}[pt]
 % \footnotesize
-\begin{threeparttable}
 \scriptsize
+\begin{threeparttable}
 \caption{DRB Comparison}
 \label{table:comparison}
-\begin{tabularx}{\textwidth}{@{}l*{20}c}
+\begin{tabularx}{\textwidth}{@{} l *{20}c}
+% \begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{x}}c@{\phantom{x}}}}
 \toprule
 \spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive}   & \spheading{Fault Tolerance (less than)}  & \spheading{Independent Participation}  & \spheading{Per-Round Entropy Provider}  & \spheading{Unpredictability}  & \spheading{Immunity to Withholding}  & \spheading{Adaptive Security}   & \spheading{Verifier Complexity}  & \multicolumn{2}{c}{\spheading{Communication Complexity}}  &  \spheading{Damage}  & \spheading{Recovery Cost}\\ 
-\cmidrule(lr){11-12}
+\cmidrule{11-12}
  & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
 Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment  &  1  & \cmark   & All   &  \xmark  & \xmark    & \cmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & Bias & $O(1)$ \\ 
@@ -1196,7 +1217,6 @@ DDH-DVRF &  & DDH-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \c
 GLOW-DVRF &  & Pairing-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
 \bottomrule
 \end{tabularx}
-% \footnotesize
 \begin{tablenotes}
 \item $c$ is the size of shards in RandHerd and RandHound and the size of committee in Algorand. Unlike Algorand, $c$ in RandHound/RandHerd depends on $n$ and is not constant.
 \end{tablenotes}
