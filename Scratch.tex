@@ -8,7 +8,7 @@
 
 % Sets page size and margins
 % \usepackage[letterpaper,margin=1.5in]{geometry}
-
+%  \usepackage[compact]{titlesec} 
 % Useful packages
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -166,20 +166,16 @@ We next begin our discussion of various approaches to realizing an ideal DRB gen
 
 \section{VDF-Based Protocols}
 \label{section:vdf}
-One way to prevent the last revealer attack is to add a delay function after collecting entropy, making it slow to compute the final beacon output. As long as the delay is suitably long, none of the participants would be able to determine the final beacon output and manipulate or withhold their shares to bias it. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this. \\\\
-\textbf{Verifiable Delay Function (VDF)}\\
-A VDF is a function that is slow to compute and easy to verify. It has the following properties which makes it suitable to be used to add delay:
-\begin{itemize}
-    \item It takes a specified number of sequential steps to evaluate which cannot be parallelized.
-    \item The output can be efficiently and publicly verified without computing the VDF.
-    \item For every input $x$, there exists a unique output $y$ only which can be successfully verified. In other words, one cannot come up with an accepting proof for a wrong output.
-\end{itemize}
+One way to prevent the last revealer attack is to add a delay function after collecting entropy, making it slow to compute the final beacon output. As long as the delay is suitably long, none of the participants would be able to determine the final beacon output and manipulate or withhold their shares to bias it. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this.
+\begin{definition}[Verifiable Delay Function]
+A Verifiable Delay Function (VDF) is a function that takes a specified number of sequential steps to compute which cannot be parallelized. However the output can be quickly verified by anyone such that for every input $x$, there exists a unique output $y$ only which will be verified successfully. In other words, one cannot come up with an accepting proof for a wrong output.
 A VDF can be described via a set of three algorithms:
 \begin{itemize}
 \item $Setup(\lambda, T) \rightarrow pp$ is a randomized algorithm that takes a security parameter $\lambda$ and a time bound $T$  and outputs public parameters $pp$ sampled from some parameter space $PP$.
 \item $Eval(pp, x) \rightarrow (y, \pi)$ takes public parameters $pp\in PP$, an input $x$ and outputs $y$ and a proof $\pi$.
 \item $Verify(pp, x, y, \pi) \rightarrow \{accept, reject\}$ outputs $accept$ if $y$ is the correct evaluation of the VDF on input $(pp, x)$ and $reject$ otherwise.
 \end{itemize}
+\end{definition}
  The two well-regarded VDF proposals, one due to Pietrzak \cite{pietrzak2018simple} and the other due to Wesolowski \cite{wesolowski2019efficient}, make use of the serial nature of exponentiation in a group of unknown order to implement a VDF. 
 
 A VDF can be used to generate unbiasable randomness from biasable sources of entropy such as naive commit-reveal scheme or public sources of randomness such as stock prices or proof-of-work blockchains (e.g. Bitcoin \cite{nakamoto2019bitcoin}, Ethereum \cite{wood2014ethereum}). Or it can be used to construct an entirely new protocol (like RandRunner \cite{schindler2021randrunner}) altogether. These three approaches are summarized in the following sections.
@@ -204,20 +200,15 @@ where $seed_r = H(e_r)$, and $e_r$ denotes the output of a biasable external bea
 Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network. 
 
 \subsection{RandRunner}
-In the VDF-based schemes discussed so far, the rate at which random numbers are generated is limited by the delay parameter $T$ and require consensus on the inputs to VDF every round. RandRunner \cite{schindler2021randrunner} tackles these issues by building a deterministic chain of outputs (no consensus on ordering required) using a VDF design that allows the participant that sets up the VDF to quickly compute it (using a secret trapdoor) and broadcast the output. Only if the participant fails to do when required does other participants step in and eventually obtain the same result by evaluating the VDF without the trapdoor. This results in much lower communication overhead and shorter intervals between random outputs when the network is not under attack. Trapdoor VDFs, initially described in \cite{wesolowski2019efficient} can be used to realize this. RandRunner uses \emph{strongly unique trapdoor VDFs}, which ensures that the result obtained via the trapdoor and by evaluation are always equal.\\\\
-\textbf{Strongly Unique Trapdoor VDFs}\\
-A Strongly Unique Trapdoor VDF has the following properties:
-\begin{itemize}
-    \item Any participant who knows the trapdoor can efficiently evaluate the VDF, and those who do not would need to take preset sequential steps to evaluate VDFs.
-    \item It provides uniqueness even when the public parameters for the VDF are generated by the adversary. This is called strong uniqueness. 
-\end{itemize}
-A Strongly Unique Trapdoor VDF can be described by the algorithms $TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)$. It extends a traditional VDF with:
+In the VDF-based schemes discussed so far, the rate at which random numbers are generated is limited by the delay parameter $T$ and require consensus on the inputs to VDF every round. RandRunner \cite{schindler2021randrunner} tackles these issues by building a deterministic chain of outputs (no consensus on ordering required) using a VDF design that allows the participant that sets up the VDF to quickly compute it (using a secret trapdoor) and broadcast the output. Only if the participant fails to do when required does other participants step in and eventually obtain the same result by evaluating the VDF without the trapdoor. This results in much lower communication overhead and shorter intervals between random outputs when the network is not under attack. Trapdoor VDFs, initially described in \cite{wesolowski2019efficient} can be used to realize this. RandRunner uses \emph{strongly unique trapdoor VDFs}, which ensures that the result obtained via the trapdoor and by evaluation are always equal.
+\begin{definition}[Strongly Unique Trapdoor VDF]
+A Strongly Unique Trapdoor VDF extends VDF by allowing any participant who knows the trapdoor to efficiently evaluate the VDF without the need to take preset sequential steps. Moreover, it provides uniqueness even when the public parameters for the VDF are generated by the adversary. This is called strong uniqueness. A Strongly Unique Trapdoor VDF can be described by the algorithms $TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)$. It extends the algorithms of a traditional VDF with:
 \begin{itemize}
     \item $VerifySetup(\lambda, pp) \rightarrow (accept, reject)$ is used to verify the validity of the public parameters $pp$.
     \item $TrapdoorEval(pp,x,sk) \rightarrow (y, \pi)$ takes an input $x$  along with trapdoor $sk$ and outputs $y$ and a proof $\pi$ such that the algorithm takes less than time $T$ to complete unlike $Eval$.
 \end{itemize}
-See Appendix \ref{appendix:tvdf} for details.  
-
+See Appendix \ref{appendix:tvdf} for details.
+\end{definition}
 Wesolowski’s VDF \cite{wesolowski2019efficient} does not achieve strong uniqueness because knowing the trapdoor allows an adversary to forge ``valid'' proofs for different invalid outputs, thus breaking uniqueness and sequentiality properties. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}. RandRunner starts with a one-time Setup and Bootstrapping phase. It is followed by Execution phase which generates random outputs every round. The phases proceed as follows.
 \begin{enumerate}
     \item \textbf{Setup and Bootstrapping Phase.} Each participant $P_i$ executes $TVDF.Setup$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$. At the end, every participant should have the same set of public parameters $\mathcal{P} = \{ pp_1, pp_2, \ldots pp_n \}$.  The participants then verify the exchanged parameters by executing $TVDF.VerifySetup$ to ensure that the assumptions for uniqueness property of Pietrzak’s VDF \cite{pietrzak2018simple} are fulfilled, even if the parameters are generated adversarially. The protocol is then bootstrapped with an initial value $\mathcal{O}_0$ broadcast to all the participants which is used to select the leader for the first round and serves as the input to the first (leader’s) VDF being evaluated.
@@ -234,9 +225,9 @@ Wesolowski’s VDF \cite{wesolowski2019efficient} does not achieve strong unique
         Even though computing $TVDF.Eval$ takes at least $T$ sequential steps, it allows recovery in case the leader behaves maliciously. The strong uniqueness property guarantees that the resulting values are always equal to the ones computed by the leader.
     \end{itemize}
 \end{enumerate}
-When the network is in good shape and the leaders are not malicious, RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity. Adversarial leaders and network delay ($\Delta$) increases the round duration to $T$. Communication complexity then depends on how the participants communicate with each other: $O(n^2)$ for reliable broadcast with low latency and $O(n \log n)$ for gossip based protocols with higher latency. Since the output of each round is deterministic and can be computed independently (even though with delay $T$), RandRunner retains liveness even when network connectivity breaks down completely. Assuming that the initial seed is not biased, the deterministic nature of RandRunner also prevents an adversary from manipulating the beacon outputs. 
+When the network is in good shape and the leaders are not malicious, RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity. Adversarial leaders and network delay ($\Delta$) increases the round duration to $T$. Communication complexity then depends on how the participants communicate with each other: $O(n^2)$ for reliable broadcast with low latency and $O(n \log n)$ for gossip based protocols with higher latency. Since the output of each round is deterministic and can be computed independently (even though with delay $T$), RandRunner retains liveness even with dishonest majority and when network connectivity breaks down completely. Assuming an unbiased initial seed, the deterministic nature of RandRunner also prevents an adversary from manipulating the beacon outputs. 
 
-However, RandRunner produces pseudorandom numbers (and not uniform random numbers) requiring periodic refreshes of initial seed and trails in terms of the quality of randomness. Also, because of the leader based nature of RandRunner, an adversary (if leader) can always predict future outputs up to some extent and its advantage increases as long as a continuous sequence of adversarial nodes are selected as leaders. Assuming a $t$-limited adversary having relative computational advantage of $\alpha$ with respect to honest nodes, RandRunner provides $d$-unpredictability where $d = t \cdot \alpha$ if honest nodes make progress faster than adversarial nodes. This is reduced to standard majority assumption $n > 2t$ only when $\alpha = 1$ and $T \gg \Delta$. If $\alpha > 1$, the fraction of honest nodes compared to adversarial nodes must also increase.
+However, RandRunner produces pseudorandom numbers (and not uniform random numbers) requiring periodic refreshes of initial seed and trails in terms of the quality of randomness. Also, because of the leader based nature of RandRunner, an adversary (if leader) can always predict future outputs up to some extent and its advantage increases as long as a continuous sequence of adversarial nodes are selected as leaders. Assuming a $t$-limited adversary having relative computational advantage of $\alpha$ with respect to honest nodes, RandRunner provides $d$-unpredictability where $d = t \cdot \alpha$ if honest nodes make progress faster than adversarial nodes. This is reduced to standard majority assumption $n > 2t$ only when $\alpha = 1$ and $T \gg \Delta$. Otherwise, the fraction of honest nodes compared to adversarial nodes must also increase.
 % secure against covert adversary
 
 \section{Commit-Reveal-Punish}
@@ -264,52 +255,44 @@ Economically Viable Randomness (EVR) \cite{david2020economically} provides an al
 
 Unlike earlier commit-reveal-punish schemes, collective punishment is inevitable in EVR when informing happens as it is impossible to detect who colluded. Even though collective punishment is not necessary when participants fail to recover the final output, EVR enforces it to allow reconstruction to be done off-chain, without the involvement of escrow. 
 
-EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a Verifiable Secret Sharing (VSS) scheme \cite{feldman1987practical, pedersen1991non}.\\\\
-\textbf{Verifiable Secret Sharing (VSS)}\\
-A $(t, n)$-secret sharing scheme \cite{shamir1979share, blakley1979safeguarding} allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ among a set of $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that in the reconstruction phase any subset of $t+1$ or more honest participants can compute the secret $s$ via \textit{Lagrange interpolation} (Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot. However, a malicious dealer can provide incorrect shares. A Verifiable Secret Sharing (VSS) scheme solves this by providing the following additional property:
-\begin{itemize}
-    \item Every participant can verify that the share they've received from the dealer is a valid piece of the secret without revealing the secret.
-\end{itemize}
-VSS can be described by the following algorithms.
+EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
+\begin{definition}[$(t, n)$-secret sharing]
+A $(t, n)$-secret sharing scheme \cite{shamir1979share, blakley1979safeguarding} allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ among a set of $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that in the reconstruction phase any subset of $t+1$ or more honest participants can compute the secret $s$ via \textit{Lagrange interpolation} (Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
+\end{definition}
+\begin{definition}[Verifiable Secret Sharing]
+Verifiable Secret Sharing (VSS) \cite{feldman1987practical, pedersen1991non} protects a $(t, n)$-secret sharing scheme against a malicious dealer providing incorrect shares by allowing every participant to verify the share they've received from the dealer is a valid piece of the secret without revealing the secret. VSS can be described by the following algorithms.
 \begin{itemize}
     \item $Setup(\lambda) \rightarrow pp$ generates the public parameters $pp$ and is an implicit input to all other algorithms.
     \item $ShareGen(s) \rightarrow (\{s_i\}, C)$ is executed by the dealer with secret $s$ to generate secret shares $\{s_i\}$ (each of which is sent to node $i$ correspondingly) as well as commitment $C$ to the secret sharing polynomial of degree $t$.
     \item $ShareVerify(s_i, C) \rightarrow \{0, 1\}$ verifies the correctness of the share $s_i$ using $C$.
     \item $Recon(A, \{s_i\}_{i \in A}) \rightarrow s$ reconstructs the shared secret $s$ via Lagrange interpolation from a set $A$ of $t + 1$ valid shares.
 \end{itemize}
-Feldman-VSS and Pedersen-VSS are two of the most popular VSS protocols. See Appendix \ref{appendix:vss} for details.\\\\
-\textbf{Distributed Key Generation (DKG)}\\
-DKG protocol allows a set of $n$ participants to collectively generate the keys required for a threshold cryptosystem i.e. the group public key, the individual secret keys, and the corresponding public keys without the help of a trusted party. However, a DKG protocol is more than a secret sharing protocol and has the following properties:
-\begin{itemize}
-    \item It typically uses multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. 
-    \item Unlike secret sharing protocols where the secret shares are not reusable after everyone has learned the group secret, DKG shares can be used repeatedly for an unlimited number of time without ever recovering the group secret explicitly.
-\end{itemize}
-A DKG is described by the following algorithm:
+Feldman-VSS and Pedersen-VSS are two of the most popular VSS protocols. See Appendix \ref{appendix:vss} for details.
+\end{definition}
+\begin{definition}[Distributed Key Generation]
+A Distributed Key Generation (DKG) \cite{gennaro1999secure, gennaro3revisiting} protocol allows a set of $n$ participants to collectively generate a group public key, the individual secret keys, and the corresponding public keys without the help of a trusted third party. It does so by running multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. However, unlike secret sharing schemes, DKG shares can be used repeatedly for an unlimited number of time without ever recovering the group secret explicitly. A DKG is described by the following algorithm.
 \begin{itemize}
     \item $DKG(1^{\lambda}, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ is a distributed key generation algorithm that takes a input security parameter $1^\lambda$, the number of participants $n$ and the threshold parameter $t$ and outputs a group public key $pk$, the individual secret keys $\vec{SK} = \{sk_1, sk_1, \ldots, sk_n\}$, and the corresponding public keys $\vec{PK} = \{pk_1, pk_2, \ldots, pk_n\}$
 \end{itemize}
-Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix \ref{appendix:dkg} for details.\\\\
-\textbf{Escrow-DKG}\\
+Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix \ref{appendix:dkg} for details.
+\end{definition}
+
+\begin{definition}[Escrow-DKG]
 Escrow-DKG \cite{david2019rational}, is variant of DKG in the Joint-Feldman
-family \cite{gennaro1999secure, gennaro3revisiting}. However, it differs from traditional DKG in its underlying model as follows:
+family \cite{gennaro1999secure, gennaro3revisiting} with the following variations.
 \begin{itemize}
-    \item Whereas traditional DKG protocols assume a $t$-limited adversary, Escrow-DKG makes it a priori possible that an adversary can corrupt more than $t$ servers. However, it assumes the participants are rational in a setting where collusion of more than $t$ nodes would be financially punished such that, effectively, we have a $t$-limited adversary.
-    \item It assumes a trusted escrow service that substitutes and enhances the broadcast channel usually assumed in traditional protocols.
+    \item While traditional DKG protocols assume a $t$-limited adversary, Escrow-DKG allows an adversary to corrupt more than $t$ servers. However, it assumes the participants are rational in a setting where collusion of more than $t$ nodes would be financially punished such that, effectively, we have a $t$-limited adversary.
+    \item It assumes a trusted escrow service $\mathcal{G}$ that substitutes and enhances the broadcast channel usually assumed in traditional protocols.
     \item While runs of traditional DKG protocols always succeed, Escrow-DKG might fail.
 \end{itemize}
-Escrow-DKG is usually used to generate keys for secret sharing. EVR adapts it to generate random numbers with the algorithms $EDKG = (EscrowEnroll, Commit, Reveal, EscrowVerify)$. $EDKG.EscrowEnroll$ is used by participants to register with the escrow by submitting a deposit along with the commitment to a secret. $EDKG.Commit$ proceeds in a similar way as $VSS.ShareGen$. $EDKG.Reveal$ reconstructs the shared secret using valid shares via Lagrange interpolation. $EDKG.EscrowVerify$ is used by the escrow to verify the consistency of the recovered secret with the published shares. See Appendix \ref{appendix:edkg} for details.
-
-In EVR, a smart contract $\mathcal{G}$ plays the role of the escrow. It proceeds in five phases---Register, Setup, Commit, Inform, and Reveal.
+\end{definition}
+While Escrow-DKG is usually used to generate keys for secret sharing, EVR adapts it to generate random numbers every round (details in Appendix \ref{appendix:edkg}). In EVR, $\mathcal{G}$ is implemented using a smart contract. EVR proceeds in five phases---Register, Setup, Commit, Inform, and Reveal.
 \begin{enumerate}
-    \item \textbf{Register.} Every participant registers themselves with $\mathcal{G}$ by executing $EDKG.EscrowEnroll$ and depositing 1 coin per secret share.
-    \item \textbf{Setup.}  Based on the number of coins collected (denoted by $n$), $\mathcal{G}$ sets the parameters of the following.
-    \begin{itemize}
-        \item $EDKG.Commit$: the total number of participants registered $n$ and threshold parameter $t = \frac{2n}{3}$.
-        \item EVR: the bound on the illicit profit that EVR can sustain $P= n-t = \frac{n}{3}$ and the informing reward $\ell = n$.
-    \end{itemize}
-    \item \textbf{Commit.} The registered participants execute $EDKG.Commit$ to share their secrets. Detection of any misbehavior during Commit results in $\mathcal{G}$ aborting the protocol and returning the deposits.
- \item \textbf{Inform.} If Commit completes successfully, it enters the Inform phase where any participant who knows the group secret $x$ by colluding can inform $\mathcal{G}$ and get high informing reward ($\ell$) for it. The reward comes from the participants’ deposits, which are all confiscated in this case. Otherwise, it enters into the Reveal phase.
-    \item \textbf{Reveal.} The participants distribute their shares and reconstruct $x$ using $EDKG.Reveal$ off-chain. The reconstructed secret is verified by $\mathcal{G}$ by executing $EDKG.EscrowVerify$. Participants get their deposits back if successfully verified. In case the participants fail to reconstruct and publish $x$ in a timely manner, $\mathcal{G}$ confiscates the deposits of all the participants.
+    \item \textbf{Register.} Every participant registers themselves with $\mathcal{G}$ by depositing 1 coin per secret share.
+    \item \textbf{Setup.}  Based on the number of coins collected, $\mathcal{G}$ sets the total count of participants registered $n$ and threshold parameter $t = \frac{2n}{3}$ required for DKG. It also sets a bound on the illicit profit that EVR can sustain $P= n-t = \frac{n}{3}$ and the informing reward $\ell = n$.
+    \item \textbf{Commit.} Each registered participant execute $VSS.ShareGen$ to share their secrets. Detection of any misbehavior during Commit results in $\mathcal{G}$ aborting the protocol and returning the deposits.
+     \item \textbf{Inform.} If Commit completes successfully, it enters the Inform phase where any participant who knows the group secret $x$ by colluding can inform $\mathcal{G}$ and get high informing reward ($\ell$) for it. The reward comes from the participants’ deposits, which are all confiscated in this case. Otherwise, it enters into the Reveal phase.
+    \item \textbf{Reveal.} The participants distribute their shares and reconstruct $x$ via Lagrange interpolation off-chain. The consistency of reconstructed secret with the published shares is verified by $\mathcal{G}$. Participants get their deposits back if successfully verified. In case the participants fail to reconstruct and publish $x$ in a timely manner, $\mathcal{G}$ confiscates the deposits of all the participants.
 \end{enumerate}
 Given $n$ total coins deposited during Register, EVR assumes that no participant owns more than $n/3$ of the coins, either deposited to escrow or externally (which is impractical in real world) and sets a bound on the maximum illicit profit that EVR can sustain (denoted by $P$). With these limits in place, EVR makes any malicious behavior unprofitable as follows. 
 
@@ -324,21 +307,17 @@ Even though EVR works well within the given bounds, enforcing them in real world
 Instead of using an escrow to enforce desired behavior, commit-reveal-recover variants extend the basic commit-reveal paradigm and defend against the last revealer attack by providing a mechanism to recover or reconstruct the secret in case some participants refuse to reveal. This is achieved by using techniques based on threshold secret sharing or threshold encryption. These protocols assume $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct the secret such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while $t$ Byzantine nodes cannot collude to preemptively reconstruct the secret to their benefit. Guaranteeing availability as a result, the protocols allow the honest participants to reconstruct the secret by themselves even if all the corrupted participants decide to withhold.
 
 \subsection{Threshold Secret Sharing based}
-Threshold Secret Sharing based schemes use a $(t,n)$-threshold scheme to share a secret among a set of $n$ participants in such a way that any subset of $t+1$ or more participants can reconstruct it. To allow not only the participants but any external party to verify the correctness of the sharing and reconstruction, most threshold secret sharing schemes use Publicly Verifiable Secret Sharing (PVSS)  \cite{schoenmakers1999simple, cascudo2017scrape} instead of VSS as a subprotocol. Scrape \cite{cascudo2017scrape}, Albatross \cite{cascudo2020albatross}, and SecRand \cite{guo2020secRand} use PVSS whereas RandShare \cite{syta2017scalable} uses VSS (although it could be adapted to use PVSS as well).\\\\
-\textbf{Publicly Verifiable Secret Sharing (PVSS)}\\
-A Publicly Verifiable Secret Sharing (PVSS) scheme extends VSS by providing the following property:
-\begin{itemize}
-    \item Along with the participants verifying their own shares, any external party can verify the correctness of sharing and reconstruction of a secret with the help of zero knowledge proofs posted by the dealer and the reconstructing participants respectively.
-\end{itemize}
-A PVSS scheme can be realized by the algorithms $PVSS = (Setup, KeyGen, Enc, Dec, ShareGen, ShareVerify, Recon)$. To provide public verifiability, PVSS extends VSS by using keys generated by $PVSS.KeyGen$ for encryption and decryption of shares using the algorithms $PVSS.Enc$ and $PVSS.Dec$ respectively. Unlike VSS, $PVSS.ShareGen$ generates encrypted shares along with auxiliary proofs needed to verify correctness of sharing. $PVSS.ShareVerify$ verifies the overall correctness (including the consistency of encrypted and decrypted shares) using these proofs. $PVSS.Recon$ recovers the shared secret. See Appendix \ref{appendix:pvss} for further details.
-
+Threshold Secret Sharing based schemes are based on $t, n)$-secret sharing. To allow not only the participants but any external party to verify the correctness of the sharing and reconstruction, most threshold secret sharing schemes use Publicly Verifiable Secret Sharing (PVSS)  \cite{schoenmakers1999simple, cascudo2017scrape} instead of VSS as a subprotocol. Scrape \cite{cascudo2017scrape}, Albatross \cite{cascudo2020albatross}, and SecRand \cite{guo2020secRand} use PVSS whereas RandShare \cite{syta2017scalable} uses VSS (although it could be adapted to use PVSS as well).
+\begin{definition}[Publicly Verifiable Secret Sharing]
+A Publicly Verifiable Secret Sharing (PVSS) scheme extends VSS by allowing any external party, along with each participant themselves, to verify the correctness of sharing and reconstruction of a secret via zero knowledge proofs posted by the dealer and the reconstructing participants respectively.\\
+A PVSS scheme can be realized by the algorithms $PVSS = (Setup, KeyGen, Enc, Dec, ShareGen, ShareVerify, Recon)$.\\
+To provide public verifiability, PVSS extends VSS by using keys generated by $PVSS.KeyGen$ for encryption and decryption of shares using the algorithms $PVSS.Enc$ and $PVSS.Dec$ respectively. Unlike VSS, $PVSS.ShareGen$ generates encrypted shares along with auxiliary proofs needed to verify correctness of sharing. $PVSS.ShareVerify$ verifies the overall correctness (including the consistency of encrypted and decrypted shares) using these proofs. $PVSS.Recon$ recovers the shared secret. See Appendix \ref{appendix:pvss} for further details.
+\end{definition}
 Commit-reveal-recover variants based on threshold secret sharing involving $n$ participants as entropy providers starts with every participant distributing valid PVSS/VSS shares of a randomly chosen secret to all the other participants. This results in every participant ending up with a share of each of the $n$ secrets. In an ideal scenario, all the participants reveal their committed secrets, which are aggregated to compute the final randomness for the round, without ever needing to use the shares. However, to deal with withholding participants, protocols either proactively or reactively use the shares to reconstruct the final secret. The reconstruction is done using Lagrange interpolation, which recovers the unique secret given any subset of $t+1$ valid shares of it with $O(t^2)$ computations. Based on this, we can further divide the schemes into the following subcategories.
 
 \subsubsection{Commit-Reveal-Recover}
-It extends the naive commit-reveal scheme by an additional recovery phase for force-opening and reconstructing only those secrets that were withheld during the reveal phase. Given that, optimistically, no force-open will be required and the communication complexity and the duration of each round is kept in check. However, as with all schemes based on threshold secret sharing, it comes at the cost of additional data that needs to be shared to allow reconstruction. Force-opens requires further communication (and data sharing) between the participants expanding the duration of each round, which may not be desirable in some cases. Scrape adopts this technique in its random number generation by having every dealer publish a commitment to the secret, which is opened in the Reveal phase, in addition to the encrypted shares and the verification information needed for PVSS scheme.\\
-
+It extends the naive commit-reveal scheme by an additional recovery phase for force-opening and reconstructing only those secrets that were withheld during the reveal phase. Given that, optimistically, no force-open will be required and the communication complexity and the duration of each round is kept in check. However, as with all schemes based on threshold secret sharing, it comes at the cost of additional data that needs to be shared to allow reconstruction. Force-opens requires further communication (and data sharing) between the participants expanding the duration of each round, which may not be desirable in some cases. Scrape adopts this technique in its random number generation by having every dealer publish a commitment to the secret, which is opened in the Reveal phase, in addition to the encrypted shares and the verification information needed for PVSS scheme.\\\\
 \textbf{Scrape}\\
-
 \joenote{is this a one-round protocol? General note-need a framework for one round vs. two round protocols?}
 The main building block of Scrape is a PVSS scheme that requires only $\theta(n)$ exponentiations to verify $n$ shares of a secret (see Appendix \ref{appendix:scrapePVSS} for details). This makes it scalable when compared to schemes that use Schoenmakers PVSS (see Appendix \ref{appendix:schoenmakersPVSS}) which require $\theta(n t)$ exponentiations, making them quadratic when $t = n/2$. The initial setup for Scrape requires generating public keys $pk_i$ for each of the $n$ participants using $PVSS.KeyGen$. 
   The protocol then proceeds in five phases---Commit, Verify, Reveal, Recover, and Aggregate.
@@ -350,10 +329,8 @@ The main building block of Scrape is a PVSS scheme that requires only $\theta(n)
 
 \item \textbf{Aggregate.} The final randomness for the round is computed as $\mathcal{O}_r = \prod_{j \in \mathcal{C}} h^{s^{(j)}}$.
 \end{enumerate}
-Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$ . However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$. \\
-
+Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$ . However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$. \\\\
 \textbf{Albatross}\\
-
 Albatross extends Scrape to provide an improved amortized computational complexity of $\theta(\log n)$ exponentiations per random value per participant in the worst case (as compared to $\theta(n^2)$ exponentiations required in Scrape) at the cost of sub optimal corruption tolerance. An execution of Albatross with $n$ participants generates a batch of $\theta(n^2)$ uniformly random values at the end of each round (vs one uniformly random value in Scrape) resulting in the worst case amortized cost of $\theta(\log n)$ exponentiations. However, it can only tolerate up to $t = n/2 - \theta(n)$ corrupt participants (as compared to $t = n/2$ in Scrape).
 
 This is achieved via two techniques: first, packed Shamir secret sharing based PVSS to share $\ell$ secrets instead of 1 without increasing the computational cost; second, the use of linear $t$-resilient functions to extract more uniform randomness from a vector of group elements from which an adversary may control some of the values. 
@@ -361,26 +338,22 @@ This is achieved via two techniques: first, packed Shamir secret sharing based P
 Similar to Scrape, Albatross also has Commit, Verify, Reveal, and Recover phases. However, unlike Scrape, each participant shares $\ell$ secrets instead of 1, resulting in $n \times \ell$ total secrets shared at the end of Commit phase. Verify, Reveal, and Recover phases proceed in a similar way as Scrape. After a subset of $(n-t) \times \ell$ secrets are revealed/recovered, instead of aggregating them to produce a single random output like in Scrape, we use a linear $t$-resilient function to extract final randomness of $\ell^2$ elements. See Appendix \ref{appendix:albatross} for more details about the protocol.\\
 
 \subsubsection{Share-Reconstruct-Aggregate}
-The other alternative is to skip the reveal phase altogether and proactively reconstruct each secret from the shares distributed during the sharing phase. Reconstructing each secret would require the cooperation of $t+1$ participants to gather the shares, after which Lagrange interpolation can be used to reconstruct the polynomial and recover the secret. However, this increases the communication complexity, as $n (t + 1)$ shares need to be broadcast due to $n$ Lagrange interpolations every round, irrespective of adversarial corruption. RandShare \cite{syta2017scalable} uses this technique.\\
-
+The other alternative is to skip the reveal phase altogether and proactively reconstruct each secret from the shares distributed during the sharing phase. Reconstructing each secret would require the cooperation of $t+1$ participants to gather the shares, after which Lagrange interpolation can be used to reconstruct the polynomial and recover the secret. However, this increases the communication complexity, as $n (t + 1)$ shares need to be broadcast due to $n$ Lagrange interpolations every round, irrespective of adversarial corruption. RandShare \cite{syta2017scalable} uses this technique.\\\\
 \textbf{RandShare}\\
-
 RandShare uses VSS as a subprotocol, extended by adopting the concept of barrier, a specific point in the protocol execution only after which the protocol is guaranteed to complete successfully. In RandShare, the barrier is reached when the first honest node reveals the shares he holds. Because of the secret sharing threshold of $t + 1$, the $t$ dishonest participants cannot recover the honest participants’ secrets before the barrier. The protocol output cannot be changed after the barrier, and all honest participants eventually output the previously fixed value, regardless of the adversary’s behavior.\\
 RandShare proceeds in four phases---Share Distribution, Share Verification and Consensus, Share Reconstruction, and Aggregation, which are as follows.
 
 \begin{enumerate}
     \item \textbf{Share Distribution.} Each participant $P_j$ executes the distribution phase $VSS.ShareGen(s^{(j)})$ as the dealer, publishing the polynomial commitments and securely sending the shares $s_i^{(j)}$ to all other participants $P_i$, $1\le i\le n$.
-    \item \textbf{Share Verification and Consensus.} To ensure that all honest participants have a consistent view of the secrets that will be recovered after the barrier or if the protocol run has already failed , a Byzantine agreement protocol is run in combination with $VSS.ShareVerify$. The $2t+1$ successful verification messages required for achieving Byzantine agreement on a secret ensures that at least $t+1$ honest participants have verified the secret and will be able to recover it. Let $\mathcal{C}$ be the set of secrets that have been agreed upon by the participants.
+    \item \textbf{Share Verification and Consensus.} To ensure that all honest participants have a consistent view of the secrets that will be recovered after the barrier or if the protocol run has already failed , a Byzantine agreement protocol is run in combination with $VSS.ShareVerify$. This ensures that at least $t+1$ honest participants have verified the secret and will be able to recover it. Let $\mathcal{C}$ be the set of secrets that have been agreed upon by the participants.
     \item \textbf{Share Reconstruction.} If $\lvert \mathcal{C} \rvert \ge t+1$, each of these secrets $s^{(j)}$ where $j \in \mathcal{C}$ is recovered by collecting at least $t+1$ shares of the secret and reconstructing it using $VSS.Recon$. Otherwise, the protocol fails.
     \item \textbf{Aggregation.} Final randomness is computed as $\mathcal{O}_r = \sum_{j \in C}s^{(j)}$.
     
 \end{enumerate}
 
 \subsubsection{Share-Aggregate-Reconstruct}
-Instead of Scrape's process of revealing, reconstructing, and adding up all the secrets, or RandShare's process of reconstructing each secret and adding them up, SecRand directly computes the final output through Lagrange interpolation of aggregated decrypted shares from $t + 1$ participants. In short, one Lagrange interpolation suffices in SecRand's share-aggregate-reconstruct whereas $O(n)$ Lagrange interpolations are required in both commit-reveal-recover and share-reconstruct-aggregate schemes. This provides SecRand with a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reduces the communication complexity as only $t + 1$ aggregated decrypted shares are exchanged to compute the final random output.\\
-
+Instead of Scrape's process of revealing, reconstructing, and adding up all the secrets, or RandShare's process of reconstructing each secret and adding them up, SecRand directly computes the final output through Lagrange interpolation of aggregated decrypted shares from $t + 1$ participants. In short, one Lagrange interpolation suffices in SecRand's share-aggregate-reconstruct whereas $O(n)$ Lagrange interpolations are required in both commit-reveal-recover and share-reconstruct-aggregate schemes. This provides SecRand with a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reduces the communication complexity as only $t + 1$ aggregated decrypted shares are exchanged to compute the final random output.\\\\
 \textbf{SecRand}\\
-
 SecRand uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. Setup is done using $PVSS.KeyGen$ and the public keys $pk_i$ of each of the $n$ participants is registered. 
 
 SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r)$ during Share Distribution phase. The other two phases proceed as follows.
@@ -393,10 +366,9 @@ SecRand proceeds in four phases---Share Distribution, Share Verification, Aggreg
 \end{enumerate}
 
 \subsection{Threshold Encryption based}
-\joenote{Should this be a new section?}
-Even though the discussed threshold secret sharing schemes provides all the desirable security guarantees for a DRB, it comes at a high communication cost ($O(n^4)$ in the worst case when $t$ secrets need to be reconstructed) and requires each participant to share $O(n)$ data every round to guarantee reconstruction of each of the $n$ secrets. Threshold Encryption schemes brings down the reconstruction cost and the amount of data that needs to be shared every round by establishing a global public key to encrypt the shared secret such that only a subset of size greater than $t$ participants can decrypt it. It requires a DKG protocol to be run during initial setup to provide every decrypting participant $P_i$ with individual secret keys $sk_i$ and publishing the corresponding public keys $pk_i$ and a global public key $pk$. The global public key is used by any sender to encrypt a message. The individual secret and public keys will later enable any set of $t + 1$ participants to non-interactively decrypt ciphertexts computed under the global public key. 
-
-A $(t, n)$-threshold encryption scheme is composed of the following algorithms:
+Even though the discussed threshold secret sharing schemes provides all the desirable security guarantees for a DRB, it comes at a high communication cost ($O(n^4)$ in the worst case when $t$ secrets need to be reconstructed) and requires each participant to share $O(n)$ data every round to guarantee reconstruction of each of the $n$ secrets. A threshold encryption scheme brings down the reconstruction cost and the amount of data that needs to be shared every round by establishing a global public key to encrypt the shared secret.
+\begin{definition}[$(t, n)$-threshold encryption] 
+A $(t, n)$-threshold encryption scheme allows to encrypt a message towards a group of $n$ participants such that the message can be decrypted by any $t+1$ of them, but not less. A DKG protocol is run to generate a global public key $pk$ and to provide every decrypting participant $P_i$ with individual secret keys $sk_i$ and publishing the corresponding public keys $pk_i$. $pk$ is used by any sender to encrypt a message. The individual secret and public keys will later enable any set of $t + 1$ participants to non-interactively decrypt ciphertexts computed under $pk$. A $(t, n)$-threshold encryption scheme is composed of the following algorithms:
 \begin{itemize}
     \item $DKG(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs a typical DKG with threshold $t$.
     \item $Enc(pk, m) \rightarrow C$ encrypts the message $m$ with global public key $pk$ and outputs the ciphertext $C$.
@@ -404,11 +376,9 @@ A $(t, n)$-threshold encryption scheme is composed of the following algorithms:
     \item $Rec(pk, \vec{PK}, C, \vec{\mu} )\rightarrow \{m, \mathsf{reject}\}$ is a recovery algorithm that takes $pk$, a ciphertext $C$ and a subset of $t+1$ valid decryption shares $\vec{\mu} = \{\mu_1, \mu_2,\ldots, \mu_{t+1}\}$ together with the public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t+1}\}$ and outputs the message $m$ or $\mathsf{reject}$.
 \end{itemize}
 See Appendix \ref{appendix:thresholdEnc} for more details.
- 
- HERB \cite{cherniaeva2019homomorphic} uses threshold ElGamal encryption \cite{desmedt1990Threshold}, though it can be replaced with any other threshold homomorphic encryption scheme. See Appendix \ref{appendix:elGamal} for details on threshold ElGamal Encryption. \\
- 
+\end{definition}
+ HERB \cite{cherniaeva2019homomorphic} uses threshold ElGamal encryption \cite{desmedt1990Threshold}, though it can be replaced with any other threshold homomorphic encryption scheme. See Appendix \ref{appendix:elGamal} for details on threshold ElGamal Encryption.\\\\
 \textbf{HERB}\\
-
 In HERB, each participant can play two roles: entropy providers and key holders. Entropy providers are active only for ciphertext generation whereas key holders participate in all protocol stages. The protocol proceeds in three phases---Setup, Publication, and Disclosure, where Setup is only done once at the beginning. They proceed as follows.
 \begin{enumerate}
     \item \textbf{Setup.} All the key holders together run $DKG(1^\lambda, t, n)$ to generate a global public key $pk$ and individual public and secret keys ($pk_i$, $sk_i$) for $1 \le i \le n$.
