@@ -8,7 +8,7 @@
 
 % Sets page size and margins
 % \usepackage[letterpaper,margin=1.5in]{geometry}
-%  \usepackage[compact]{titlesec} 
+
 % Useful packages
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -84,17 +84,17 @@ Generating periodic trustworthy randomness is crucial to applications ranging fr
 \todo{Mention that this paper is not focusing on other beacons e.g. stock market}
 \todo{Need a clearer transition of what a distributed randomness beacon is} \joenote{beacon or protocol? I would argue it's a distributed randomness protocol that is used as a beacon.}
 
-\textbf{Randomness Beacons.} The concept of randomness beacon was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from  centralized approaches, relying on a single source or organization to distributed approaches, decentralizing the randomness generation among a set of nodes, are used to approximate it. 
+\textbf{Randomness Beacons.} The concept of randomness beacon was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from centralized approaches, relying on a single source or organization to distributed approaches, decentralizing the randomness generation among a set of nodes, are used to approximate it.
 
 \textbf{Centralized Beacons.} While centralized approaches like relying on a trusted third party like NIST \cite{fischer2011public} or random.org \cite{haahr2010random} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, in particular, risk of tampering, risk of benefit from prior knowledge of randomness and inability of the end-user to verify that the numbers they are getting from beacon are random. Users have to trust that the system is providing genuinely random numbers. For these reasons, it is strongly desirable to construct a beacon with no trusted parties or central point of failure.
 
-\textbf{Biasable External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock-market data \cite{clark2010use} or PoW blockchains like Bitcoin \cite{nakamoto2019bitcoin} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders. 
+\textbf{Biasable External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock-market data \cite{clark2010use} or PoW blockchains like Bitcoin \cite{nakamoto2019bitcoin, han2020randchain} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders.
 
 Beacons realized using stock-market data are susceptible to manipulation from high-frequency traders through unnatural sales or purchases, particularly near the closing time of the market. To add to this, the extent to which the financial exchanges are in fact trusted parties that could manipulate or halt the beacon output also remains unclear.
 
-Even though the decentralized nature and the large amount of computational work expended on maintaining a PoW blockchain makes them good sources of entropy, the security of such beacons are heavily dependent on the extent to which the miners can be bribed to withhold/discard competitor blocks. Delegating trust to  miners instead of a centralized authority becomes even more undesirable when the miners themselves are stakeholders in the output of the beacon.
+Even though the decentralized nature and the large amount of computational work expended on maintaining a PoW blockchain makes them good sources of entropy, the security of such beacons are heavily dependent on the extent to which the miners can be bribed to withhold blocks to create a bias. The issue aggravates when the miners themselves are stakeholders in the output of the beacon.
 
-\textbf{Distributed Randomness Beacons.} 
+\textbf{Distributed Randomness Beacons.}
 A natural approach to further distribute and decentralize trust is to rely on a set of mutually-distrustful nodes and use distributed protocols to generate randomness. The distributed randomness protocol can publish verifiable and unbiased random numbers periodically and be used as a beacon. We call such a beacon a Distributed Randomness Beacon (DRB). In this paper, we focus on distributed randomness protocols that can be used to realize a DRB.
 
 \textbf{Contribution.} The goal of the paper is to systematize the current progress on the problem of generating reliable distributed randomness and devise a theoretical framework and generalization encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties and potential drawbacks and benefits, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. Drawing from a scattered body of knowledge, we identify two key components of a practical DRB's design --- selection of entropy providers and beacon output generation, which can be decoupled from each other. This enables a more insightful analysis of existing protocols which can also be extended to future protocols with similar design. Finally, we provide new insights and discussion on various techniques which can be used to improve existing protocols.
@@ -233,21 +233,19 @@ However, RandRunner produces pseudorandom numbers (and not uniform random number
 \section{Commit-Reveal-Punish}
 \joenote{I would put this right after commit-reveal}
 \label{section:commit-reveal-punish}
-Instead of assuming that the adversary $t$-limited and rest of the participants follow the protocol exactly and only deviate from it if corrupted by the adversary, a more realistic approach is to assume that all the participants are rational profit-maximizing entities, colluding or withholding to increase their profits. 
+Instead of assuming that the adversary $t$-limited and rest of the participants follow the protocol exactly and only deviate from it if corrupted by the adversary, a more realistic approach is to assume that all the participants are rational profit-maximizing entities, colluding or withholding to increase their profits.
 
-Commit-Reveal-Punish schemes assume that all participants are rational. To incentivize such a participant into joining the service, we assume an intrinsic value associated with the system, called ``jackpot'' tied to the required deposits needed to join such a service. An escrow is used to collect initial deposits from the participants as part of their commitment, which can be slashed (and redistributed) if undesired behavior is detected. Commit-Reveal-Punish schemes achieve unpredictability and unbiasability by using the escrow to either force every participant to reveal their shares \cite{youcai2017randao, andrychowicz2014secure, bentov2014use} or by using threshold secret sharing schemes to allow the shared secret to be recovered by a subset of participants \cite{david2020economically}. 
+Commit-Reveal-Punish schemes assume that all participants are rational. To incentivize such a participant into joining the service, we assume an intrinsic value associated with the system (called jackpot) tied to the required deposits needed to join such a service. An escrow is used to collect initial deposits from the participants as part of their commitment, which can be slashed (and redistributed) if undesired behavior is detected. Commit-Reveal-Punish schemes achieve unpredictability and unbiasability either by forcing every participant to reveal \cite{youcai2017randao, andrychowicz2014secure, bentov2014use} or by tolerating some number of withholding participants via threshold secret sharing \cite{david2020economically}. These two approaches are summarized in the following sections.
 
-These two approaches are summarized in the following sections.
 \subsection{Enforcing Every Reveal}
-RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow realized using a smart contract in Ethereum. Similar to a commit-reveal scheme, it proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ coins as deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in their corresponding deposit of $m$ coins being taken away and redistributed among the rest of the participants. Finally, if none of the participants withhold, all the revealed secrets are combined and broadcast. \cite{andrychowicz2014secure, bentov2014use} use similar concept of monetarily penalizing a participant that aborts to realize secure multiparty lotteries in Bitcoin, which can also be extended to generate randomness. 
+RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow realized using a smart contract on Ethereum. It proceeds in three phases---Commit, Reveal, and Aggregate. During Commit phase, in addition to committing to their selected secrets, the participants are also required to send $m$ coins as deposit to the escrow contract. Failure to reveal the secret during Reveal phase by a participant results in the corresponding deposit of $m$ coins being taken away and redistributed among the rest of the participants. Finally, if none of the participants withhold, all the revealed secrets are aggregated and broadcast.
 
-To ensure that honest participants are fully compensated when a participant fails to reveal, all these protocols require a high initial deposit of $O(n^2)$ coins per participant, where the jackpot and the number of participants are both $O(n)$. This makes withholding highly unprofitable as the $O(n^2)$ initial deposit of the withholder is redistributed among the remaining honest participants (each receiving $O(n)$ coins as compensation). 
+To ensure that honest participants are fully compensated when a participant fails to reveal, protocols like RANDAO require a high initial deposit of $O(n^2)$ coins per participant, where the jackpot and the number of participants are both $O(n)$ \cite{andrychowicz2014secure, bentov2014use}. This makes withholding highly unprofitable, as the $O(n^2)$ initial deposit of the withholder is redistributed among the remaining honest participants each receiving $O(n)$ coins as compensation.
 
-\cite{bartoletti2017constant} and \cite{miller2017zero} provides an alternative to realize multi-party lotteries with constant or no deposits using multiple instances of fair two-player lotteries, which can be realized with no deposits \cite{andrychowicz2014fair, andrychowicz2014secure}. It is extended to multi-party lotteries by constructing a binary-tree tournament consisting of $n-1$ two-player lottery instances (called ``matches''), where the loser of each match gets eliminated. \cite{bartoletti2017constant} requires a constant deposit whereas \cite{miller2017zero} does not require any deposit. However, both of these schemes require significant off-chain setup and participants to actively interact on-chain in $O(\log n)$ rounds, making them hard to scale. And although the tournament style commit-reveal instances suits the purpose of choosing a lottery winner or leader-election well, using the commitments to generate uniform random outputs require non-trivial extensions.
-\joenote{why is it non-trivial to take the value mod number of participants?}
+Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required \cite{bartoletti2017constant, miller2017zero}. The idea is to construct a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per \cite{andrychowicz2014fair, andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
 
 \subsection{Rational Threshold Randomness}
-Economically Viable Randomness (EVR) \cite{david2020economically} provides an alternative which only requires constant deposits (for tolerating $O(n)$ illicit profit with $n$ participants), allows a subset of participants to reconstruct the shared randomness and yet maintains the trustworthiness of the randomness produced. The escrow ensures unpredictability and unbiasability of the protocol in the following ways: 
+Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability and unbiasability of the protocol in the following ways:
 \begin{itemize}
     \item \textbf{Unpredictability.} It introduces a informing mechanism to prevent collusion among participants. If the escrow is notified of collusion, it rewards the informer and slashes the deposits of all other participants (``collective punishment''). This makes informing more profitable than colluding. Realizing this, entities are discouraged to collude, fearing another entity would frame.
     \item \textbf{Unbiasability/Robustness.} Any withholding of shares or failure to reconstruct the final random output is disincentivized by the escrow collectively punishing everybody by slashing all the deposits.
@@ -435,7 +433,7 @@ f_{priv}(\cdot) < target
 \]
 where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ is indicative of the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that a protocol can tinker with $target$ to make the lottery arbitrarily easy or hard to win. The idea is that each node calculates $f_{priv}(\cdot)$ as per its private input and checks if the above inequality is satisfied, in which case it is considered to have won the lottery and becomes an entropy provider.
 
-As it may be possible for an adversary to perform a grinding attack by brute-forcing many values of $priv$ until a desirable function output is achieved (i.e. desirable both in terms of satisfying the lottery inequality and also the actual beacon output generation step that follows the lottery step, to be discussed later, given $priv_1$ and $priv_2$ that both satisfy the lottery), one crucial requirement is that the private input should be provably committed in the past and thus be ungrindable at the time of computation of the lottery function. Three examples of the above private lottery formulation exist in the landscape: a VRF-based lottery, Caucus' \cite{azouvi2018winning} lottery involving a hash chain, and RandChain's \cite{han2020randchain} mining-based lottery.\\
+As it may be possible for an adversary to perform a grinding attack by brute-forcing many values of $priv$ until a desirable function output is achieved (i.e. desirable both in terms of satisfying the lottery inequality and also the actual beacon output generation step that follows the lottery step, to be discussed later, given $priv_1$ and $priv_2$ that both satisfy the lottery), one crucial requirement is that the private input should be provably committed in the past and thus be ungrindable at the time of computation of the lottery function. Two examples of the above private lottery formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
 
 \noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand} (as well as Ouroboros Praos \cite{david2018ouroboros} and a protocol by Nguyen-Van et al. \cite{nguyen2019scalable}), a VRF (whose details are included in the Appendix) is used as part of its sortition algorithm\joenote{define sortition?} each round to process a lottery. (While there exist more than one version of Algorand's sortition algorithm, we consider its first version, as the versions don't differ on a fundamental level.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
@@ -494,13 +492,6 @@ involves all VRF outputs from all respective slot leaders, where $epoch$ denotes
 \mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}
 \]
 such that it naturally follows its subset selection mechanism $H(h_r \oplus \mathcal{O}_{r - 1}) < target$.
-\item RandChain. Unique due to its competitive (rather than collaborative) network setting, RandChain forces participants to publish their first solution to the SeqPoW mining puzzle at the time of discovery. Effectively, this causes the first solution $S_i = g^i(S_0)$ with $g(S_j) = SeqPoW.Solve(pp, pk, S_j)[0]$ for $j \geq 0$ from the Appendix to be the entropy provider's precommitted entropy. The beacon output is given by
-\begin{align*}
-\mathcal{O}_r &= H_2(pk \mathbin\Vert g^i(S_0))\\
-&= H_2(pk \mathbin\Vert g^i(H(pk \mathbin\Vert h^-)))\\
-&= H_2(pk \mathbin\Vert g^i(H(pk \mathbin\Vert H(H_2^{-1}(\mathcal{O}_{r - 1})))))
-\end{align*}
-where $i$ represents the effort of mining such that $i$ is the smallest natural number allowing the output of applying $g$ to the initial seed $S_0 = H(pk \mathbin\Vert h^-)$ for $i$ number of times to solve the SeqPoW mining puzzle, $H_2$ is a hash function different from $H$, $h^- = H(H_2^{-1}(\mathcal{O}_{r - 1}))$ denotes the previous block hash, and $H_2^{-1}(\mathcal{O}_{r - 1})$ denotes the preimage $x$ chosen to yield $\mathcal{O}_{r - 1} = H_2(x)$ in round $r - 1$ (while not hinting at an inverse of the hash function $H_2$). It is in this way that RandChain's mining-based randomness generation scheme can also be interpreted as one that combines the previous beacon output $\mathcal{O}_{r - 1}$ with some ungrindable (due to the competitive network assumption) entropy $S_i$ by the SeqPoW miner that finds such $i$.
 \end{itemize}
 
 \section{Protocols With No Marginal Entropy}
@@ -563,7 +554,7 @@ While grinding attack is not a threat in commit-reveal-recover variants (like Sc
 To prevent this, the broached subset-based protocols offer the following (aforementioned but summarized here) mechanisms to counteract any potential grinding attack.
 \begin{itemize}
 \item HydRand and GRandPiper. \joenote{reader will have forgotten these by now. need to refresh what the attack is/how the out put is computed each round.} The per-node entropy $h^{e_{\tilde{r}}}$ from $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$ is precommitted in round $\tilde{r}$ during the node's previous leadership. Another key is that a leader cannot regain leadership in the next $t$ rounds such that there must be at least one honest node among any $t + 1$ consecutive rounds in a way that ``resets'' any grinding attack attempt within any window of $t + 1$ rounds. While the property of $t$-unpredictability is derived from this very fact also, it should be noted that the $t$-limited adversary assumption must hold in the first place in order for such line of reasoning to make sense.
-\item Private lottery schemes (Algorand, Ouroboros Praos, Caucus, NV, and RandChain). Recall that the private input $priv$ from $f_{priv}(\cdot)$ should be ungrindable. For VRF-based protocols, Caucus, and RandChain, this respectively corresponds to $sk$, $h_r$ (in round $r$), and solution to the mining puzzle, all of which are also used for beacon output generation except in NV. In fact, grinding attack in NV is more limited in scope, as it can lead to a biased entropy-providing subset but not a biased beacon output due to the fact that a VRF is used in subset selection whereas a HERB-style threshold encryption (if considering a variant of NV's original Requester model) is used in its beacon output generation. Indeed, this separation demonstrates that the mechanisms used for subset selection and beacon output generation can be modular and different. In other words, it is not a requirement that the same private lottery tool (e.g. VRF) must be used to generate a beacon output even if this happens in most protocols due to convenience.
+\item Private lottery schemes (Algorand, Ouroboros Praos, Caucus, and NV). Recall that the private input $priv$ from $f_{priv}(\cdot)$ should be ungrindable. For VRF-based protocols and Caucus, this respectively corresponds to $sk$ and $h_r$ (in round $r$), all of which are also used for beacon output generation except in NV. In fact, grinding attack in NV is more limited in scope, as it can lead to a biased entropy-providing subset but not a biased beacon output due to the fact that a VRF is used in subset selection whereas a HERB-style threshold encryption (if considering a variant of NV's original Requester model) is used in its beacon output generation. Indeed, this separation demonstrates that the mechanisms used for subset selection and beacon output generation can be modular and different. In other words, it is not a requirement that the same private lottery tool (e.g. VRF) must be used to generate a beacon output even if this happens in most protocols due to convenience.
 \item RandHound. While the public lottery (for leader election) is set in a way that is ungrindable, it is worth noting that RandHound's entropy-providing subset size requirement offers an additional defense against grinding attack on the beacon output, as the presence of at least one honest entropy provider nullifies any grinding attack attempt in a commit-reveal-recover variant like RandHound's share-reconstruct-aggregate.
 \item Ouroboros. Although Ouroboros also takes advantage of share-reconstruct-aggregate, it does not have an explicit subset size requirement, as the set of unique slot leaders (i.e. entropy providers) in an epoch can range anywhere from 1 to $K$ (denoting the number of total slots in an epoch) in size in theory. This can facilitate grindability. Take a case where Ouroboros' follow-the-satoshi subset selection algorithm outputs only one entropy provider from an epoch (i.e. round $r$), for an extreme example. In that case, the sole entropy provider can not only predict and bias $\mathcal{O}_r$, but also grind on $\mathcal{O}_r$ to bias future rounds (up to an arbitrary number of rounds in theory). In practice, the combination of Ouroboros' blockchain setting based on Proof of Stake (such that an adversary should have to own a lot of coins) and a large $K$ is what makes such cases highly unlikely.
 \end{itemize}
@@ -965,47 +956,6 @@ Dfinity-DVRF is described by the following DVRF algorithms.
 \item $Verify(pk, \{pk_i\}, x, y, \pi)$ is equal to that in GLOW-DVRF.
 \end{enumerate}
 
-\section{Sequential Proof of Work}
-A modification to Proof of Work (PoW) where the nonce-incrementing portion of its typical mining process is replaced by an iteratively sequential function (such as Sloth \cite{lenstra2015random} or VDF, though we focus on the VDF case here for convenience), Sequential Proof of Work (SeqPoW) \cite{han2020randchain} is a variant of PoW that prevents parallel computing. It can be described by the following tuple of algorithms.
-\begin{itemize}
-\item $Setup(\lambda, T, \tau) \rightarrow pp$ outputs public parameters $pp$ given security parameter $\lambda$, time step parameter $T$ (which each iteration of $Solve$ would invoke), and difficulty level $\tau$ (to check if a proposed solution is indeed a solution a la PoW).
-\item $Gen(pp) \rightarrow (sk, pk)$ is a randomized algorithm outputting a node's secret key $sk$ and a public key $pk$.
-\item $Init(pp, sk, x) \rightarrow (S_0, \pi_0)$ outputs initial proposed solution $S_0$ and proof $\pi_0$ given input $x \in X$ and secret key $sk$. Some constructions may use $pk$ in place of $sk$. This also applies to $Solve$.
-\item $Solve(pp, sk, S_i) \rightarrow (S_{i + 1}, b_{i + 1})$ outputs $(i + 1)$-th proposed solution $S_{i + 1}$ and result $b_{i + 1} \in \{0, 1\}$ (where $b_{i + 1} = 1$ if the proposed solution is indeed a solution such that $S_{i + 1}$ solves the SeqPoW puzzle with difficulty level $\tau$) via computation of a VDF for $T$ steps given $S_i$ and $sk$ as inputs. This algorithm is the one that conceptually corresponds to the nonce-incrementing portion of solving PoW. Whereas one can choose any nonces and respectively start incrementing them in parallel to find a solution to the PoW puzzle, SeqPoW prevents parallelism due to the nature of VDFs.
-\item $Prove(pp, i, S_0, S_i) \rightarrow \pi_i$ outputs a VDF proof $\pi_i$ for computing $S_i$ from $S_0$ in $i \cdot T$ steps.
-\item $Verify(pp, pk, i, S_0, S_i, \pi_i) \rightarrow \{0, 1\}$ outputs 1 if $S_i$ passes the VDF verification test with $\pi_i$ and is a valid solution to the SeqPoW puzzle with difficulty level $\tau$. The algorithm outputs 0 otherwise.
-\end{itemize}
-
-Note the recursive nature of the $Solve$ algorithm such that a successful mining procedure (i.e. finding a solution to the SeqPoW puzzle with difficulty level $\tau$) would involve iterating it on the initial solution seed $S_0$ until $S_i$ is discovered where $(S_i, 1) = Solve(pp, sk, S_{i - 1})$. In other words, it is expected that most instances of $Solve(pp, sk, S_j)$ would yield $(\cdot, 0)$ and that one would have to perform $Solve(pp, sk, S_{j + 1})$ in that case, a process that is not parallelizable.
-
-The difference between SeqPoW and Proofs of Sequential Work (PoSW) \cite{mahmoody2013publicly,cohen2018simple} is that the miner performs $Solve$ for a randomized number of times in SeqPoW as opposed to for a fixed one. For instance, it is possible to successfully mine and find a solution to the SeqPoW puzzle by performing $Solve$ only once, which would not be the case in PoSW (unless we consider its trivial case).
-
-Furthermore, SeqPoW should satisfy the following four properties.
-\begin{enumerate}
-\item Completeness. Conforming to the mining process of SeqPoW involving iterations of $Solve$ on the initial seed $S_0$ until discovery of a solution should yield an output accepted by the $Verify$ algorithm. In other words:
-\begingroup\makeatletter\def\f@size{8}\check@mathfonts
-\[
-Pr\left[\begin{array}{l}Verify(pp, pk, i,\\S_0, S_i, \pi_i) = 1\end{array} \middle\vert \begin{array}{l}
-pp \leftarrow Setup(\lambda, T, \tau);\\
-(sk, pk) \leftarrow Gen(pp);\\
-(S_0, \pi_0) \leftarrow Init(pp, sk, x);\\
-(S_j, b_j) \leftarrow Solve(pp, sk, S_{j - 1})\\
-\phantom{(S_j, b_j) XY} \forall j \in [1, i];\\
-b_i = 1;\\
-\pi_i \leftarrow Prove(pp, i, S_0, S_i)
-\end{array}\right] = 1
-\]\endgroup
-\item Soundness. An output $(S_i, \pi_i)$ obtained otherwise should be rejected by the $Verify$ algorithm except with negligible probability.
-\item Hardness. Each attempt of $Solve$ produces a valid solution with probability $\frac{1}{\tau}$. In other words:
-\begingroup\makeatletter\def\f@size{8}\check@mathfonts
-\[
-Pr\left[b_{i + 1} = 1 \middle\vert \begin{array}{l}
-(S_{i + 1}, b_{i + 1}) \leftarrow Solve(pp, sk, S_i)
-\end{array}\right] \leq \frac{1}{\tau} + negl(\lambda)
-\]\endgroup
-\item Sequentiality. The notion of $\sigma$-sequentiality \cite{boneh2018verifiable} is satisfied such that a parallel algorithm $\mathcal{A}$ using at most $poly(\lambda)$ processors and running in time $\sigma(T)$ cannot compute the $Solve$ algorithm except with negligible probability.
-\end{enumerate}
-
 \section{Other Cryptographic Primitives}
 \subsection{Commitment Scheme}
 \label{appendix:commitment}
@@ -1107,21 +1057,19 @@ Via $\pi_{CE} = CE(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where $G \in \m
 \cmidrule{4-5}
 \multicolumn{3}{c|}{} & \multicolumn{1}{c|}{Fresh per-node entropy} & \multicolumn{1}{c|}{$\mathcal{O}_{r - 1}$ \& precommitted per-node entropy} \\
 \cmidrule{1-5}
-\multirow{6}{*}{\spheading[0.465\textwidth]{\mbox{Step 1: Subset Selection}}} & \multirow{3}{*}[-2.8cm]{Public} & RR & \begin{tabular}{@{}l@{}}\textbf{BRandPiper}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
+\multirow{5}{*}{\spheading[0.425\textwidth]{\mbox{Step 1: Subset Selection}}} & \multirow{3}{*}[-2.8cm]{Public} & RR & \begin{tabular}{@{}l@{}}\textbf{BRandPiper}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
 \cmidrule{3-5}
 & & RS & \begin{tabular}{@{}l@{}}\textbf{Ouroboros}\\\textit{Step 1}: Follow-the-satoshi \cite{bentov2014proof,kiayias2017ouroboros}\\\textit{Step 2}: Share-reconstruct-aggregate\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{HydRand}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$\\\\\textbf{GRandPiper}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(h^{e_{\tilde{r}}}, \mathcal{O}_{r - 1}, ..., \mathcal{O}_{r - t})$\end{tabular} \\
 \cmidrule{3-5}
 & & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
 \cmidrule{2-5}
-& \multirow{3}{*}[-1.2cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
+& \multirow{2}{*}[-0.6cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
 \cmidrule{3-5}
 & & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\\\textit{Step 1}: $H(h_r \oplus \mathcal{O}_{r - 1}) < target$\\\textit{Step 2}: $\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}$\end{tabular} \\
-\cmidrule{3-5}
-& & SeqPoW & & \begin{tabular}{@{}l@{}}\textbf{RandChain}\\\textit{Step 1}: $H(pk \mathbin\Vert S_i) < target$\\\textit{Step 2}: $\mathcal{O}_r = H_2(pk \mathbin\Vert g^i(S_0))$\\\phantom{\textit{Step 2}: $\mathcal{O}_r$ }$= H_2(pk \mathbin\Vert g^i(H(pk \mathbin\Vert H(H_2^{-1}(\mathcal{O}_{r - 1})))))$\end{tabular} \\
 \cmidrule{1-5}
 \end{tabularx}
 \begin{tablenotes}[para,flushleft]
-\item Note that public subset selection mechanisms (Section \ref{subsubsection:public-subset-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private subset selection can be found in Section \ref{subsubsection:private-subset-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}. While notations $n$, $\tilde{n}$, and $C$ denote, respectively, the number of participants, the number of participants eligible for leadership, and the configuration parameter, more details on notation and beacon output generation process can be found in Section \ref{subsection:beacon-output-generation}.
+\item Note that public subset selection mechanisms (Section \ref{subsubsection:public-subset-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private subset selection can be found in Section \ref{subsubsection:private-subset-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}. Details on notation and beacon output generation process can be found in Section \ref{subsection:beacon-output-generation}.
 \end{tablenotes}
 \end{threeparttable}
 \end{table*}
@@ -1154,7 +1102,7 @@ RandShare &  & PVSS & $n/3$   & \xmark   & All   & 1   & \cmark    & \cmark   & 
 SecRand &  & PVSS &  $n/2$  & \xmark   & All   & 1   & \cmark    & \cmark   & $O(n^2)$  & $O(n^3)$   & $O(n^4)$  & Predict & $O(n^2)$ \\ 
 HERB &  & Thr. ElGamal & $n/3$   & \xmark   & All   & 1   & \cmark    & \cmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & Predict & $O(n^3)$ \\ 
 \midrule
-HydRand & \multirow{11}{*}{\ref{section:subset-based}} & PVSS & $n/3$   & \xmark   & Leader   & $t$   & \cmark    & \xmark   & $O(n)$  & $O(n^2)$   & $O(n^3)$  & Bias & $O(n^2)$ \\ 
+HydRand & \multirow{10}{*}{\ref{section:subset-based}} & PVSS & $n/3$   & \xmark   & Leader   & $t$   & \cmark    & \xmark   & $O(n)$  & $O(n^2)$   & $O(n^3)$  & Bias & $O(n^2)$ \\ 
 GRandPiper &  & PVSS  & $n/2$   & \xmark   & Leader   & $t$   & \cmark    & \xmark   & $O(n^2)$  & $O(n^2)$   & $O(n^2)$  & Bias & $O(n^2)$ \\ 
 BRandPiper &  & PVSS  & $n/2$   & \xmark   & Leader   & 1   & \cmark    & \xmark   & $O(n^2)$  & $O(n^2)$   & $O(n^3)$  & Predict & $O(n^2)$ \\ 
 Ouroboros &  & PVSS & $n/2$   & \xmark   & Subset   & 1   & \cmark    & \xmark   & $O(n^3)$  & $O(n^4)$   & $O(n^4)$  & Bias & $O(n^2)$ \\ 
@@ -1164,7 +1112,6 @@ Algorand &  & VRF  & $n/3$   & \cmark    & Leader   & $t$   & \xmark    & \cmark
 Ouroboros Praos &  & VRF & $n/2$   & \cmark    & Subset   & 1   & \xmark    & \cmark   & $O(1)$  & $O(n)$   & $O(n)$  & Bias & $O(n^2)$ \\ 
 Caucus &  & Hash chain &  $n/2$  & \cmark    & Leader   & $t$   & \xmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Bias & $O(n^3)$ \\ 
 NV &  & VRF, (thr.) ElGamal &  $n$  & \xmark   & Subset   & $1$   & \xmark    & \xmark   & $O(n)$  & $O(n^3)$   & $O(n^3)$  & Bias & $O(n^2)$ \\ 
-RandChain &  & SeqPoW &  $n/3$  & \cmark    & Leader   &  1  & \xmark    & \cmark   & $O(1)$  & $O(n)$   & $O(n)$  & Bias &  $O(1)$\\ 
 \midrule
 drand & \multirow{4}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$   & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
 RandHerd &  & Thr. Schnorr & $n/3$   & \xmark   & None   & 1   & \xmark    & \xmark   & $O(1)$  & $O(c^2 \log n)$   & $O(n^3)$  & Bias & $O(n^3)$ \\ 
