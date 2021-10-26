@@ -481,15 +481,7 @@ where $slot$ denotes the slot number and $\mathsf{TEST}$ is a string such that t
 \[
 H(h_r \oplus \mathcal{O}_{r - 1}) < target
 \]
-where $\mathcal{O}_{r - 1}$ likewise denotes randomness from the previous round. \joenote{I think this might be best to leave out of the paper, or mention in a smaller section on proof-of-work. The model is very different and if this is included, why not Bitcoin and everything else?}\\
-
-\noindent\textbf{Mining-based approach.} In RandChain, the logic is slightly different in that a node's private information that is input to the lottery function is not something it already has generated and knows. It is quite the opposite: via mining, each node tries to guess and find its own private information (i.e. solution to the mining puzzle) and satisfy the lottery inequality before others do. This view of interpreting mining as a form of private lottery is due to RandChain's network setting that is more competitive (a la blockchain settings) than collaborative (in which nodes cooperate to derive joint randomness). As a result, the lottery given by
-\[
-H(pk \mathbin\Vert S_i) < target
-\]
-involves a timely search of the private input $S_i$ that solves the mining puzzle where $S_i$ is an output of applying, for $i$ number of times, some function $g$ to $S_0 = H(pk \mathbin\Vert h^-)$ with $h^-$ denoting the previous block hash. While $g$ can correspond to a simple, parallelizable nonce-incrementing process as in Proof of Work, RandChain lets this $g$ be a VDF, realizing a non-parallelizable variant of Proof of Work called Sequential Proof of Work (whose details are included in the Appendix and can be of independent interest).
-
-Note the importance of competition in the security of RandChain's DRB. Without competition, the act of mining is in fact precisely the act of performing a grinding attack, which can lead to biasing of the randomness output. With competition, nodes are incentivized to broadcast and publicize a solution as soon as they find one, forcing them to commit to the first solution they find as their private input.
+where $\mathcal{O}_{r - 1}$ likewise denotes randomness from the previous round.
 
 \subsection{Step 2. Beacon Output Generation}
 \label{subsection:beacon-output-generation}
@@ -543,60 +535,58 @@ where $i$ represents the effort of mining such that $i$ is the smallest natural 
 
 \section{Protocols With No Marginal Entropy}
 \label{section:dvrf}
-\subsection{DRB Based On Distributed Verifiable Random Function}
-While DRB protocols can have all nodes or some subset of nodes contribute entropy to the beacon output every round, it is possible to devise a protocol where no node produces any marginal entropy to prolong a beacon.\joenote{mention advantages/disadvantages} Guaranteeing randomness entirely via pseudorandomness, such a protocol can be based on the concept of distributed VRF \cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF \cite{cascudomt}), which is a distributed version of VRF. In a DVRF setting, namely, the usual VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a VRF output (as well as its proof) as if the computation involves one node with the knowledge of $sk$.\\
+While DRB protocols can have all nodes or some subset of nodes contribute entropy to the beacon output every round, it is possible to devise a protocol where no node produces any marginal entropy to prolong a beacon. The advantage of this approach is that no node needs to generate and communicate any fresh entropy (which alleviates communication overhead) while the disadvantage is that the entire beacon can be predictable once compromised (perhaps in an undetectable manner).
 
-\noindent\textbf{Beacon output of a DVRF-based DRB.} With DVRF-related details included in the Appendix, each beacon output of a DVRF-based DRB is given by
+\subsection{DRB Based On Distributed Verifiable Random Function}
+Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on the concept of distributed VRF \cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF \cite{cascudomt}), which is a distributed version of VRF. The idea is that the usual VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a VRF output (as well as its proof) as if the computation involves one node with the knowledge of $sk$.
+
+\begin{definition}[Distributed verifiable random function]
+A distributed verifiable random function (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
+\begin{itemize}
+\item $DKG(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a global public key $pk$ (e.g. $pk = g^{sk}$) given security parameter $1^\lambda$, total number of nodes $n$, and threshold parameter $t$.
+\item $PartialEval(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
+\item $PartialVerify(pk_i, x, y_i, \pi_i) \rightarrow \{0, 1\}$ verifies the correctness of the partial evaluation $y_i$ given its proof $\pi_i$, an input $x$, and a node's public key $pk_i$.
+\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A}) \rightarrow (y, \pi)$ outputs the DVRF evaluation $y$ as well as its proof of correctness $\pi$ given a set $A$ of $t + 1$ nodes and their outputs of $PartialEval(sk_i, x)$, all of which pass $PartialVerify$.
+\item $Verify(pk, \{pk_i\}, x, y, \pi) \rightarrow \{0, 1\}$ verifies the correctness of the DVRF evaluation $y$ given $\pi$, input $x$, and public keys.
+\end{itemize}
+Naturally, it should satisfy VRF's properties of provability, uniqueness, and pseudorandomness. See Appendix \ref{appendix:dvrf}.
+\end{definition}
+
+\noindent\textbf{Beacon output of a DVRF-based DRB.} Each beacon output of a DVRF-based DRB is then given by
 \begingroup\makeatletter\def\f@size{8}\check@mathfonts
 \[
 \mathcal{O}_r = DVRF.Combine(A, \{DVRF.PartialEval(sk_i, f(\mathcal{O}_{r - 1}))\}_{i \in A})[0]
 \]\endgroup
-where $sk_i$ denotes each node's secret key after a DKG, $A$ denotes the set of $t + 1$ nodes whose outputs of $DVRF.PartialEval(\cdot)$ pass the $DVRF.PartialVerify(\cdot)$ test, and $f$ denotes some premeditated (mostly uncomplicated) function of the previous beacon output $\mathcal{O}_{r - 1}$ on which nodes compute a DVRF.
+where $sk_i$ denotes each node's secret key after a DKG, $A$ denotes the set of $t + 1$ nodes whose outputs of $DVRF.PartialEval(\cdot)$ pass the $DVRF.PartialVerify(\cdot)$ test, and $f$ denotes some premeditated (mostly uncomplicated) function of $\mathcal{O}_{r - 1}$ on which nodes compute a DVRF.
 
 Equivalently, suppose there exists one imaginary node with the knowledge of $sk$ (which should not happen in a typical DVRF or a DKG to begin with) computing a VRF. Then
 \[
 \mathcal{O}_r = VRF_{sk}(f(\mathcal{O}_{r - 1}))
 \]
-yields a computationally equivalent output to when a DVRF is computed among $n$ nodes. As $f$ typically takes a form resembling $f(\mathcal{O}_{r - 1}) = H(r \mathbin\Vert \mathcal{O}_{r - 1})$, it can be seen that there is no need for any generation of marginal entropy by the participants. Simultaneously, the precise reason for the security of the above DVRF formulation is that no one node (or up to $t$ number of nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
+yields a computationally equivalent output to when a DVRF is computed among $n$ nodes. As $f$ typically takes a form resembling $f(\mathcal{O}_{r - 1}) = H(r \mathbin\Vert \mathcal{O}_{r - 1})$, it can be seen that there is no marginal entropy generated by the participants. The precise reason for the security of the above DVRF formulation is that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
 
-\noindent\textbf{Understanding a chain of unique signatures from a DVRF perspective.} 
-\joenote{this whole paragraph could be a footnote or appendix. The signature/VRF/VUF discussion is tangential to the plot}.
-Due to the known fact that the hash of a VUF equals a VRF, i.e. $VRF.Prove(sk, x) = (VRF_{sk}(x), \pi_{sk}(x)) = (H(VUF_{sk}(x)), VUF_{sk}(x))$, a unique digital signature (which is a VUF \cite{dodis2005verifiable}) can be made into a DVRF by just taking a threshold signature variant of it and hashing the output. Adopting the BLS signature scheme \cite{boneh2001short} as the underlying unique signature scheme, protocols like Dfinity \cite{hanke2018dfinity} and drand \cite{drand} (though with slightly different trivial details) offer a DRB via the recursion given by
+\noindent\textbf{DVRF-based DRB from a chain of unique signatures.}
+Due to the known fact that the hash of a verifiable unpredictable function (VUF, see Appendix \ref{appendix:vuf}) equals a VRF, a unique digital signature (which is a VUF \cite{dodis2005verifiable}) can be made into a DVRF by taking its threshold signature variant and hashing the output. Adopting the BLS signature scheme \cite{boneh2001short}, protocols like Dfinity \cite{hanke2018dfinity} and drand \cite{drand} (though with slightly different trivial details) offer a DRB given by
 \[
 \mathcal{O}_r = H(Sign_{sk}(r \mathbin\Vert \mathcal{O}_{r - 1}))
 \]
-where $Sign_{sk}(\cdot)$ is part of the BLS signature scheme (whose details are included in the Appendix) and $sk$ is the implied global secret key derived from a DKG among participants such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures (which use $sk_i$), reminiscent of how a DVRF is computed via combining of partial evaluations.
+where $Sign_{sk}(\cdot)$ is part of the BLS signature scheme (see Appendix \ref{appendix:bls}) and $sk$ is the implied global secret key derived from a DKG among participants such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures (which use $sk_i$), reminiscent of how a DVRF is computed via combining of partial evaluations.
 
-In fact, note that $H(Sign_{sk}(\cdot))$ is equivalent to $VRF_{sk}(\cdot)$, which is (as aforementioned under the DVRF framework) equivalent to
+In fact, note that $H(Sign_{sk}(\cdot))$ is equivalent to $VRF_{sk}(\cdot)$, which is equivalent to
 \[
 DVRF.Combine(A, \{DVRF.PartialEval(sk_i, \cdot)\}_{i \in A})[0]
 \]
-combining $t + 1$ partial evaluations from $t + 1$ nodes in set $A$. Hence, it is in this way that hashing of a threshold signature (unique like BLS) is really a DVRF, in which case the threshold signature rather becomes the DVRF's proof $\pi$.\\
+combining $t + 1$ partial evaluations. Hence, hashing of a threshold signature is indeed a DVRF, in which case the threshold signature rather becomes the DVRF's proof $\pi$.\\
 
-\noindent\textbf{Variations on a chain of unique signatures.} In addition to a chain of BLS signatures given by Dfinity and drand, there have been a few relevant variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DVRF, and GLOW-DVRF \cite{galindo2020fully}.
+\noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist other variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DRB, and GLOW-DRB \cite{galindo2020fully}.
 \begin{itemize}
-\item RandHerd. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups via some initial configuration seed (which is derived from a one-time run of RandHound in the original paper) such that each group emits a group leader while one of the group leaders (e.g. that of the first group) is deemed a cothority (collective authority) leader.\joenote{need to specify the benefits (quantitatively) and drawbacks of this approach} Nonexistent in Dfinity or drand, this results in the notion of hierarchy among nodes and thus has the effect of reducing communication and computational overhead of the protocol overall, as there is no need for nodes to broadcast every relevant message to every other node. Second, the underlying signature scheme used is the Schnorr signature scheme instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple modification can involve setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand in order to remove any potential bias. Otherwise, we assume $t_r$ is not a source of entropy but rather a system parameter.
-\item DDH-DVRF. The following tuple of DVRF algorithms differentiates DDH-DVRF.\joenote{need a high level explanation. Hard to follow this and no ``why'' is evident}
-\item GLOW-DVRF. \joenote{Same not -} Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ similar to BLS such that the setup includes different hash functions $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$ and $H_2: \mathbb{G}_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While the following tuple of algorithms generally resembles that of DDH-DVRF, algebraic modifications are made accordingly to reflect the fact that a pairing is used.
-    \begin{enumerate}
-    \item $DKG(1^\lambda, t, n)$ is adapted so that $pk_i$ resides in $\mathbb{G}_1$ while $pk$ resides in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_1^{sk_i}, g_2^{sk})$ for $g_1 \in \mathbb{G}_1$ and $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate a compact proof in the final $Verify$ step involving a pairing equation.
-    \item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = DLEQ(g_1, g_1^{sk_i}, H_1(x), H_1(x)^{sk_i})$.
-    \item $PartialVerify(pk_i, x, y_i, \pi_i)$ is equivalent to $DLEQ\text{-}Verify(g_1, pk_i, H_1(x), y_i, \pi_i)$ and verifies the correctness of the $PartialEval$ algorithm using the $DLEQ$ proof $\pi_i$.
-    \item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $\pi = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $y = H_2(\pi)$. Note that $\pi$ is a group element and thus a compact proof.
-    \item $Verify(pk, \{pk_i\}, x, y, \pi)$ verifies $y = H_2(\pi)$ and a pairing equation $e(\pi, g_2) = e(H_1(x), pk)$.
-    \end{enumerate}
+\item RandHerd. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial configuration seed (derived from a one-time run of RandHound in the original paper) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This results in the notion of hierarchy among nodes and thus has the effect of reducing the communication overhead from $O(n^2)$ to $O(c^2 \log n)$, as there is no need for nodes to broadcast every relevant message to every other node. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple modification can involve setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand in order to remove any potential bias. Otherwise, we assume $t_r$ is not a source of entropy but rather a system parameter.
+\item DDH-DRB. Each round of DDH-DRB involves DDH-DVRF. As $PartialVerify$ and $Verify$ from Dfinity-DVRF (i.e. each round of Dfinity) rely on verifying pairing equations (see Appendix \ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (see Appendix \ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ of DDH-DVRF grows linearly in the size of $A$ and is not a compact proof. See Appendix \ref{appendix:ddh-dvrf} for details.
+\item GLOW-DRB. Each round of GLOW-DRB involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $Verify$ (a la Dfinity-DVRF) but a DLEQ NIZK in $PartialVerify$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $Verify$ while enjoying less computational overhead from $PartialVerify$. See Appendix \ref{appendix:glow-dvrf} for details.
 \end{itemize}
 
-For comparison, Dfinity, with its setup equal to that of GLOW-DVRF due to the use of a pairing, can in fact be written as follows.
-\begin{enumerate}
-\item $DKG(1^\lambda, t, n)$ is adapted so that both $pk_i$ and $pk$ reside in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_2^{sk_i}, g_2^{sk})$ for $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate the check of some pairing equation in both $PartialVerify$ and $Verify$.
-\item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \text{$\perp$}$. The reason for a null proof is that a pairing equation check is used in $PartialVerify$ (which is the differentiator from GLOW-DVRF) with no need for any auxiliary information.
-\item $PartialVerify(pk_i, x, y_i, \pi_i)$ checks a pairing equation $e(y_i, g_2) = e(H_1(x), pk_i)$.
-\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ is equal to that in GLOW-DVRF.
-\item $Verify(pk, \{pk_i\}, x, y, \pi)$ is equal to that in GLOW-DVRF.
-\end{enumerate}
-
 \section{Discussions}
+In this section, we broach points worth discussing. Namely, possible attack vectors are discussed as well as the phenomenon of adaptive security (or the lack thereof) and a tradeoff involving fresh randomness (versus pseudorandomness) and communication overhead.
 \subsection{Grinding Attack}
 While grinding attack is not a threat in commit-reveal-recover variants (like Scrape and HERB) or protocols with no marginal entropy (like drand and RandHerd), it is indeed a valid concern in a class of subset-based protocols involving either random selection (RS) and private lottery in terms of subset selection mechanism or combining of precommitted per-node entropy with $\mathcal{O}_{r - 1}$ in terms of beacon output generation mechanism. The main idea is that an adversary can perform a grinding attack to produce a biased entropy-providing subset, a biased beacon output, or both unless a countermeasure is given by a DRB. In the worst case, it may even be a possibility that $\mathcal{O}_r$ can be adversarially generated (if ever) via grinding such that the entropy-providing subset for the next round would likewise be adversarially selected, resulting in a vicious cycle.
 
@@ -952,6 +942,7 @@ for any probabilistic polynomial-time algorithm $\mathcal{A} = (\mathcal{A}_1, \
 \end{enumerate}
 
 \subsection{Verifiable Unpredictable Function (VUF)}
+\label{appendix:vuf}
 A VUF \cite{micali1999verifiable,dodis2005verifiable} is a VRF except the last property of pseudorandomness is replaced by the following unpredictability property.
 \begin{itemize}
 \item Unpredictability. The output is unpredictable except with negligible probability. In other words:
@@ -961,19 +952,48 @@ Pr\left[y = F_{sk}(x) \middle\vert (x, y) \leftarrow \mathcal{A}^{Prove(\cdot)}(
 for any probabilistic polynomial-time algorithm $\mathcal{A}$, which does not query the oracle on $x$.
 \end{itemize}
 
+\subsection{Distributed Verifiable Random Function (DVRF)}
+\label{appendix:dvrf}
+A DVRF satisfies the following properties (some of which are inherited from what a VRF should satisfy).
+\begin{itemize}
+\item Provability (Robustness). If $(y, \pi)$ is output by the $Combine$ algorithm, then it is accepted by the $Verify$ algorithm.
+\item Uniqueness. There does not exist $(y_1, \pi_1) \neq (y_2, \pi_2)$ such that $Verify(pk, \{pk_i\}, x, y_1, \pi_1) = Verify(pk, \{pk_i\}, x, y_2, \pi_2) = 1$.
+\item Pseudorandomness. An adversary corrupting $t$ nodes cannot distinguish a DVRF output from a uniformly random value except with negligible probability.
+\item Consistency. $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ should yield the same $y$ for any set $A$ involving $t + 1$ nodes whose outputs of $PartialEval(sk_i, x)$ are accepted by $PartialVerify(pk_i, x, y_i, \pi_i)$.
+\end{itemize}
+
 \subsection{DDH-DVRF}
 \label{appendix:ddh-dvrf}
-The following tuple of DVRF algorithms differentiates DDH-DVRF.
+DDH-DVRF is described by the following DVRF algorithms.
 \begin{enumerate}
 \item $DKG(1^\lambda, t, n)$ runs a typical DKG (a la Joint-Feldman or Joint-Pedersen).
-\item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = DLEQ(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the Chaum-Pedersen protocol (whose details are included in the Appendix) non-interactively proving that the discrete log involving the first two parameters to $DLEQ(\cdot)$ is equal to that involving the last two parameters without revealing the discrete logarithm value itself.
-\item $PartialVerify(pk_i, x, y_i, \pi_i)$ is equivalent to $DLEQ\text{-}Verify(g, pk_i, H(x), y_i, \pi_i)$ (from the Appendix) and verifies the correctness of the $PartialEval$ algorithm using the $DLEQ$ proof $\pi_i$.
-\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in the Appendix. Note that $\pi$ is linear in the size of $A$ and hence is not a compact proof (which motivates GLOW-DVRF).
+\item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = DLEQ(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the Chaum-Pedersen protocol (see Appendix \ref{appendix:dleq}) non-interactively proving that the discrete log involving the first two parameters to $DLEQ(\cdot)$ is equal to that involving the last two parameters without revealing the discrete logarithm value itself.
+\item $PartialVerify(pk_i, x, y_i, \pi_i)$ is equivalent to $DLEQ\text{-}Verify(g, pk_i, H(x), y_i, \pi_i)$ and verifies the correctness of the $PartialEval$ algorithm using the $DLEQ$ proof $\pi_i$.
+\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix \ref{appendix:lagrange}.
 \item $Verify(pk, \{pk_i\}, x, y, \pi)$ verifies all the partial proofs via $PartialVerify(pk_i, x, y_i, \pi_i)$ for all $i \in A$ from $\pi$ and also verifies $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$.
 \end{enumerate}
 
 \subsection{GLOW-DVRF}
-\subsection{Dfinity as DVRF}
+\label{appendix:glow-dvrf}
+Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ similar to BLS such that the setup includes different hash functions $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$ and $H_2: \mathbb{G}_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While the following tuple of algorithms generally resembles that of DDH-DVRF, algebraic modifications are made accordingly to reflect the fact that a pairing is used.
+\begin{enumerate}
+\item $DKG(1^\lambda, t, n)$ is adapted so that $pk_i$ resides in $\mathbb{G}_1$ while $pk$ resides in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_1^{sk_i}, g_2^{sk})$ for $g_1 \in \mathbb{G}_1$ and $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate a compact proof in the final $Verify$ step involving a pairing equation.
+\item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = DLEQ(g_1, g_1^{sk_i}, H_1(x), H_1(x)^{sk_i})$.
+\item $PartialVerify(pk_i, x, y_i, \pi_i)$ is equivalent to $DLEQ\text{-}Verify(g_1, pk_i, H_1(x), y_i, \pi_i)$ and verifies the correctness of the $PartialEval$ algorithm using the $DLEQ$ proof $\pi_i$.
+\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $\pi = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $y = H_2(\pi)$. Note that $\pi$ is a group element and thus a compact proof.
+\item $Verify(pk, \{pk_i\}, x, y, \pi)$ verifies $y = H_2(\pi)$ and a pairing equation $e(\pi, g_2) = e(H_1(x), pk)$.
+\end{enumerate}
+
+\subsection{Dfinity-DVRF}
+\label{appendix:dfinity-dvrf}
+Dfinity-DVRF is described by the following DVRF algorithms.
+\begin{enumerate}
+\item $DKG(1^\lambda, t, n)$ is adapted so that both $pk_i$ and $pk$ reside in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_2^{sk_i}, g_2^{sk})$ for $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate the check of some pairing equation in both $PartialVerify$ and $Verify$.
+\item $PartialEval(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \text{$\perp$}$. The reason for a null proof is that a pairing equation check is used in $PartialVerify$ (which is the differentiator from GLOW-DVRF) with no need for any auxiliary information.
+\item $PartialVerify(pk_i, x, y_i, \pi_i)$ checks a pairing equation $e(y_i, g_2) = e(H_1(x), pk_i)$.
+\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ is equal to that in GLOW-DVRF.
+\item $Verify(pk, \{pk_i\}, x, y, \pi)$ is equal to that in GLOW-DVRF.
+\end{enumerate}
 
 \section{Sequential Proof of Work}
 A modification to Proof of Work (PoW) where the nonce-incrementing portion of its typical mining process is replaced by an iteratively sequential function (such as Sloth \cite{lenstra2015random} or VDF, though we focus on the VDF case here for convenience), Sequential Proof of Work (SeqPoW) \cite{han2020randchain} is a variant of PoW that prevents parallel computing. It can be described by the following tuple of algorithms.
@@ -1016,25 +1036,6 @@ Pr\left[b_{i + 1} = 1 \middle\vert \begin{array}{l}
 \item Sequentiality. The notion of $\sigma$-sequentiality \cite{boneh2018verifiable} is satisfied such that a parallel algorithm $\mathcal{A}$ using at most $poly(\lambda)$ processors and running in time $\sigma(T)$ cannot compute the $Solve$ algorithm except with negligible probability.
 \end{enumerate}
 
-\begin{definition}[Distributed verifiable random function]
-A distributed verifiable random function (DVRF) is a VRF where multiple nodes cooperate to yield an output in a way that tolerates up to threshold $t$ number of Byzantine nodes such that any $t + 1$ honest nodes are able to yield a DVRF output. Naturally, it should satisfy VRF's properties of provability, uniqueness, and pseudorandomness. Requiring a couple extra steps due to the fact that some nodes can be Byzantine and contribute wrong values to the protocol, it requires the following tuple of algorithms.
-\begin{itemize}
-\item $DKG(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a global public key $pk$ (e.g. $pk = g^{sk}$) given security parameter $1^\lambda$, total number of nodes $n$, and threshold parameter $t$.
-\item $PartialEval(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
-\item $PartialVerify(pk_i, x, y_i, \pi_i) \rightarrow \{0, 1\}$ verifies the correctness of the partial evaluation $y_i$ given its proof $\pi_i$, an input $x$, and a node's public key $pk_i$.
-\item $Combine(A, \{(y_i, \pi_i)\}_{i \in A}) \rightarrow (y, \pi)$ outputs the DVRF evaluation $y$ as well as its proof of correctness $\pi$ given a set $A$ of $t + 1$ nodes and their outputs of $PartialEval(sk_i, x)$, all of which pass the $PartialVerify(pk_i, x, y_i, \pi_i)$ test such that $PartialVerify(pk_i, x, y_i, \pi_i)$ returns 1.
-\item $Verify(pk, \{pk_i\}, x, y, \pi) \rightarrow \{0, 1\}$ verifies the correctness of the DVRF evaluation $y$ given $\pi$, input $x$, and public keys.
-\end{itemize}
-
-Furthermore, a DVRF satisfies the following properties (some of which are inherited from what a VRF should satisfy).
-\begin{itemize}
-\item Provability (Robustness). If $(y, \pi)$ is output by the $Combine$ algorithm, then it is accepted by the $Verify$ algorithm.
-\item Uniqueness. There does not exist $(y_1, \pi_1) \neq (y_2, \pi_2)$ such that $Verify(pk, \{pk_i\}, x, y_1, \pi_1) = Verify(pk, \{pk_i\}, x, y_2, \pi_2) = 1$.
-\item Pseudorandomness. An adversary corrupting $t$ nodes cannot distinguish a DVRF output from a uniformly random value except with negligible probability.
-\item Consistency. $Combine(A, \{(y_i, \pi_i)\}_{i \in A})$ should yield the same $y$ for any set $A$ involving $t + 1$ nodes whose outputs of $PartialEval(sk_i, x)$ are accepted by $PartialVerify(pk_i, x, y_i, \pi_i)$.
-\end{itemize}
-\end{definition}
-
 \section{Other Cryptographic Primitives}
 \subsection{Commitment Scheme}
 \label{appendix:commitment}
@@ -1057,6 +1058,7 @@ For further details (e.g. perfectly vs computationally binding and hiding), refe
 Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \mathbb{Z}_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \mathbb{Z}_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \mathbb{Z}_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
 
 \subsection{BLS Signature}
+\label{appendix:bls}
 Introduced by Boneh, Lynn, and Shacham in 2003, the BLS signature scheme \cite{boneh2001short} consists of the following tuple of algorithms given a key pair ($sk$, $pk$).
 \begin{enumerate}
 \item $Sign_{sk}(m) \rightarrow H_1(m)^{sk}$ outputs a digital signature $\sigma = H_1(m)^{sk}$ given secret key $sk$ and message $m$ where $H_1$ is a hash function such that $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$.
@@ -1196,8 +1198,8 @@ RandChain &  & SeqPoW &  $n/3$  & \cmark    & Leader   &  1  & \xmark    & \cmar
 \midrule
 drand & \multirow{4}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$   & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
 RandHerd &  & Thr. Schnorr & $n/3$   & \xmark   & None   & 1   & \xmark    & \xmark   & $O(1)$  & $O(c^2 \log n)$   & $O(n^3)$  & Bias & $O(n^3)$ \\ 
-DDH-DVRF &  & DDH-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
-GLOW-DVRF &  & Pairing-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
+DDH-DRB &  & DDH-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
+GLOW-DRB &  & Pairing-based DVRF  & $n/2$ & \xmark   & None   & 1   & \cmark    & \cmark   & $O(1)$  & $O(n^2)$   & $O(n^2)$  & Predict & $O(n^3)$ \\ 
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft]
