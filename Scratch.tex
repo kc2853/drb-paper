@@ -59,8 +59,8 @@
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO:} #1}}
 \newcommand{\joenote}[1]{\textcolor{blue}{\textbf{JOE:} #1}}
-\newcommand{\kevinnote}[1]{\textcolor{green}{\textbf{JOE:} #1}}
-\newcommand{\aathiranote}[1]{\textcolor{purple}{\textbf{JOE:} #1}}
+\newcommand{\kevinnote}[1]{\textcolor{green}{\textbf{KEVIN:} #1}}
+\newcommand{\aathiranote}[1]{\textcolor{purple}{\textbf{AATHIRA:} #1}}
 
 \title{\Large \bf A Survey on Distributed Randomness}
 \author{
@@ -387,7 +387,7 @@ The first step of a subset-based DRB protocol involves selecting an entropy-prov
 
 \subsubsection{Public Subset Selection}
 \label{subsubsection:public-subset-selection}
-In a public subset selection, only public information is needed to derive an agreeable subset that provides entropy every round.\\
+In a \textit{public subset selection}, only public information is needed to derive an agreeable subset that provides entropy every round.\\
 
 \noindent\textbf{Round-Robin (RR).} A first example is \textit{round-robin} (RR), in which nodes simply take turns being selected such that there is no notion of hierarchy among nodes. While RR can work with subsets of any size in theory as long as the exact mechanism is clearly defined by the protocol in advance, it is canonical that RR usually refers to the selection of subset of size one (i.e. a leader) corresponding to node $i \equiv r \pmod n$ given round $r$ and $n$ number of nodes. Hence, protocols like BRandPiper \cite{bhat2020randpiper} (in which the round leader is the only active entropy provider) adopt RR as their leader selection mechanism. In the case of BRandPiper, it is in fact imperative that the leader is selected via RR due to its innate fairness property \cite{azouvi2018winning} (also known as chain quality \cite{garay2015bitcoin} in the blockchain context) where all nodes, by RR's definition, take equal leadership across any $n$ rounds.\\
 
@@ -413,13 +413,13 @@ The motivation for LS (as opposed to RR or RS) is clear\joenote{It's not clear o
 
 \subsubsection{Private Subset Selection}
 \label{subsubsection:private-subset-selection}
-In a private subset selection, also known as private lottery, each node needs to input some private information (e.g. secret key) in order to check whether or not it has been selected into the entropy-providing subset (i.e. has won the lottery). The general formulation of a private lottery can be given by
+In a \textit{private subset selection}, also known as \textit{private lottery}, each node needs to input some private information (e.g. secret key) in order to check whether or not it has been selected into the entropy-providing subset (i.e. has won the lottery). The general formulation of a private lottery can be given by
 \[
 f_{priv}(\cdot) < target
 \]
-where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ is indicative of the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that a protocol can tinker with $target$ to make the lottery arbitrarily easy or hard to win. The idea is that each node calculates $f_{priv}(\cdot)$ as per its private input and checks if the above inequality is satisfied, in which case it is considered to have won the lottery and becomes an entropy provider.
+where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ denotes the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that we can tinker with $target$ to make the lottery arbitrarily easy or hard to win. The idea is that each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it wins the lottery and becomes an entropy provider.
 
-As it may be possible for an adversary to perform a grinding attack by brute-forcing many values of $priv$ until a desirable function output is achieved (i.e. desirable both in terms of satisfying the lottery inequality and also the actual beacon output generation step that follows the lottery step, to be discussed later, given $priv_1$ and $priv_2$ that both satisfy the lottery), one crucial requirement is that the private input should be provably committed in the past and thus be ungrindable at the time of computation of the lottery function. Two examples of the above private lottery formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
+As it may be possible for an adversary to perform a grinding attack by brute-forcing many values of $priv$ until a desirable function output is achieved, one crucial requirement is that the private input should be provably committed in the past and thus be ungrindable at the time of computation of the lottery function. Two examples of the above private lottery formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
 
 \noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand} (as well as Ouroboros Praos \cite{david2018ouroboros} and NV denoting a protocol by Nguyen-Van et al. \cite{nguyen2019scalable}), a VRF (see Appendix \ref{appendix:vrf}) is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions don't differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
@@ -546,23 +546,21 @@ Two countermeasures (depending on the protocol) are given by the following examp
 \subsection{Withholding Attack}
 On the other hand, there exists an attack without much countermeasure, namely withholding attack. Any leader-based protocol can be vulnerable to this attack due to heavy reliance on a leader's availability. Any protocol with a private lottery can also be vulnerable due to its nature where the lottery winner has to announce itself as a winner in the first place or can withhold this announcement if desirable.\\
 
-\noindent\textbf{Protocols with a leader.} For instance, take RandHound, RandHerd, SPURT, and RandRunner, all of which are leader-based. With the exception of RandRunner, these protocols suffer from the leader unavailability issue in case the leader withholds its message for whichever reason (Byzantine or non-Byzantine) such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In RandRunner, a beacon output will not be aborted but delayed at worst due to the usage of VDFs. In any case, assuming that a leader would be available every round can be a naive one, and there needs to be some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).\\
+\noindent\textbf{Protocols with a leader.} For instance, take RandHound, RandHerd, SPURT, and RandRunner, all of which are leader-based. With the exception of RandRunner, these protocols suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In RandRunner, a beacon output will not be aborted but delayed at worst due to the usage of VDFs. In any case, desirable is some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).\\
 
-\noindent\textbf{Protocols with a private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can withhold after privately computing $\mathcal{O}_r$, creating a bias). The crux is that private lottery winners are indeed private such that there is no way to detect once a winner withholds its leadership (perhaps maliciously), i.e. there is no accountability. This is an unavoidable tradeoff to the two notable benefits of a private lottery: resilience to DoS attack (due to its property of delayed unpredictability \cite{azouvi2018winning} where one cannot predict the eligibility of honest nodes until they reveal) and independent participation (i.e. nodes do not have to know other participants in advance in order to participate).
+\noindent\textbf{Protocols with a private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can withhold after privately computing $\mathcal{O}_r$, creating a bias). The crux is that private lottery winners are indeed private such that there is no way to detect once a winner withholds its leadership, i.e. there is no accountability. This is an unavoidable tradeoff to the two notable benefits of a private lottery: resilience to DoS attack (due to its property of delayed unpredictability \cite{azouvi2018winning} where one cannot predict the eligibility of honest nodes until they reveal) and independent participation (i.e. nodes do not have to know other participants in advance in order to participate). \kevinnote{benefits of private lottery, in that section?}
 
-Some possible remedies include the following. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message at any point would be indicative of some withholding. Naturally, this is costly in terms of communication complexity and thus not the most practical. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of any withholding attack. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen such that the identity of the leader will only be known to the chosen leader until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what separates SSLE from schemes like Algorand. It does not prevent withholding attack by itself, however.
+There are two possible remedies. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message at any point would be indicative of withholding. Naturally, this however incurs costly communication overhead. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of withholding. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen such that the identity of the leader will only be known to the chosen leader until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. It does not prevent withholding attack by itself, however.
 
 \subsection{Adaptive Security}
 \label{subsection:adaptive}
-* Adaptive security: either revelation of leadership coupled with entropy provision OR the size of subset (that adversary needs to adaptively corrupt) is big
+A DRB is \textit{adaptively secure} if its security properties remain unaffected when given an adaptive adversary as opposed to a static one. Otherwise, it is \textit{adaptively insecure}. In this section, we discuss three ways in which adaptive security can be achieved and observe how DRB protocols in the landscape satisfy adaptive security accordingly or adaptive insecurity otherwise.
 
-* Adaptive insecurity:
-
-1) gap between revelation of leadership/membership and entropy provision
-
-2) leader can withhold
-
-3) prediction possible due to asymmetry in computation power, e.g. RandRunner
+\begin{enumerate}
+\item \textbf{The size of each entropy-providing subset is greater than $t$ or equal to 0.}
+\item \textbf{In a protocol based on private lottery, only one message is required from an entropy provider in any round $r$.}
+\item \textbf{There is no concept of a leader (which may be different from an entropy provider).}
+\end{enumerate}
 
 \subsection{Quality vs Efficiency}
 % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective
