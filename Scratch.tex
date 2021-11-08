@@ -125,7 +125,7 @@ Consider the following simple scenario without perfect synchrony: three particip
 \label{subsection:commit-reveal}
 A classical improvement to the above issue, commit-reveal provides an intuitive way to source a joint random number from a group of participating nodes by introducing a cryptographic commit step before revealing. It runs as follows.
 \begin{enumerate}
-\item \underline{Commit}. Each participant $P_i$ broadcasts its cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy share $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r)$ denotes a cryptographic commitment to $x$ with hiding and binding properties (see Appendix \ref{appendix:commitment}).
+\item \underline{Commit}. Each participant $P_i$ broadcasts its cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy share $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties (see Appendix \ref{appendix:commitment}).
 \item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens the commitment by revealing the pair $(e_i, r_i) = \mathsf{Open}(e_i, r_i)$. In turn, $P_i$ verifies the received pair $(e_j, r_j)$ for $j \neq i$ by checking the equality $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\mathcal{O}$ can canonically be given by
 \[
 \mathcal{O} = \sum_{i = 1}^n e_i
@@ -185,12 +185,12 @@ The work of \cite{lenstra2015random} extends commit-reveal using the Sloth funct
     $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
     The final beacon output is calculated as $\mathcal{O}_r = H(y_r) $, which is then posted and can be efficiently verified using $\pi_r$ through $\mathsf{VDF.Verify}$.
 \end{enumerate}
-As long as $T$ is longer than the time period during which the values may be submitted including $\Delta$ (for synchronous communication model), even the last entropy provider cannot bias the final beacon output because by the time a participant computes $\mathsf{VDF.Eval}$, the Share phase would be over and would no longer be able to manipulate their shares. Such a beacon is unbiasable (and unpredictable) by an adversary that controls $n-1$ of the participants because the entropy from even a single honest participant would require an adversary to compute $\mathsf{VDF.Eval}$. 
+As long as $T$ is longer than the time period during which the values may be submitted including $\Delta$, even the last entropy provider cannot bias the final beacon output. Also notably, Unicorn++ is unbiasable by an adversary that controls $n - 1$ of the participants, as the entropy from even one honest participant would require computation of $\mathsf{VDF.Eval}$ from scratch.
 
 \subsection{Extending Public Randomness}
-As proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation from insiders (high frequency traders and miners respectively) can be used as the $seed_r$ which is fed into $\mathsf{VDF.Eval}$ to generate beacon output as follows:
+As proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation can also be used to supply $seed_r$ via
 $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
-where $seed_r = H(e_r)$, and $e_r$ denotes the output of a public external beacon.
+where $seed_r = H(e_r)$ with $e_r$ denoting the output of a public external beacon.
 
 Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network. 
 
@@ -320,7 +320,7 @@ The main building block of Scrape is its PVSS scheme (see Appendix \ref{appendix
 \item \textbf{Aggregate.} The final randomness is $\mathcal{O}_r = \prod_{j \in \mathcal{C}} h^{s^{(j)}}$.
 \end{enumerate}
 
-Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$ . However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$. \\\\
+Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$. However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$. \\\\
 \textbf{Albatross}\\
 Albatross \cite{cascudo2020albatross} extends Scrape and provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by usage of two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round. See Appendix \ref{appendix:albatross} for details.
 
@@ -341,13 +341,13 @@ RandShare proceeds as follows.
 \subsubsection{Share-Aggregate-Reconstruct}
 Instead of Scrape's process of revealing, reconstructing, and adding up all the secrets, or RandShare's process of reconstructing each secret and adding them up, SecRand \cite{guo2020secRand} directly computes the final output through a single Lagrange interpolation of aggregated decrypted shares from $t + 1$ participants. This provides SecRand with a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reduces the communication complexity as only $t + 1$ aggregated decrypted shares are exchanged to compute the final random output.\\\\
 \textbf{SecRand}\\
-SecRand uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After intial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r)$ during Share Distribution phase. The other two phases proceed as follows.
+SecRand uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After intial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
 \begin{enumerate}
     \setcounter{enumi}{2}
-    \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$) and calculates its group secret share as follows: 
-    $$ gs_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)} $$
-    $P_i$ then broadcasts its group secret share $gs_i$ along with a proof of correct decryption $\pi_i$.
-    \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t+1$ valid group secret shares are distributed, the complete group secret $gs$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(gs)$.
+    \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows: 
+    $$\tilde{s}_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)}$$
+    $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
+    \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t+1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(\tilde{s})$.
 \end{enumerate}
 
 \subsection{From Threshold Encryption}
@@ -938,14 +938,14 @@ Dfinity-DVRF is described by the following DVRF algorithms.
 \label{appendix:commitment}
 A cryptographic commitment \cite{blum1983coin} to message $m$ can be abstractly seen as a secure box (locked with a padlock) whose content is $m$. Initially, the sender $P$ commits to $m$ by putting it inside the box, locking it, and sending it to the receiver $V$ such that $P$ can later open the commitment (i.e. reveal $m$ to $V$) by sending $V$ the key that unlocks the padlock. These two messages can be represented by the following.
 \begin{enumerate}
-\item $C = \mathsf{Com}(m, r)$ is a commitment to message $m$ with fresh randomness $r$.
-\item $\mathsf{Open}(m, r)$ reveals the opening information necessary to verify the validity of $C$ with respect to $m$ and $r$.
+\item $C = \mathsf{Com}(m, r_0)$ is a commitment to message $m$ with fresh randomness $r_0$.
+\item $\mathsf{Open}(m, r_0)$ reveals the opening information necessary to verify the validity of $C$ with respect to $m$ and $r_0$.
 \end{enumerate}
 
 Obviously, such secure box needs to be secure, satisfying the following two properties.
 \begin{itemize}
-\item \textit{Binding property} requires that it is not possible for $P$ to change $m$ after $\mathsf{Com}(m, r)$ is given to $V$.
-\item \textit{Hiding property} requires that it is not possible for $V$ to learn $m$ before $\mathsf{Open}(m, r)$ is given to $V$ by $P$.
+\item \textit{Binding property} requires that it is not possible for $P$ to change $m$ after $\mathsf{Com}(m, r_0)$ is given to $V$.
+\item \textit{Hiding property} requires that it is not possible for $V$ to learn $m$ before $\mathsf{Open}(m, r_0)$ is given to $V$ by $P$.
 \end{itemize}
 
 For further details (e.g. perfectly vs computationally binding and hiding), refer to \cite{damgaard1998commitment}.
