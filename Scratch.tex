@@ -27,6 +27,7 @@
 \usepackage{etoolbox}
 \usepackage{setspace}
 \usepackage{braket}
+\usepackage{enumitem}
 % start table
 \usepackage{tabularx,booktabs,multirow}
 \usepackage{diagbox}
@@ -44,6 +45,8 @@
 \AtEndEnvironment{quote}{\vspace{1em}\endsinglespace}
 \renewcommand{\arraystretch}{1.5}
 \tabulinesep = 2mm
+\setlist[itemize]{wide=0.5\parindent}
+\setlist[enumerate]{wide=0.5\parindent}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -374,7 +377,7 @@ HERB achieves a communication complexity of $O(n^3)$ with only constant amount o
 
 \section{Committee-Based Protocols}
 \label{section:committee-based}
-While all aforementioned commit-reveal variants (i.e. from Sections \ref{subsection:extending-commit-reveal}, \ref{section:commit-reveal-punish}, and \ref{section:commit-reveal-recover}) include every node in the entropy-providing committee $\mathcal{C}_r$, the issue with this approach is one of scalability. In other words, requiring communication of marginal entropy by all nodes is unsurprisingly inefficient, and hence a natural optimization is to reduce $|\mathcal{C}_r|$ (the size of $\mathcal{C}_r$).
+While all aforementioned commit-reveal variants (Sections \ref{subsection:extending-commit-reveal}, \ref{section:commit-reveal-punish}, and \ref{section:commit-reveal-recover}) include every node in the entropy-providing committee $\mathcal{C}_r$, the issue with this approach is one of scalability. Requiring communication of marginal entropy by all nodes is unsurprisingly inefficient, and hence a natural optimization is to reduce $|\mathcal{C}_r|$ (the size of $\mathcal{C}_r$).
 
 In this section, we consider DRB protocols that are \textit{committee-based}, where a committee refers to a non-empty proper subset of nodes. Committee-based protocols proceed in two steps: \textit{committee selection} and \textit{beacon output generation}. As the names suggest, $\mathcal{C}_r$ is agreed upon during committee selection while the beacon output $\mathcal{O}_r$ is generated and agreed upon during beacon output generation. Provided below is a summary of 11 preexisting protocols, and we offer intuition (refer to corresponding citations for full details) on interpreting them under our simple framework.
 
@@ -387,11 +390,11 @@ The first step of a committee-based DRB protocol involves selecting $\mathcal{C}
 \label{subsubsection:public-committee-selection}
 In a \textit{public committee selection}, only public information is needed to derive $\mathcal{C}_r$.\\
 
-\noindent\textbf{Round-Robin (RR).} A first example is \textit{round-robin} (RR), in which nodes simply take turns being selected such that there is no notion of hierarchy among nodes. While RR can work with committees of any size in theory as long as the exact mechanism is clearly defined by the protocol in advance, it is canonical that RR usually refers to the selection of committee of size one (i.e. a leader) corresponding to node $i \equiv r \pmod n$. Protocols like BRandPiper \cite{bhat2020randpiper} (in which the round leader is the only active entropy provider) adopt RR as their leader selection mechanism due to its innate fairness property \cite{azouvi2018winning} (also known as chain quality \cite{garay2015bitcoin} in the blockchain context) where all nodes, by RR's definition, take equal leadership.\\
+\noindent\textbf{Round-Robin (RR).} A first example is \textit{round-robin} (RR), in which nodes simply take turns being selected such that there is no notion of hierarchy among nodes. While RR can work with committees of any size as long as the exact mechanism is clearly defined in advance, it is canonical that RR usually refers to the selection of committee of size one (i.e. a leader) corresponding to node $i \equiv r \pmod n$. Protocols like BRandPiper \cite{bhat2020randpiper} (in which the round leader is the only active entropy provider) adopt RR as their leader selection mechanism due to its innate fairness property \cite{azouvi2018winning} (also known as chain quality \cite{garay2015bitcoin} in the blockchain context) where all nodes, by RR's definition, take equal leadership.\\
 
 \noindent\textbf{Random Selection (RS).} A second example is \textit{random selection} (RS), which uses a public source of randomness (e.g. most commonly $\mathcal{O}_{r - 1}$) to derive $\mathcal{C}_r$. While RR is a simple deterministic algorithm, RS is a randomized one and thus allows for more protocol-level variations, exemplified as follows.
 \begin{itemize}
-\item HydRand \cite{schindler2020hydrand} and GRandPiper \cite{bhat2020randpiper}. Given $\mathcal{O}_{r - 1}$, $\mathcal{C}_r$ consists of node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$ where $\tilde{n}$ denotes the number of nodes eligible for leadership.
+\item HydRand \cite{schindler2020hydrand} and GRandPiper \cite{bhat2020randpiper}. $\mathcal{C}_r$ consists of node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$ where $\tilde{n}$ is the number of eligible nodes.
 \item Ouroboros \cite{kiayias2017ouroboros}. The follow-the-satoshi algorithm \cite{bentov2014proof,kiayias2017ouroboros} outputs the next slot leaders of an epoch (i.e. predefined collection of consecutive slots) given $\mathcal{O}_{r - 1}$ as input by tracking the owners of specific ``satoshis'' or units of currency in order to derive $\mathcal{C}_r$. Note that we regard Ouroboros' epoch as one round in the DRB context.
 \end{itemize}
 
