@@ -238,7 +238,7 @@ RANDAO \cite{youcai2017randao} extends a basic commit-reveal using an escrow rea
 
 To ensure that honest participants are fully compensated when a participant fails to reveal, protocols like RANDAO require a high initial deposit of $O(n^2)$ coins per participant, where the jackpot and the number of participants are both $O(n)$ \cite{andrychowicz2014secure, bentov2014use}. This makes withholding highly unprofitable, as the $O(n^2)$ initial deposit of the withholder is redistributed among the remaining honest participants each receiving $O(n)$ coins as compensation.
 
-Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required \cite{bartoletti2017constant, miller2017zero}. The idea is to construct a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per \cite{andrychowicz2014fair, andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
+Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required \cite{bartoletti2017constant, miller2017zero} by constructing a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per \cite{andrychowicz2014fair, andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
 
 \subsection{Rational Threshold Randomness}
 Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability and unbiasability of the protocol in the following ways:
@@ -252,7 +252,7 @@ Collective punishment is inevitable in EVR when informing happens as it is impos
 EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
 
 \begin{definition}[$(t, n)$-secret sharing]
-A $(t, n)$-secret sharing scheme \cite{shamir1979share, blakley1979safeguarding} allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ among a set of $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that in the reconstruction phase any subset of $t+1$ or more honest participants can compute the secret $s$ via \textit{Lagrange interpolation} (Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
+A $(t, n)$-secret sharing scheme (also known as Shamir's secret sharing \cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ of degree $t$ among $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
 \end{definition}
 
 \begin{definition}[Verifiable Secret Sharing]
@@ -318,60 +318,41 @@ The main building block of Scrape is its PVSS scheme (see Appendix \ref{appendix
 \begin{enumerate}
 \item \textbf{Commit.} Every participant $P_j$ executes $\mathsf{PVSS.ShareGen}(s^{(j)})$ as dealer D and publishes the encrypted shares $\mathsf{Enc}(pk_i, s^{(j)}_i)$ for $1 \le i \le n$ and verification information $\pi_D^{(j)}$, also learning the random secret $h^{s^{(j)}}$. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^{(j)}, r_j)$ (with fresh randomness $r_j$).
 \item \textbf{Verify.} For every set of published encrypted shares and the verification information, all participants run $\mathsf{PVSS.ShareVerify}$ corresponding to verification of correct encryption. Let $\mathcal{C}$ be the set of all participants who published commitments and valid shares.
-\item \textbf{Reveal.} Once $t+1$ participants have distributed their commitments and valid shares, every participant $P_j$, $j \in \mathcal{C}$ opens its commitment, and shares $\mathsf{Open}(s^{(j)}, r_j)$.
+\item \textbf{Reveal.} Once $t + 1$ participants have distributed their commitments and valid shares, every participant $P_j$, $j \in \mathcal{C}$ opens its commitment, and shares $\mathsf{Open}(s^{(j)}, r_j)$.
 \item \textbf{Recover.} For every participant $P_a \in \mathcal{C}$ that does not publish $\mathsf{Open}(s^{(a)}, r_a)$ in Reveal phase, other participants $P_j$ for $1 \leq j \leq n$ reconstructs $h^{s^{(a)}}$ by running $\mathsf{PVSS.Recon}$, which requires each participant to publish their decrypted shares $s_j^{(a)}$ and the corresponding proof of correct decryption $\pi_j^{(a)}$ that pass $\mathsf{PVSS.ShareVerify}$.
 \item \textbf{Aggregate.} The final randomness is $\mathcal{O}_r = \prod_{j \in \mathcal{C}} h^{s^{(j)}}$.
 \end{enumerate}
 
 Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$. However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$. \\\\
 \textbf{Albatross}\\
-Albatross \cite{cascudo2020albatross} extends Scrape and provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by usage of two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round. See Appendix \ref{appendix:albatross} for details.
+Albatross \cite{cascudo2020albatross} extends Scrape and provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round. See Appendix \ref{appendix:albatross} for details.
 
 \subsubsection{Share-Reconstruct-Aggregate}
-The other alternative is to skip the reveal phase altogether and proactively reconstruct each secret from the shares distributed during the sharing phase. Reconstructing each secret would require the cooperation of $t+1$ participants to gather the shares, after which Lagrange interpolation can be used to reconstruct the polynomial and recover the secret. However, this increases the communication complexity, as $n (t + 1)$ shares need to be broadcast due to $n$ Lagrange interpolations every round, irrespective of adversarial corruption. RandShare \cite{syta2017scalable} uses this technique.\\\\
-\textbf{RandShare}\\
-RandShare uses VSS as a subprotocol, extended by adopting the concept of barrier, a specific point in the protocol execution after which the output is fixed and guaranteed to complete successfully. In RandShare, the barrier is reached when the first honest node reveals his shares.
-RandShare proceeds as follows.
-
-\begin{enumerate}
-    \item \textbf{Share Distribution.} Each participant $P_j$ executes the distribution phase $\mathsf{VSS.ShareGen}(s^{(j)})$ as the dealer, publishing the polynomial commitments and securely sending the shares $s_i^{(j)}$ to all other participants $P_i$, $1\le i\le n$.
-    \item \textbf{Share Verification and Consensus.} To ensure that all honest participants have a consistent view of the secrets that will be recovered after the barrier or if the protocol run has already failed , a Byzantine agreement protocol is run in combination with $\mathsf{VSS.ShareVerify}$. This ensures that at least $t+1$ honest participants have verified the secret and will be able to recover it. Let $\mathcal{S}$ be the set of secrets that have been agreed upon by the participants.
-    \item \textbf{Share Reconstruction.} If $\lvert \mathcal{S} \rvert \ge t+1$, each of these secrets $s^{(j)}$ where $j \in \mathcal{S}$ is recovered by collecting at least $t+1$ shares of the secret and reconstructing it using $\mathsf{VSS.Recon}$. Otherwise, the protocol fails.
-    \item \textbf{Aggregation.} Final randomness is $\mathcal{O}_r = \sum_{j \in \mathcal{S}} s^{(j)}$.
-    
-\end{enumerate}
+The other alternative is to skip the reveal phase altogether and proactively reconstruct each secret from the shares distributed during the sharing phase. Reconstructing each secret would require the cooperation of $t + 1$ participants to gather the shares, after which Lagrange interpolation can be used to reconstruct the polynomial and recover the secret. However, this increases the communication complexity, as $n (t + 1)$ shares need to be broadcast to reconstruct $n$ secrets every round, irrespective of adversarial corruption. RandShare \cite{syta2017scalable} uses this technique alongside a Byzantine agreement protocol to reach consensus on $t + 1$ secrets which would be reconstructed, reducing the total shares needed to be distributed to produce $\mathcal{O}_r$. See Appendix \ref{appendix:randshare} for details.
 
 \subsubsection{Share-Aggregate-Reconstruct}
-Instead of Scrape's process of revealing, reconstructing, and adding up all the secrets, or RandShare's process of reconstructing each secret and adding them up, SecRand \cite{guo2020secRand} directly computes the final output through a single Lagrange interpolation of aggregated decrypted shares from $t + 1$ participants. This provides SecRand with a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reduces the communication complexity as only $t + 1$ aggregated decrypted shares are exchanged to compute the final random output.\\\\
-\textbf{SecRand}\\
-SecRand uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After intial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
-\begin{enumerate}
-    \setcounter{enumi}{2}
-    \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows: 
-    $$\tilde{s}_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)}$$
-    $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
-    \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t+1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(\tilde{s})$.
-\end{enumerate}
+Instead of Scrape's process of revealing, reconstructing, and adding up all the secrets, or RandShare's process of reconstructing each secret and adding them up, Share-Aggregate-Reconstruct schemes uses the additive homomorphic property of secret shares (i.e. the sum of shares is the share of the sum of corresponding secrets) to compute the final output (i.e. sum of all secrets) through a single Lagrange interpolation of summed decrypted shares from $t + 1$ participants. SecRand \cite{guo2020secRand}, which is a variant of Scrape, uses this technique for its randomness generation. This provides SecRand with a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reduces the communication complexity as only $t + 1$ aggregated decrypted shares are exchanged to compute the final random output. See Appendix \ref{appendix:secRand} for details.
 
 \subsection{From Threshold Encryption}
 Threshold secret sharing schemes comes at a high communication cost ($O(n^4)$ when $t$ secrets needs to be reconstructed) and requires each participant to share $O(n)$ data every round. A threshold encryption scheme brings down the reconstruction cost and the data to be shared each round by establishing a global public key to encrypt the shared secret.
+
 \begin{definition}[$(t, n)$-threshold encryption] 
-A $(t, n)$-threshold encryption scheme allows to encrypt a message towards a group of $n$ participants such that the message can be decrypted by any $t+1$ of them, but not less. The global public key $pk$ generated by a DKG protocol is used by any sender to encrypt the message. The individual public keys $pk_i$ and the corresponding secret keys $sk_i$ will later enable any set of $t + 1$ participants to non-interactively decrypt ciphertexts computed under $pk$. A $(t, n)$-threshold encryption scheme is composed of the following algorithms:
+A $(t, n)$-threshold encryption scheme allows to encrypt a message towards a group of $n$ participants such that the message can be decrypted by any $t + 1$ of them, but not less. The global public key $pk$ generated by DKG is used by any sender to encrypt a message. The individual public keys $pk_i$ and the secret keys $sk_i$ enable any set of $t + 1$ participants to decrypt ciphertexts computed under $pk$. A $(t, n)$-threshold encryption scheme is composed of the following algorithms (see Appendix \ref{appendix:thresholdEnc} for security properties).
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs a typical DKG with threshold $t$.
     \item $\mathsf{Enc}(pk, m) \rightarrow C$ encrypts the message $m$ with global public key $pk$ and outputs the ciphertext $C$.
     \item $\mathsf{ShareDec}(pk, sk_i, pk_i, C) \rightarrow \mu_i$ generates the decryption share $\mu_i$ for ciphertext $C$ using the individual keys $(sk_i, pk_i)$ and $pk$.
-    \item $\mathsf{Rec}(pk, \vec{PK}, C, \vec{\mu} )\rightarrow \{m, Reject\}$ is a recovery algorithm that takes $pk$, a ciphertext $C$ and a subset of $t+1$ valid decryption shares $\vec{\mu} = \{\mu_1, \mu_2,\ldots, \mu_{t+1}\}$ together with the public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t+1}\}$ and outputs the message $m$ or $Reject$.
+    \item $\mathsf{Rec}(pk, \vec{PK}, C, \vec{\mu} )\rightarrow \{m, Reject\}$ is a recovery algorithm that takes $pk$, a ciphertext $C$ and a subset of $t + 1$ valid decryption shares $\vec{\mu} = \{\mu_1, \mu_2,\ldots, \mu_{t + 1}\}$ together with the public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t + 1}\}$ and outputs the message $m$ or $Reject$.
 \end{itemize}
-See Appendix \ref{appendix:thresholdEnc} for more details.
 \end{definition}
+
 HERB \cite{cherniaeva2019homomorphic} uses threshold ElGamal encryption \cite{desmedt1990Threshold}, though it can be replaced with any other threshold homomorphic encryption scheme. See Appendix \ref{appendix:thrElGamal} for details on threshold ElGamal Encryption.\\\\
 \textbf{HERB}\\
 In HERB, each participant can play two roles: entropy providers and key holders. Entropy providers are active only for ciphertext generation whereas key holders participate in all protocol stages. After the initial Setup where all key holders together run $\mathsf{ThrEnc.DKG}(1^\lambda, t, n)$ to generate keys for threshold encryption, the protocol proceeds as follows.
 \begin{enumerate}
     \item \textbf{Publication.} Each entropy provider $e_j$ generates a random share $M_j$ and encrypts it using $\mathsf{ThrEnc.Enc}$ to generate the ciphertext share $C_j$, which is published along with a proof of correct encryption $\pi_{CE_{j}}$ needed to ensure non-malleability of encrypted shares. The shares are then verified and agreed upon by the participants. Let $QUAL$ denote a set of valid $C_j$'s. When enough $C_j$'s are published (based on system parameters), they are homomorphically combined into a common ciphertext $C$ corresponding to the plaintext $M$.
     
-    \item \textbf{Disclosure.} The key holders $k_i$ use $\mathsf{ThrEnc.ShareDec}$ to generate their decryption share $D_i$ and publish it along with a proof of correct decryption $\pi_{DLEQ_{i}}$, which is then verified by other participants. When $t+1$ decryption shares are published and verified, participants use $\mathsf{ThrEnc.Rec}$ to reconstruct the final random number $M$ for the round.
+    \item \textbf{Disclosure.} The key holders $k_i$ use $\mathsf{ThrEnc.ShareDec}$ to generate their decryption share $D_i$ and publish it along with a proof of correct decryption $\pi_{DLEQ_{i}}$, which is then verified by other participants. When $t + 1$ decryption shares are published and verified, participants use $\mathsf{ThrEnc.Rec}$ to reconstruct the final random number $M$ for the round.
 \end{enumerate}
 HERB achieves a communication complexity of $O(n^3)$ with only constant amount of data shared each round by the key holders. The communication complexity can be further optimized to $O(n^2)$ by using Avalanche \cite{rocket2018snowflake} to achieve consensus on $QUAL$, leading to an overall better performance than threshold secret sharing schemes. However, the dependence of HERB on DKG leads to high setup cost, as every new key holder would require a rerun of DKG to establish the keys. When compared to threshold VRF based schemes (Section \ref{section:dvrf}) which also uses DKG for setup, HERB trails in terms of communication complexity as it collects fresh entropy each round. This however results in HERB producing uniform random numbers (vs pseudorandom numbers). Also, HERB allows the entropy providers to be independent of key holders making it possible to collect entropy from a large and flexible set of sources while allowing the key holders set to be much smaller and sampled to contain at most $t$ malicious nodes.
 
@@ -395,7 +376,7 @@ In a \textit{public committee selection}, only public information is needed to d
 \noindent\textbf{Random Selection (RS).} A second example is \textit{random selection} (RS), which uses a public source of randomness (e.g. most commonly $\mathcal{O}_{r - 1}$) to derive $\mathcal{C}_r$. While RR is a simple deterministic algorithm, RS is a randomized one and thus allows for more protocol-level variations, exemplified as follows.
 \begin{itemize}
 \item HydRand \cite{schindler2020hydrand} and GRandPiper \cite{bhat2020randpiper}. $\mathcal{C}_r$ consists of node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$ where $\tilde{n}$ is the number of eligible nodes.
-\item Ouroboros \cite{kiayias2017ouroboros}. The follow-the-satoshi algorithm \cite{bentov2014proof,kiayias2017ouroboros} outputs the next slot leaders of an epoch (i.e. predefined collection of consecutive slots) given $\mathcal{O}_{r - 1}$ as input by tracking the owners of specific ``satoshis'' or units of currency in order to derive $\mathcal{C}_r$. Note that we regard Ouroboros' epoch as one round in the DRB context.
+\item Ouroboros \cite{kiayias2017ouroboros}. The follow-the-satoshi algorithm \cite{bentov2014proof,kiayias2017ouroboros} outputs the next slot leaders of an epoch (i.e. predefined collection of consecutive slots) given $\mathcal{O}_{r - 1}$ as input by tracking the owners of specific ``satoshis'' or currency units in order to derive $\mathcal{C}_r$. Note that we regard an epoch as one round.
 \end{itemize}
 
 That RS is randomized incurs a side effect where some nodes may, in theory, never be selected and therefore may never be able to provide entropy. A more realistic concern is that an adversary can attempt to bias, via grinding attack, $\mathcal{O}_r$ in order to bias $\mathcal{C}_{r + 1}$ (which can bias $\mathcal{O}_{r + 1}$ and so on). This is a notable attack vector given RS.
@@ -406,7 +387,7 @@ On the other hand, this is not an issue in RR, as its committee selection is det
 
 One requirement, due to the power delegated to the leader, is that $|\mathcal{C}_r|$ needs to be greater than $t$ so that a malicious leader wouldn't be able to choose $\mathcal{C}_r$ maliciously. RandHound \cite{syta2017scalable} and SPURT \cite{das2021spurt} demonstrate such LS.
 \begin{itemize}
-\item RandHound. As instantiated in RandHerd \cite{syta2017scalable}, RandHound's leader election (i.e. via RS as the first step of LS) involves a public lottery where each node generates a lottery ticket $t_i = H(C \mathbin\Vert pk_i)$ given a public configuration parameter $C$ (assuming its randomness) such that the owner of $min(t_i)$ becomes the leader (originally called client). In the second step of LS, RandHound adopts a form of sharding (involving PVSS groups). The leader selects more than a threshold number of nodes in each shard (PVSS group), guaranteeing more than a threshold number of entropy providers across all shards.
+\item RandHound. As instantiated in RandHerd \cite{syta2017scalable}, RandHound's leader election (i.e. via RS as the first step of LS) involves a public lottery where each node generates a lottery ticket $t_i = H(C \mathbin\Vert pk_i)$ given a public configuration parameter $C$ (assuming its randomness) such that the owner of $min(t_i)$ becomes the leader (originally called client). In the second step of LS, RandHound adopts a form of sharding (involving PVSS groups). The leader selects more than a threshold number of nodes in each shard (PVSS group), guaranteeing a threshold number of entropy providers across all shards.
 \item SPURT. Unlike RandHound, SPURT adopts RR as its first part of LS such that nodes simply take turns being a round leader. Then the leader chooses $\mathcal{C}_r$ based on received encrypted messages.
 \end{itemize}
 
@@ -426,9 +407,9 @@ As it is possible for an adversary to perform a grinding attack by trying many v
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
-where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are private lottery ideas for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). See Table \ref{table:committee-based} for details.\\
+where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are private lotteries for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). See Table \ref{table:committee-based} for details.\\
 
-\noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. Effectively, a hash chain provides the functionality of provable commitment to some private input as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so is equivalent to committing to $h_{r + 1}$ (and $h_{r + 1}$ would be publicized later to commit to $h_{r + 2}$ and so on). Consequently, each participant of Caucus independently generates a private hash chain comprising its $m$ private inputs such that the lottery is given by
+\noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so commits to $h_{r + 1}$. Thus, each participant of Caucus independently generates a private hash chain comprising $m$ private inputs such that the lottery is given by
 \[
 H(h_r \oplus \mathcal{O}_{r - 1}) < target
 \]
@@ -566,7 +547,7 @@ The protocols that we have seen so far provide a range of efficiency and quality
 VRF based protocols require very little communication and computation but the output is biasable by withholding. DVRF based protocols get rid of the bias by allowing a set of participants greater than a threshold to recover the output. VDF based protocols require high computational cost (sequential squarings) but generates uniform pseudorandom outputs with quadratic communication cost. While these protocols can be used on their own, they can also be combined in a modular way to build a distributed randomness beacon. Mt. Random \cite{cascudomt}, a multi-tiered randomness beacon is one such example.
 
 \joenote{should there be a separate section on protocols that combine other protocols?}
-Mt. Random has three independent tiers, each based on a different technique and providing different trade-off between complexity and quality of randomness. Tier 1 provides uniform randomness via PVSS based protocols. Mt. Random reduces the amortized cost per beacon output by using an extension of Albatross called GULL (Gradually UnLeashed aLbatross) \cite{cascudomt}. GULL could be substituted with any of the Commit-Reveal-Recover variants from Section \ref{section:commit-reveal-recover}. Tier 2 provides uniform pseudorandomness via DVRF based protocols. Mt. Random uses DDH based version of drand, but could be substituted with any of the DVRF based protocols from Section \ref{section:dvrf} or RandRunner from Section \ref{subsection:randrunner}. Tier 3 provides biased pseudorandomness using VRF based protocols. Mt. Random uses a variation of Ouroboros Praos where every participant computes and broadcasts their VRF outputs (and requires no committee selection via private lottery). Even though this makes detecting malicious participants (and maybe punishing them) easier, the beacon output for the round would still remain biased. Randomness from earlier tiers are used to periodically refresh seeds for Tier 2 and Tier 3 protocols, making them more secure than their stand-alone versions.
+Mt. Random has three independent tiers, each based on a different technique and providing different trade-off between complexity and quality of randomness. Tier 1 provides uniform randomness via PVSS based protocols. Mt. Random reduces the amortized cost per beacon output for PVSS by using an extension of Albatross called GULL (Gradually UnLeashed aLbatross) \cite{cascudomt}, but could be substituted with any of the Commit-Reveal-Recover variants from Section \ref{section:commit-reveal-recover}. Tier 2 provides uniform pseudorandomness via DVRF based protocols. Mt. Random uses DDH based version of drand, but any of the DVRF based protocols from Section \ref{section:dvrf} or RandRunner from Section \ref{subsection:randrunner} could be used instead. Tier 3 provides biased pseudorandomness using VRF based protocols. Mt. Random uses a variation of Ouroboros Praos where every participant computes and broadcasts their VRF outputs (and requires no committee selection via private lottery). Though this makes detecting malicious participants (and maybe punishing them) easier, the beacon output for the round would still remain biased. Randomness from earlier tiers are used to periodically refresh seeds for Tier 2 and Tier 3 protocols, making them more secure than their stand-alone versions.
 
 Mt. Random illustrates a framework in which PVSS and (D)VRF protocols can be combined in a multi-tiered fashion where higher tiers generate random outputs faster than lower tiers albeit with losses in randomness quality. It is possible to extend the framework to other primitives/building blocks or use an altogether different framework to combine different protocols. This remains to be explored further.
 
@@ -623,7 +604,7 @@ Feldman-VSS \cite{feldman1987practical} and Pedersen-VSS \cite{pedersen1991non} 
 
 \subsection{Feldman-VSS}
 \label{appendix:feldmanVSS}
-The following summarizes a simple VSS scheme proposed by Paul Feldman for sharing a secret $s$ among $n$ participants where any subset of $t+1$ among them can reconstruct the group secret.
+The following summarizes a simple VSS scheme proposed by Paul Feldman for sharing a secret $s$ among $n$ participants where any subset of $t + 1$ among them can reconstruct the group secret.
 
 \begin{itemize}
 \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \mathbb{Z}_q$ involves the dealer sampling $t$ random coefficients $a_1, \ldots, a_t \in \mathbb{Z}_q$ and constructing $p(x) = s + a_1x+ a_2x^2 +\ldots+a_tx^t$. The shares are computed as $s_i = p(i)$ in mod $q$ for $1\le i \le n$ and shared privately with each participant. The commitments to the secret $C_0 = g^s$ as well as coefficients $C_j = g^{a_j}$ for $j = 1,\ldots,t$ are also broadcast by the dealer.
@@ -631,7 +612,7 @@ The following summarizes a simple VSS scheme proposed by Paul Feldman for sharin
 $$g^{s_i} = \prod_{j = 0}^{t} C_j^{i^j} = C_0 C_1^i C_2^{i^2} \cdots C_{t}^{i^{t}}$$
 If it does not hold for some $i$, then $P_i$ broadcasts an accusation against the dealer, who has to respond by broadcasting the correct $s_i$. Correct reconstruction is achieved by filtering out shares that do not satisfy $\mathsf{ShareVerify}$.
 \item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ outputs the secret $s$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ in mod $q$ with $t + 1$ valid shares from the reconstruction set $A$:
-$$s = p(0) = \sum_{i = 1}^{t+1} s_i \lambda_i$$
+$$s = p(0) = \sum_{i = 1}^{t + 1} s_i \lambda_i$$
 \end{itemize}
 
 The verifiability in Feldman-VSS comes from inclusion of commitments to the coefficients. These commitments enable participants to verify the validity of the shares that they receive from the dealer.
@@ -648,10 +629,23 @@ A la Pedersen commitment, Pedersen-VSS is a variation that couples the commitmen
 $$g^{s_i} h^{s'_i} = \prod_{j = 0}^{t} C_j^{i^j}$$
 Similar to Feldman-VSS, any accusation of incorrect sharing against dealer by a participant $P_i$ would require the dealer to broadcast $(s_i, s'_i)$.
 \item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ outputs the secret $s$ by performing Lagrange interpolation involving Lagrange coefficients $\lambda_i = \prod_{j \neq i} \frac{j}{j - i}$ in mod $q$ with $t + 1$ valid shares of $p(x)$ from the reconstruction set $A$:
-$$s = p(0) = \sum_{i = 1}^{t+1} s_i \lambda_i$$
+$$s = p(0) = \sum_{i = 1}^{t + 1} s_i \lambda_i$$
 \end{itemize}
 
 Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^s$ (as the public key corresponding to the secret key $s$) and $g^{s} h^{s'}$ (as a published commitment for verification purposes). In other words, the share verification process does not (even information-theoretically) leak any information regarding the initial secret $s$, a fact that is not true with Feldman-VSS. This is useful when VSS is used as a subprotocol for distributed key generation, where an adversary is otherwise able to bias the outcome.
+
+\subsection{RandShare}
+\label{appendix:randshare}
+RandShare uses VSS as a subprotocol, extended by adopting the concept of barrier, a specific point in the protocol execution after which the output is fixed and guaranteed to complete successfully. In RandShare, the barrier is reached when the first honest node reveals his shares.
+RandShare proceeds as follows.
+
+\begin{enumerate}
+    \item \textbf{Share Distribution.} Each participant $P_j$ executes the distribution phase $\mathsf{VSS.ShareGen}(s^{(j)})$ as the dealer, publishing the polynomial commitments and securely sending the shares $s_i^{(j)}$ to all other participants $P_i$, $1\le i\le n$.
+    \item \textbf{Share Verification and Consensus.} To ensure that all honest participants have a consistent view of the secrets that will be recovered after the barrier or if the protocol run has already failed , a Byzantine agreement protocol is run in combination with $\mathsf{VSS.ShareVerify}$. This ensures that at least $t + 1$ honest participants have verified the secret and will be able to recover it. Let $\mathcal{S}$ be the set of secrets that have been agreed upon by the participants.
+    \item \textbf{Share Reconstruction.} If $\lvert \mathcal{S} \rvert \ge t + 1$, each of these secrets $s^{(j)}$ where $j \in \mathcal{S}$ is recovered by collecting at least $t + 1$ shares of the secret and reconstructing it using $\mathsf{VSS.Recon}$. Otherwise, the protocol fails.
+    \item \textbf{Aggregation.} Final randomness is $\mathcal{O}_r = \sum_{j \in \mathcal{S}} s^{(j)}$.
+    
+\end{enumerate}
 
 \section{Distributed Key Generation (DKG)}
 \label{appendix:dkg}
@@ -659,7 +653,7 @@ A DKG protocol should satisfy the following security requirements:
 \begin{itemize}
     \item Correctness
         \begin{enumerate}
-        \item All subsets of $t+1$ shares provided by honest participants define the same unique secret key $x$.
+        \item All subsets of $t + 1$ shares provided by honest participants define the same unique secret key $x$.
         \item All honest participants have the same value of public key $y=g^x$, where $x$ is the unique secret guaranteed above.
         \item $x$ is uniformly distributed in $\mathbb{Z}_q$, and thus $y$ is uniformly distributed in $\mathbb{G}_q$ (subgroup of $\mathbb{Z}^*_p$ generated by $g$).
         \end{enumerate}
@@ -709,14 +703,13 @@ The biasability of Joint-Feldman comes from the fact that the decision on who wi
 
 \subsection{Escrow-DKG}
 \label{appendix:edkg}
-Escrow-DKG \cite{david2019rational} extends DKG to a model where the participants are not expected to follow some predetermined set of instructions and instead are driven to maximize their profit. It does so by introducing a transparent escrow service that takes participants' deposits and can burn or redistribute them. It proceeds in similar phases as Joint-Feldman. However, any complaint of undesired behavior by a participant against another participant is arbitrated by the escrow and can result in deposits being slashed. The protocol fails once a complaint has been filed. The modification of Escrow-DKG used in EVR , with $n$ participants and threshold $t$, can be described by the following algorithms:
+Escrow-DKG \cite{david2019rational} extends DKG to a model where the participants are not expected to follow some predetermined set of instructions and instead are driven to maximize their profit. It does so by introducing a transparent escrow service that takes participants' deposits and can burn or redistribute them. It proceeds in similar phases as Joint-Feldman. However, any complaint of undesired behavior by a participant against another participant is arbitrated by the escrow and can result in deposits being slashed. The protocol fails once a complaint has been filed. The modification of Escrow-DKG used in EVR, with $n$ participants and threshold $t$, can be described by the following algorithms:
 \begin{itemize}
     \item $\mathsf{EscrowEnroll}(d, pk, H(C_{0})) \rightarrow \{0,1\}$ is used by a participant with public encryption key $pk$ to register with the escrow with deposit $d$ and hash of commitment to her partial secret $C_{0}$. In case of Feldman-VSS, $C_{0} = g^{s}$. It returns the success of enrollment.
     
-    \item $\mathsf{Commit}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_{i})\}, C)$ is used by a participant with secret $s$ to generate encrypted subshares and commitments by executing $\mathsf{VSS.ShareGen}(s)$. For Feldman-VSS, it outputs commitment to the coefficients of $t$ degree random polynomial $C_j = g^{a_j}$ for $0\le j \le t$ and subshares for every other participant $P_i$ encrypted using their public key $\mathsf{Enc}(pk_i, s_{i})$. \\
-    Each participant verifies the consistency of the subshares with the commitments. The escrow also checks if the published $C_{0}$ matches with $H(C_{0})$ for participant $P_i$. Any complaint is arbitrated by the escrow and can result in deposits being slashed.
+    \item $\mathsf{Commit}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_{i})\}, C)$ is used by a participant with secret $s$ to generate encrypted subshares and commitments by executing $\mathsf{VSS.ShareGen}(s)$. For Feldman-VSS, it outputs commitments $C_j = g^{a_j}$ for $0 \le j \le t$ to the coefficients of the secret sharing polynomial and subshares for every other participant $P_i$ encrypted via $\mathsf{Enc}(pk_i, s_{i})$. Each participant verifies the correctness of the sharing. The escrow also checks if the published $C_{0}$ matches with $H(C_{0})$ for participant $P_i$. Any complaint is arbitrated by the escrow and can result in deposits being slashed.
     
-    \item $\mathsf{Reveal}(A, \{x_i\}_{i \in A}) \rightarrow (x, X)$ takes a subset of $t+1$ individual key shares and reconstructs the shared group secret $x$ using $\mathsf{VSS.Recon}$. In Feldman-VSS, each participant $P_i$ calculates their secret key share as $x_i = \sum_{j=1}^{n} s_j$ in mod $q$ and the group secret $x$ is reconstructed by Lagrange interpolation on $t+1$ such shares. Additionally, it also outputs its corresponding public key $X = \prod_{i=1}^{n} C_{i0}$ for verification.
+    \item $\mathsf{Reveal}(A, \{x_i\}_{i \in A}) \rightarrow (x, X)$ takes a subset of $t + 1$ individual key shares and reconstructs the shared group secret $x$ using $\mathsf{VSS.Recon}$. In Feldman-VSS, each participant $P_i$ calculates their secret key share as $x_i = \sum_{j=1}^{n} s_j$ in mod $q$ and the group secret $x$ is reconstructed by Lagrange interpolation on $t + 1$ such shares. Additionally, it also outputs its corresponding public key $X = \prod_{i=1}^{n} C_{i0}$ for verification.
     
     \item $\mathsf{EscrowVerify}(x, X)\rightarrow\{0,1\}$ is used by the escrow to verify that the published secret $x$ is indeed the one that corresponds to $X$.
 \end{itemize}
@@ -825,12 +818,24 @@ In Albatross, we assume $n$ participants, of which the static adversary corrupts
         \end{itemize}
 \end{enumerate}
 
+\subsection{SecRand}
+\label{appendix:secRand}
+SecRand uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After initial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
+
+\begin{enumerate}
+    \setcounter{enumi}{2}
+    \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows: 
+    $$\tilde{s}_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)}$$
+    $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
+    \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t + 1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(\tilde{s})$.
+\end{enumerate}
+
 \section{Threshold Encryption}
 \label{appendix:thresholdEnc}
 Following the work of \cite{cortier2013distributed}, a $(t, n)$-threshold encryption scheme should provide the following properties:
 \begin{itemize}
-    \item Completeness. For any $1\le t\le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t+1$ honest participants have computed the correct decryption shares with $\mathsf{ShareDec}(sk_i, pk_i, C)$, then we require $\mathsf{Rec}(pk, \vec{PK}, C, \vec{\mu} ) = m$.
-    \item Robustness. For any ciphertext $C$ and any two $(t+1)-$subsets of decryption shares $\mu \ne \mu'$ such that $\mathsf{Rec}(pk, C, \mu) \ne {Reject}$ and $\mathsf{Rec}(pk, C, \mu') \ne {Reject}$, then it holds that $\mathsf{Rec}(pk, C, \mu) = \mathsf{Rec}(pk, C, \mu')$.
+    \item Completeness. For any $1\le t\le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{ShareDec}(sk_i, pk_i, C)$, then we require $\mathsf{Rec}(pk, \vec{PK}, C, \vec{\mu} ) = m$.
+    \item Robustness. For any ciphertext $C$ and any two $(t + 1)-$subsets of decryption shares $\mu \ne \mu'$ such that $\mathsf{Rec}(pk, C, \mu) \ne {Reject}$ and $\mathsf{Rec}(pk, C, \mu') \ne {Reject}$, then it holds that $\mathsf{Rec}(pk, C, \mu) = \mathsf{Rec}(pk, C, \mu')$.
     \item IND-CPA against static corruptions. A $(t, n)$ threshold cryptosystem is said to be IND-CPA secure if for any polynomial time adversary $\mathcal{A}$ corrupting at most $t$ participants at the beginning of the protocol, $\mathcal{A}$, who acts on behalf of corrupted nodes, has negligible advantage in a game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ played against challenger, who acts on behalf of the remaining servers. In other words,
     $$|Pr[\mathsf{Exp}_{\mathcal{A}}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \mathsf{negl}(\lambda)$$
     
@@ -850,7 +855,7 @@ $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, cherniaeva20
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs DKG protocol and generates the common public key $pk$, individual secret keys $\vec{SK}$ and the corresponding individual public keys $\vec{PK}$.
      \item $\mathsf{Enc}(pk, M) \rightarrow (A, B)$ takes as input a point $M \in \mathbb{G}$ and the global public key $pk$ and generates ciphertext $C = (A, B) = (rG, M+D) $ where $D = r \cdot pk$.
      \item $\mathsf{ShareDec}(pk, sk_i, C) \rightarrow \mu_i$ takes ciphertext $C = (A,B)$, the individual secret key $sk_i$ and the global public key $pk$ as input and generates the decrypted share $\mu_i = sk_i \cdot A$.
-     \item $\mathsf{Rec}(pk, C, \mu_i, \ldots, \mu_{t+1} ) \rightarrow M$ reconstructs the point $D$ from the public shares $\mu_i, \ldots, \mu_{t+1}$ using Lagrange interpolation and outputs the decrypted message $M = B - D$.
+     \item $\mathsf{Rec}(pk, C, \mu_i, \ldots, \mu_{t + 1} ) \rightarrow M$ reconstructs the point $D$ from the public shares $\mu_i, \ldots, \mu_{t + 1}$ using Lagrange interpolation and outputs the decrypted message $M = B - D$.
 \end{itemize}
 
 \section{Verifiable Random Function (VRF)}
@@ -1039,21 +1044,18 @@ Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where 
 \cmidrule{3-5}
 & & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
 \cmidrule{2-5}
-& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
+& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\tnote{1}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
 \cmidrule{3-5}
 & & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\\\textit{Step 1}: $H(h_r \oplus \mathcal{O}_{r - 1}) < target$\\\textit{Step 2}: $\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}$\end{tabular} \\
 \cmidrule{1-5}
 \end{tabularx}
-\begin{tablenotes}[para,flushleft]
+\begin{tablenotes}[flushleft]
+\footnotesize
 \item Note that public committee selection mechanisms (Section \ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section \ref{subsubsection:private-committee-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}.
+\item[1] The protocol is an epoch-based variant of Algorand. While $|\mathcal{C}_r|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ slots and thus $K$ per-slot lotteries. (Each epoch is a round.) Parameters $slot$ and $epoch$ denote the slot and epoch numbers, respectively, and $\rho_i = VRF_{sk_i}(\mathcal{O}_{r - 1} \mathbin\Vert slot_i \mathbin\Vert \mathsf{NONCE})$ is returned by the slot leader of $slot_i$. $\mathsf{TEST}$ and $\mathsf{NONCE}$ are strings.
 \end{tablenotes}
 \end{threeparttable}
 \end{table*}
-% While $|\mathcal{C}_r|$ is expected to be one in Algorand (such that there is 1 final winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ slots (such that there is 1 expected winner per lottery but $K$ per-slot lotteries per round, which is an epoch), as the protocol provides an epoch-based variant of Algorand. Fundamentally the same as that of Algorand, the per-slot lottery of Ouroboros Praos is given by
-% \[
-% VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target
-% \]
-% where $slot$ denotes the slot number and $\mathsf{TEST}$ is a string such that there would be $K$ expected entropy providers (each corresponding to a slot) in a round.
 
 \begin{table*}[pt]
 % \footnotesize
@@ -1083,15 +1085,15 @@ RandShare & & PVSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(
 SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(n^2)$ \\
 HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Predict & $O(n^3)$ \\
 \midrule
-HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee \tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
-GRandPiper & & PVSS & $n/2$ & \xmark & Committee \tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
-BRandPiper & & PVSS & $n/2$ & \xmark & Committee \tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
+HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
+GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
+BRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
 Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^3)$ & $O(n^4)$ & $O(n^4)$ & Bias & $O(n^2)$ \\
 RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c^2 n)$ & $O(c^2n)$ & $O(c^2n)$ & Bias & $O(n^2)$ \\
 SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
-Algorand & & VRF & $n/3$ & \cmark & Committee \tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(cn)$ & $O(cn)$ & Bias & $O(n^2)$ \\
+Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(cn)$ & $O(cn)$ & Bias & $O(n^2)$ \\
 Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$ & Bias & $O(n^2)$ \\
-Caucus & & Hash chain & $n/2$ & \cmark & Committee \tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+Caucus & & Hash chain & $n/2$ & \cmark & Committee\tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
 NV++ & & VRF, thr. ElGamal & $n$ & \xmark & Committee & $1$ & \xmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
 \midrule
 drand & \multirow{4}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
