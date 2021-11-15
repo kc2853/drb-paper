@@ -399,7 +399,7 @@ where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that 
 
 As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$. Two examples of the above formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
 
-\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF (see Appendix \ref{appendix:vrf}) is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions don't differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
+\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions don't differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
@@ -523,6 +523,7 @@ A DRB is \textit{adaptively secure} if its security properties remain unaffected
 \item \textbf{There is no concept of a round leader.} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, an adversary can still adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the round leader allows biasability if the leader aborts after seeing $\mathcal{O}_r$ as aforementioned. In SPURT, corrupting the next $t$ leaders to perform a withholding attack endangers liveness.
 \end{enumerate}
 
+\iffalse
 \subsection{Quality vs Efficiency}
 % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective
 The protocols that we have seen so far provide a range of efficiency and quality trade-offs under different setups, assumptions and adversarial models. PVSS/VSS based protocols offers uniform randomness, but comes at quartic communication complexity. 
@@ -532,8 +533,27 @@ VRF based protocols require very little communication and computation but the ou
 Mt. Random has three independent tiers, each based on a different technique and providing different trade-off between complexity and quality of randomness. Tier 1 provides uniform randomness via PVSS based protocols. Mt. Random reduces the amortized cost per beacon output for PVSS by using an extension of Albatross called GULL (Gradually UnLeashed aLbatross) \cite{cascudomt}, but could be substituted with any of the Commit-Reveal-Recover variants from Section \ref{section:commit-reveal-recover}. Tier 2 provides uniform pseudorandomness via DVRF based protocols. Mt. Random uses DDH based version of drand, but any of the DVRF based protocols from Section \ref{section:dvrf} or RandRunner from Section \ref{subsection:randrunner} could be used instead. Tier 3 provides biased pseudorandomness using VRF based protocols. Mt. Random uses a variation of Ouroboros Praos where every participant computes and broadcasts their VRF outputs (and requires no committee selection via private lottery). Though this makes detecting malicious participants (and maybe punishing them) easier, the beacon output for the round would still remain biased. Randomness from earlier tiers are used to periodically refresh seeds for Tier 2 and Tier 3 protocols, making them more secure than their stand-alone versions.
 
 Mt. Random illustrates a framework in which PVSS and (D)VRF protocols can be combined in a multi-tiered fashion where higher tiers generate random outputs faster than lower tiers albeit with losses in randomness quality. It is possible to extend the framework to other primitives/building blocks or use an altogether different framework to combine different protocols. This remains to be explored further.
+\fi
+% \todo{conclusions, open problems}
+\section{Concluding Remarks}
+In this paper, we provide an overview and comparison of various DRB protocols which provide a range of cost and quality trade-offs under different setups, assumptions and adversarial models. We further describe a modular framework comprising of two components: selection of entropy providers and beacon output generation, which can be used to analyze any practical DRB's design. Based on our systematization, we provide the following insights:
+\begin{itemize}
+    \item PVSS/VSS based protocols are suitable when high quality of unbiased randomness is to be generated with a dynamic but small set of entropy providers. To scale it to a larger set of nodes, various techniques to select a subset of entropy providers can be used.
+    \item Protocols requiring DKG for initial setup (DVRF, threshold encryption based) works well with a larger, but relatively static set of entropy providers due to the high cost associated with it.
+    \item Out of the protocols generating pseudorandom outputs, VDF based protocols stands out due to its ease of setup and ability to generate randomness even with a dishonest majority.
+    \item VRF based protocols are suitable for generating quick biasable pseudorandomness with a large dynamic set of entropy providers and is commonly used in protocols that require randomness as part of their overall construction.
+    % escrow based protocols are suitable when used in conjunction with a lottery/jackpot/ associated with generating randomness.
+\end{itemize}
+While significant developments have been made to address the problem of generating unbiasable randomness, we identify the following areas which could benefit from further research. 
+\begin{itemize}
+    \item Extending/modifying existing protocols to deal with asynchrony.
+    \item Combining multiple stand-alone beacons in a modular way to build a heterogeneous beacon. Mt.Random \cite{cascudomt}, a multi-tiered randomness beacon providing different trade-off between cost and quality of randomness explores this idea.
+    \item Extending private lottery based protocols to generate unbiased pseudorandomness. Though SSLE provides a way around it, the issue of withholding still remains.
+    \item Formalizing the security parameters for VDF based protocols.
+    % communication cost bottleneck due to consensus
+    % proactively detecting corruption and automatic recovery
+\end{itemize}
 
-\todo{conclusions, open problems}
 
 \printbibliography
 \appendix
