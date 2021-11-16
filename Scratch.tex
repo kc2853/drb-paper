@@ -320,13 +320,13 @@ Counteracting the last revealer attack, commit-reveal-recover extends commit-rev
 
 Note that what a participant $j$ can decrypt during the Recover phase is not really the share $s^{(j)}$, but rather $h^{s^{(j)}}$. However these values are enough to reconstruct $h^s$ which acts as a uniformly random choice in the group by the participant who chose $s$.\\
 
-\noindent\textbf{Albatross.} Extending Scrape, Albatross \cite{cascudo2020albatross} provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round. 
+\noindent\textbf{Albatross.} Extending Scrape, Albatross \cite{cascudo2020albatross} provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round.
 
 \subsubsection{Share-Reconstruct-Aggregate}
 One alternative is to skip the commit-reveal phase involving cryptographic commitments altogether and by default reconstruct each secret shared via PVSS. In other words, we can remove the $\mathsf{Com}(s^{(j)}, r_j)$ portion of commit-reveal-recover's commit phase (\textit{share}), perform Lagrange interpolation per secret for a total of $O(n)$ times (\textit{reconstruct}), and sum up the interpolated secrets to output $\mathcal{O}_r$ (\textit{aggregate}). While the resulting \textit{share-reconstruct-aggregate} saves a round of communication from Scrape's worst case, its average case does incur substantial communication overhead due to $O(n)$ runs of Lagrange interpolation, each of which requires cooperation of $t + 1$ nodes. RandShare \cite{syta2017scalable} uses this technique alongside a Byzantine agreement protocol to reach consensus on $O(n)$ secrets to be reconstructed. See Appendix \ref{appendix:randshare} for details.
 
 \subsubsection{Share-Aggregate-Reconstruct}
-Another alternative is to harness the homomorphic properties of a PVSS sharing where the sum of $n$ respective shares of $n$ secrets is a share of the sum of $n$ secrets (note that the sum of $n$ secrets is precisely $\mathcal{O}_r$ in these protocols). Due to this, only one, as opposed to $O(n)$, Lagrange interpolation can be sufficient to reconstruct $\mathcal{O}_r$ once nodes essentially perform \textit{aggregate} before \textit{reconstruct}, hence the name \textit{share-aggregate-reconstruct}. SecRand \cite{guo2020secRand}, which is a variant of Scrape, uses this technique, providing a higher and more stable performance than Scrape and RandShare against an adversary's malicious behavior of withholding its secret and also reducing the communication complexity as only $t + 1$ aggregated shares are exchanged to compute the final beacon output. See Appendix \ref{appendix:secRand} for details.
+Another alternative is to harness the homomorphic properties of a PVSS sharing where the sum of $n$ respective shares of $n$ secrets is a share of the sum of $n$ secrets (note that the sum of $n$ secrets is precisely $\mathcal{O}_r$ in these protocols). Due to this, only one, as opposed to $O(n)$, Lagrange interpolation is sufficient to reconstruct $\mathcal{O}_r$ once nodes essentially perform \textit{aggregate} before \textit{reconstruct}, hence the name \textit{share-aggregate-reconstruct}. A variant of Scrape, SecRand \cite{guo2020secRand} uses this technique to reduce the communication complexity by a factor of $n$ as only $t + 1$ aggregated shares are exchanged to compute the final beacon output. See Appendix \ref{appendix:secRand} for details.
 
 \subsection{From Threshold Encryption}
 While protocols based on threshold secret sharing can incur high communication cost of $O(n^4)$ due to $O(n)$ runs of Lagrange interpolation, protocols relying on a different cryptographic primitive, namely threshold encryption, offer a variant where only 1 Lagrange interpolation suffices even in the worst case. Though reminiscent of share-aggregate-reconstruct, these protocols differ in that they don't necessarily assume a PKI (mandatory in PVSS) but rather a DKG, which may be run multiple times to refresh keys. In this section, we define threshold encryption and summarize how a protocol like HERB \cite{cherniaeva2019homomorphic} exhibits above.
@@ -335,9 +335,9 @@ While protocols based on threshold secret sharing can incur high communication c
 A $(t, n)$-threshold encryption scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs a typical DKG.
-    \item $\mathsf{Enc}(pk, m) \rightarrow c$ encrypts the message $m$ with group public key $pk$ and outputs the ciphertext $c$.
-    \item $\mathsf{ShareDec}(pk, sk_i, pk_i, c) \rightarrow d_i$ generates the decryption share $d_i$ for ciphertext $c$ using the individual keys $(sk_i, pk_i)$ and $pk$.
-    \item $\mathsf{Rec}(pk, \vec{PK}, c, \vec{d} )\rightarrow \{m, Reject\}$ is a recovery algorithm that takes $pk$, a ciphertext $c$, and a subset of $t + 1$ valid decryption shares $\vec{d} = \{d_1, d_2,\ldots, d_{t + 1}\}$ together with the public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t + 1}\}$ and outputs the message $m$ via one Lagrange interpolation or $Reject$.
+    \item $\mathsf{Enc}(pk, m) \rightarrow c$ encrypts message $m$ with group public key $pk$ and outputs ciphertext $c$.
+    \item $\mathsf{ShareDec}(pk, sk_i, pk_i, c) \rightarrow d_i$ generates decryption share $d_i$ for ciphertext $c$ using individual key pair $(sk_i, pk_i)$ and $pk$.
+    \item $\mathsf{Rec}(pk, \vec{PK}, c, \vec{d}) \rightarrow \{m, Reject\}$ is a recovery algorithm that takes $pk$, ciphertext $c$, and a subset of $t + 1$ valid decryption shares $\vec{d} = \{d_1, d_2,\ldots, d_{t + 1}\}$ together with the individual public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t + 1}\}$ and outputs the message $m$ via Lagrange interpolation or $Reject$.
 \end{itemize}
 \end{definition}
 
@@ -867,8 +867,8 @@ SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrap
 
     Following the work of \cite{cortier2013distributed}, a $(t, n)$-threshold encryption scheme should provide the following properties:
     \begin{itemize}
-        \item Completeness. For any $1\le t\le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{ShareDec}(sk_i, pk_i, c)$, then we require $\mathsf{Rec}(pk, \vec{PK}, c, \vec{\mu} ) = m$.
-        \item Robustness. For any ciphertext $c$ and any two $(t + 1)-$subsets of decryption shares $\mu \ne \mu'$ such that $\mathsf{Rec}(pk, c, \mu) \ne {Reject}$ and $\mathsf{Rec}(pk, c, \mu') \ne {Reject}$, then it holds that $\mathsf{Rec}(pk, c, \mu) = \mathsf{Rec}(pk, c, \mu')$.
+        \item Completeness. For any $1\le t\le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{ShareDec}(sk_i, pk_i, c)$, then we require $\mathsf{Rec}(pk, \vec{PK}, c, \vec{d} ) = m$.
+        \item Robustness. For any ciphertext $c$ and any two $(t + 1)-$subsets of decryption shares $d \ne d'$ such that $\mathsf{Rec}(pk, c, d) \ne {Reject}$ and $\mathsf{Rec}(pk, c, d') \ne {Reject}$, then it holds that $\mathsf{Rec}(pk, c, d) = \mathsf{Rec}(pk, c, d')$.
         \item IND-CPA against static corruptions. A $(t, n)$ threshold cryptosystem is said to be IND-CPA secure if for any polynomial time adversary $\mathcal{A}$ corrupting at most $t$ participants at the beginning of the protocol, $\mathcal{A}$, who acts on behalf of corrupted nodes, has negligible advantage in a game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ played against challenger, who acts on behalf of the remaining servers. In other words,
         $$|Pr[\mathsf{Exp}_{\mathcal{A}}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \mathsf{negl}(\lambda)$$
         
@@ -1129,11 +1129,11 @@ RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$ & \cmark & \xmark & $O(\
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$ & Halt & $O(n)$ \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^2)$ & $O(n^3)$ & Halt & $O(n)$ \\
 \midrule
-Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(n^2)$ \\
-Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n)$ & $O(n^2)$ & Predict & $O(n^2)$ \\
+Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^4)$ & Predict & $O(n^2)$ \\
+Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(1)$ & $O(n^2)$ & Predict & $O(n^2)$ \\
 RandShare & & PVSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(1)$ \\
-SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(n^2)$ \\
-HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Predict & $O(n^3)$ \\
+SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
+HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^3)$ \\
 \midrule
 HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
 GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
