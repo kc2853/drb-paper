@@ -87,7 +87,7 @@ Generating periodic trustworthy randomness is crucial to applications ranging fr
 
 \textbf{Centralized Beacons.} While relying on a trusted third party like NIST \cite{fischer2011public} or random.org \cite{haahr2010random} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, such as the risk of tampering and the inability of the end user to verify the correctness of the beacon. For this reason, it is strongly desirable to construct a beacon with no trusted party or central point of failure.
 
-\textbf{Public External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock market data \cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin \cite{nakamoto2019bitcoin, han2020randchain} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders.
+\textbf{Public External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock market data \cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin \cite{nakamoto2019bitcoin, bentov2016bitcoin, han2020randchain} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders.
 
 Beacons realized using stock market data are susceptible to manipulation by high-frequency traders via unnatural trades, particularly near the closing time of the market. The extent to which the financial exchanges are in fact trusted parties that could manipulate also remains unclear.
 
@@ -96,9 +96,9 @@ Even though the decentralized nature and the large amount of computational work 
 \textbf{Distributed Randomness Beacons.}
 A natural approach to further distribute and decentralize trust is to rely on a set of mutually distrustful nodes and use distributed protocols dealing with a Byzantine network to generate randomness. We call a beacon realized in this manner a \textit{distributed randomness beacon} (DRB). In this paper, we focus on distributed randomness protocols that can be used to realize a DRB.
 
-\textbf{Contribution.} The goal of the paper is to systematize the current progress on the problem of generating reliable distributed randomness and devise a theoretical framework and generalization encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. Drawing from a scattered body of knowledge, we identify two key components of a practical DRB's design --- selection of entropy providers and beacon output generation, which can be decoupled from each other. This enables a more holistic analysis of existing protocols as well as future protocols of similar nature. Finally, we provide new insights and discussion on potential attack vectors, countermeasures that a DRB can benefit from, and techniques that lead to better efficiency and scalability.
+\textbf{Contribution.} The goal of the paper is to systematize the current progress on the problem of generating reliable distributed randomness and devise a theoretical framework and generalization encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. Drawing from a body of knowledge based on heuristics, we identify two key components of a practical DRB's design --- selection of entropy providers and beacon output generation, which can be decoupled from each other. This enables a more holistic analysis of existing protocols as well as future protocols of similar nature. Finally, we provide new insights and discussion on potential attack vectors, countermeasures that a DRB can benefit from, and techniques that lead to better efficiency and scalability.
 
-\textbf{Paper organization.} We organize the paper as follows. Preliminaries including our system model, a strawman DRB leveraging perfect synchrony (an ideal assumption), commit-reveal, and the definition of an ideal DRB are described in Section \ref{section:preliminaries}. Section \ref{section:vdf} introduces fairly recent protocols using verifiable delay functions, which help achieve both desirable properties of a DRB and simplicity. Then from Section \ref{section:commit-reveal-punish} to \ref{section:dvrf}, protocols are introduced in decreasing order of number of nodes providing \textit{marginal entropy} (i.e. randomness that is independently generated at a node level and is broadcast during the newest round of a DRB). Accordingly, Section \ref{section:commit-reveal-punish} and \ref{section:commit-reveal-recover} review protocols in which all nodes must provide marginal entropy while erroneous behaviors by some nodes are successfully counteracted, respectively, by financial punishment and threshold secret sharing or threshold encryption. Section \ref{section:committee-based} illustrates protocols that include in the beginning of each round an extra step of committee selection, enabling only a committee (non-empty proper subset) of nodes to provide marginal entropy for the sake of efficiency (overall computational and communication complexity). In Section \ref{section:dvrf}, we furthermore have protocols that do not require any marginal entropy to generate a beacon output. Lastly, various discussion topics (e.g. attack vectors and an overall comparison of DRBs in Table \ref{table:comparison}) are dived into in Section \ref{section:discussions}.
+\textbf{Paper organization.} We organize the paper as follows. Preliminaries including our system model, a strawman DRB leveraging perfect synchrony (an ideal assumption), commit-reveal, and the definition of an ideal DRB are described in Section \ref{section:preliminaries}. Section \ref{section:vdf} introduces fairly recent protocols using verifiable delay functions \cite{boneh2018verifiable}, which help achieve both security and simplicity. Then from Section \ref{section:commit-reveal-punish} to \ref{section:dvrf}, protocols are introduced in decreasing order of number of nodes providing \textit{marginal entropy} (i.e. randomness that is independently generated at a node level and is broadcast during the newest round of a DRB). Accordingly, Section \ref{section:commit-reveal-punish} and \ref{section:commit-reveal-recover} review protocols in which all nodes must provide marginal entropy while erroneous behaviors by some nodes are successfully counteracted, respectively, by financial punishment \cite{youcai2017randao, david2020economically} and threshold secret sharing \cite{schoenmakers1999simple, cascudo2017scrape} or threshold encryption \cite{de1994share, desmedt1990Threshold}. Section \ref{section:committee-based} illustrates protocols that include in the beginning of each round an extra step of committee selection, enabling only a committee (non-empty proper subset) of nodes to provide marginal entropy for the sake of efficiency (overall computational and communication complexity). In Section \ref{section:dvrf}, we furthermore have protocols that do not require any marginal entropy to generate a beacon output. Lastly, various discussion topics (e.g. attack vectors and an overall comparison of DRBs in Table \ref{table:comparison}) are dived into in Section \ref{section:discussions}.
 
 \section{Preliminaries}
 \label{section:preliminaries}
@@ -190,14 +190,18 @@ Extending commit-reveal by adding a delay, Unicorn \cite{lenstra2015random} uses
     such that $\mathcal{O}_r = H(y_r)$, which is posted and can be efficiently verified using $\pi_r$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
 
-As long as $T$ is longer than the time period during which the values may be submitted including $\Delta$, even the last entropy provider cannot bias the final beacon output. Also notably, Unicorn++ is unbiasable by an adversary that controls $n - 1$ of the participants, as the entropy from even one honest participant would require computation of $\mathsf{VDF.Eval}$ from scratch.
+As long as $T$ is longer than the duration of Collect phase (including $\Delta$), even the last entropy provider cannot bias the final beacon output. Also notably, Unicorn++ is unbiasable by an adversary that controls $n - 1$ of the participants, as the entropy from even one honest participant would require computation of $\mathsf{VDF.Eval}$ from scratch.
 
+Additionally, as proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation can be used to supply $seed_r$ in Collect phase.
+
+\iffalse
 \subsection{Extending Public Randomness}
 As proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation can also be used to supply $seed_r$ via
 $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
 where $seed_r = H(e_r)$ with $e_r$ denoting the output of a public external beacon.
 
 Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network. 
+\fi
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
@@ -228,7 +232,7 @@ Wesolowski's VDF \cite{wesolowski2019efficient} is not strongly unique, as knowi
     \end{itemize}
 \end{enumerate}
 
-When the network is in good shape and the leaders are not malicious, RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity. Adversarial leaders and network delay ($\Delta$) increases the round duration to $T$ and the communication complexity to $O(n^2)$. Because $\mathcal{O}_r$ can be computed independently (with delay $T$), RandRunner retains liveness even with a dishonest majority and when network connectivity breaks down completely. Assuming an unbiased initial seed, the deterministic nature of RandRunner prevents an adversary from manipulating the beacon outputs. However, RandRunner produces pseudorandom numbers (and not uniform random numbers) and trails in terms of the quality of randomness. The leader based nature of RandRunner allows an adversary (if leader) to predict future outputs up to some extent and its advantage increases as long as a continuous sequence of adversarial nodes are selected as leaders. Assuming a $t$-limited adversary with relative computational advantage of $\alpha$ with respect to honest nodes, RandRunner provides $d$-unpredictability where $d = t \cdot \alpha$ if honest nodes make progress faster than adversarial nodes. This is reduced to standard majority assumption $n > 2t$ only when $\alpha = 1$ and $T \gg \Delta$. Otherwise, the fraction of honest nodes compared to adversarial nodes must also increase.
+RandRunner generates fresh randomness rapidly with only $O(n)$ communication complexity in the optimistic case. Adversarial leaders and network delay ($\Delta$) increases the round duration to $T$ and the communication complexity to $O(n^2)$. Because $\mathcal{O}_r$ can be computed independently (with delay $T$), RandRunner retains liveness even with a dishonest majority and when network connectivity breaks down completely. The deterministic nature of RandRunner also prevents an adversary from biasing the beacon outputs. However, RandRunner produces pseudorandom numbers (and not uniform random numbers) and trails in terms of the quality of randomness. Assuming a $t$-limited adversary with relative computational advantage of $\alpha$ with respect to honest nodes, RandRunner provides $d$-unpredictability where $d = t \cdot \alpha$ rounds if the honest nodes collectively progress faster than the malicious nodes and the following inequality holds: $$n-t > t \cdot \alpha$$ This is reduced to standard majority assumption $n > 2t$ only when $\alpha = 1$.
 % secure against covert adversary
 \section{Commit-Reveal-Punish}
 \label{section:commit-reveal-punish}
@@ -242,11 +246,7 @@ To ensure that honest participants are fully compensated when a participant fail
 Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required \cite{bartoletti2017constant, miller2017zero} by constructing a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per \cite{andrychowicz2014fair, andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
 
 \subsection{Rational Threshold Randomness}
-Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability and unbiasability of the protocol in the following ways.
-\begin{itemize}
-    \item \textbf{Unpredictability.} It introduces a informing mechanism to prevent collusion among participants. If the escrow is notified of collusion, it rewards the informer and slashes the deposits of all other participants (``collective punishment''). This makes informing more profitable than colluding. Realizing this, entities are discouraged to collude, fearing another entity would frame.
-    \item \textbf{Unbiasability/Robustness.} Any withholding of shares or failure to reconstruct $\mathcal{O}_r$ is disincentivized by the escrow collectively punishing everybody by slashing all the deposits.
-\end{itemize}
+Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability by introducing an informing mechanism. If the escrow is notified of collusion, it rewards the informer and slashes the deposits of all other participants (``collective punishment''). Realizing this, entities are discouraged to collude, fearing another entity would frame. To ensure unbiasability and robustness, any withholding of shares or failure to reconstruct $\mathcal{O}_r$ also results in collective punishment enforced by the escrow.
 
 EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
 
@@ -323,13 +323,13 @@ Note that what a participant $j$ can decrypt during the Recover phase is not rea
 \noindent\textbf{Albatross.} Extending Scrape, Albatross \cite{cascudo2020albatross} provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs at the end of each round (as opposed to Scrape's one). This is achieved by two techniques: packed Shamir secret sharing and linear $t$-resilient functions, each of which contributes a multiplicative factor of $O(n)$ to the number of beacon outputs produced per round.
 
 \subsubsection{Share-Reconstruct-Aggregate}
-One alternative is to skip the commit-reveal phase involving cryptographic commitments altogether and by default reconstruct each secret shared via PVSS. In other words, we can remove the $\mathsf{Com}(s^{(j)}, r_j)$ portion of commit-reveal-recover's commit phase (\textit{share}), perform Lagrange interpolation per secret for a total of $O(n)$ times (\textit{reconstruct}), and sum up the interpolated secrets to output $\mathcal{O}_r$ (\textit{aggregate}). While the resulting \textit{share-reconstruct-aggregate} saves a round of communication from Scrape's worst case, its average case does incur substantial communication overhead due to $O(n)$ runs of Lagrange interpolation, each of which requires cooperation of $t + 1$ nodes. RandShare \cite{syta2017scalable} uses this technique alongside a Byzantine agreement protocol to reach consensus on $O(n)$ secrets to be reconstructed. See Appendix \ref{appendix:randshare} for details.
+One alternative is to skip the commit-reveal phase involving cryptographic commitments altogether and by default reconstruct each secret shared via PVSS. In other words, we can remove the $\mathsf{Com}(s^{(j)}, r_j)$ portion of commit-reveal-recover's commit phase (\textit{share}), perform Lagrange interpolation per secret for a total of $O(n)$ times (\textit{reconstruct}), and sum up the interpolated secrets to output $\mathcal{O}_r$ (\textit{aggregate}). While the resulting \textit{share-reconstruct-aggregate} saves a round of communication from Scrape's worst case, its average case does incur substantial communication overhead due to $O(n)$ runs of Lagrange interpolation, each of which requires cooperation of $t + 1$ nodes. RandShare \cite{syta2017scalable} uses this technique alongside a Byzantine agreement protocol to reach consensus on $O(n)$ secrets to be reconstructed.
 
 \subsubsection{Share-Aggregate-Reconstruct}
-Another alternative is to harness the homomorphic properties of a PVSS sharing where the sum of $n$ respective shares of $n$ secrets is a share of the sum of $n$ secrets (note that the sum of $n$ secrets is precisely $\mathcal{O}_r$ in these protocols). Due to this, only one, as opposed to $O(n)$, Lagrange interpolation is sufficient to reconstruct $\mathcal{O}_r$ once nodes essentially perform \textit{aggregate} before \textit{reconstruct}, hence the name \textit{share-aggregate-reconstruct}. A variant of Scrape, SecRand \cite{guo2020secRand} uses this technique to reduce the communication complexity by a factor of $n$ as only $t + 1$ aggregated shares are exchanged to compute the final beacon output. See Appendix \ref{appendix:secRand} for details.
+Another alternative is to harness the homomorphic properties of a PVSS sharing where the sum of $n$ respective shares of $n$ secrets is a share of the sum of $n$ secrets (note that the sum of $n$ secrets is precisely $\mathcal{O}_r$ in these protocols). Due to this, only one, as opposed to $O(n)$, Lagrange interpolation is sufficient to reconstruct $\mathcal{O}_r$ once nodes essentially perform \textit{aggregate} before \textit{reconstruct}, hence the name \textit{share-aggregate-reconstruct}. A variant of Scrape, SecRand \cite{guo2020secRand} uses this technique to reduce the communication complexity by a factor of $n$ as only $t + 1$ aggregated shares are exchanged to compute the final beacon output.
 
 \subsection{From Threshold Encryption}
-While protocols based on threshold secret sharing can incur high communication cost of $O(n^4)$ due to $O(n)$ runs of Lagrange interpolation, protocols relying on a different cryptographic primitive, namely threshold encryption, offer a variant where only 1 Lagrange interpolation suffices even in the worst case. Though reminiscent of share-aggregate-reconstruct, these protocols differ in that they do not necessarily assume a PKI (mandatory in PVSS) but rather a DKG, which may be run multiple times to refresh keys. In this section, we define threshold encryption and summarize how a protocol like HERB \cite{cherniaeva2019homomorphic} exhibits above.
+While protocols based on threshold secret sharing can incur high communication cost of $O(n^4)$ due to $O(n)$ runs of Lagrange interpolation, protocols relying on a different cryptographic primitive, namely threshold encryption \cite{de1994share, desmedt1990Threshold}, offer a variant where only 1 Lagrange interpolation suffices even in the worst case. Though reminiscent of share-aggregate-reconstruct, these protocols differ in that they do not necessarily assume a PKI (mandatory in PVSS) but rather a DKG, which may be run multiple times to refresh keys. In this section, we define threshold encryption and summarize how a protocol like HERB \cite{cherniaeva2019homomorphic} exhibits above.
 
 \begin{definition}[$(t, n)$-threshold encryption]
 A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
@@ -341,7 +341,7 @@ A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a su
 \end{itemize}
 \end{definition}
 
-HERB uses threshold ElGamal encryption \cite{desmedt1990Threshold} (see Appendix \ref{appendix:thrElGamal} for details), though it can be replaced with any other threshold homomorphic encryption scheme.\\
+HERB uses threshold ElGamal encryption \cite{desmedt1990Threshold, fouque2001threshold} (see Appendix \ref{appendix:thrElGamal} for details) though it can be replaced with any other threshold homomorphic encryption scheme.\\
 
 \noindent\textbf{HERB.} After an initial DKG ($\mathsf{ThrEnc.DKG}$), the protocol proceeds in two phases. In the first phase, nodes play the role of \textit{entropy providers} each offering some entropy contribution to generate a group ciphertext. In the second phase, nodes play the role of \textit{key holders} performing threshold decryption. While entropy providers and key holders could technically be different nodes, we assume they are the same below.
 
@@ -350,7 +350,7 @@ HERB uses threshold ElGamal encryption \cite{desmedt1990Threshold} (see Appendix
     \item \textbf{Disclosure.} Each key holder $P_i$ uses $\mathsf{ThrEnc.DecShare}$ to generate a decryption share $d_i$, published along with a proof of correct decryption $\pi_{DLEQ}^{(i)}$ (Appendix \ref{appendix:dleq}). When $t + 1$ decryption shares are published and verified, nodes use $\mathsf{ThrEnc.Rec}$ to output $\mathcal{O}_r = m$.
 \end{enumerate}
 
-HERB achieves a communication complexity of $O(n^3)$ with only constant amount of data shared each round by the key holders. The communication complexity can be further optimized to $O(n^2)$ by using Avalanche \cite{rocket2018snowflake} to achieve consensus on $\mathcal{C}_r$, leading to an overall better performance than threshold secret sharing schemes. However, the dependence of HERB on DKG leads to high setup cost, as every new key holder would require a rerun of DKG to establish the keys. When compared to threshold VRF based schemes (Section \ref{section:dvrf}) which also uses DKG for setup, HERB trails in terms of communication complexity as it collects fresh entropy each round. This however results in HERB producing uniform random numbers (vs pseudorandom numbers). Also, HERB allows the entropy providers to be independent of key holders making it possible to collect entropy from a large and flexible set of sources while allowing the key holders set to be much smaller and sampled to contain at most $t$ malicious nodes.
+Offering a different flavor but similar to SecRand's share-aggregate-recover, HERB achieves a communication complexity of $O(n^2)$ and $O(n^3)$ in the optimistic and worst cases, respectively, due to 1 needed Lagrange interpolation per $\mathcal{O}_r$. Its requirement of DKG in the setup presents a caveat however, as a new DKG must take place for any attempt to refresh keys of participants (e.g. in case of a suspected hack or a simple reconfiguration). This can incur additional cost, as a DKG requires every node to actively interact. On the flip side, HERB provides a positive feature where entropy providers need not be key holders (as noted before), implying that the level of randomness quality and that of security can aptly be scaled independently if necessary.
 
 \section{Committee-Based Protocols}
 \label{section:committee-based}
@@ -358,7 +358,7 @@ While all aforementioned commit-reveal variants (Sections \ref{subsection:extend
 
 In this section, we consider DRB protocols that are \textit{committee-based}, where a committee refers to a non-empty proper subset of nodes. Committee-based protocols proceed in two steps: \textit{committee selection} and \textit{beacon output generation}. As the names suggest, $\mathcal{C}_r$ is agreed upon during committee selection while the beacon output $\mathcal{O}_r$ is generated and agreed upon during beacon output generation. Provided below is a summary of 11 preexisting protocols, and we offer intuition (refer to corresponding citations for full details) on interpreting them under our simple framework.
 
-The insight is that committee selection and beacon output generation are theoretically modular such that (cryptographic) tools used in the first step can be independent of those used in the second step. It is in this way that these two steps can be seen as two ``dimensions'' explaining any (preexisting or future) committee-based DRB. Refer to Table \ref{table:committee-based} to visualize.
+The insight is that committee selection and beacon output generation are theoretically modular such that (cryptographic) tools used in the first step can be independent of those used in the second step. It is in this way that these two steps can be seen as two ``dimensions'' explaining a committee-based DRB. Refer to Table \ref{table:committee-based} to visualize.
 
 \subsection{Step 1. Committee Selection}
 The first step of a committee-based DRB protocol involves selecting $\mathcal{C}_r$ in a way that is agreeable by all nodes. We classify committee selection mechanisms into two: public and private.
@@ -399,7 +399,7 @@ where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that 
 
 As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$. Two examples of the above formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
 
-\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
+\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF (verifiable random function) \cite{micali1999verifiable,dodis2005verifiable} is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
@@ -478,7 +478,7 @@ Equivalently, suppose there exists one imaginary node with the knowledge of $sk$
 \]
 yields a computationally equivalent output to when a DVRF is computed among $n$ nodes. As $f$ typically takes a form resembling $f(\mathcal{O}_{r - 1}) = H(r \mathbin\Vert \mathcal{O}_{r - 1})$, there is no marginal entropy generated by the participants. The precise reason for the security of the above DVRF formulation is that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
 
-\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Due to the known fact that the hash of a verifiable unpredictable function (VUF) equals a VRF, a unique digital signature (which is a VUF \cite{dodis2005verifiable}) can be made into a DVRF by taking its threshold signature variant \cite{boldyreva2003threshold} and hashing the output. Adopting the BLS signature scheme \cite{boneh2001short}, protocols like Dfinity \cite{hanke2018dfinity} and drand \cite{drand} (though with slightly different trivial details) offer a DRB given by
+\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Due to the known fact that the hash of a verifiable unpredictable function (VUF) \cite{micali1999verifiable} equals a VRF, a unique digital signature (which is a VUF \cite{dodis2005verifiable}) can be made into a DVRF by taking its threshold signature variant \cite{boldyreva2003threshold} and hashing the output. Adopting the BLS signature scheme \cite{boneh2001short}, protocols like Dfinity \cite{hanke2018dfinity} and drand \cite{drand} (though with slightly different trivial details) offer a DRB given by
 \[
 \mathcal{O}_r = H(\mathsf{Sign}_{sk}(r \mathbin\Vert \mathcal{O}_{r - 1}))
 \]
@@ -536,20 +536,21 @@ Mt. Random illustrates a framework in which PVSS and (D)VRF protocols can be com
 \fi
 % \todo{conclusions, open problems}
 \section{Conclusion}
-In this paper, we provide an overview and comparison of various DRB protocols which provide a range of cost and quality tradeoffs under different setups, assumptions and adversarial models. We further describe a modular framework comprising of two components: selection of entropy providers and beacon output generation, which can be used to analyze any practical DRB's design. Based on our systematization, we provide the following insights:
+In this paper, we provide an overview and comparison of various DRB protocols which provide a range of cost and quality tradeoffs under different setups, assumptions and adversarial models. We further describe a modular framework comprising of two components: selection of entropy providers and beacon output generation, which can be used to analyze any practical DRB's design. Based on our systematization, we provide the following insights.
 \begin{itemize}
-    \item PVSS/VSS based protocols are suitable when high quality of unbiased uniform randomness is to be generated with a dynamic but small set of entropy providers. To scale it to a larger set of nodes, various techniques to select a subset of entropy providers can be used.
-    \item Protocols requiring DKG (vs PKI) for initial setup (DVRF, threshold encryption based) works well with a larger, but relatively static set of entropy providers due to the high cost associated with it.
-    \item Out of the protocols generating pseudorandom outputs, VDF based protocols stands out due to its ease of setup and ability to generate randomness even with a dishonest majority.
-    \item Protocols based on private lottery are suitable for generating quick but biasable pseudorandomness with a large dynamic set of entropy providers, allows ad-hoc/independent participation and is commonly used in protocols that require randomness as part of their overall construction (Algorand, Ouroboros Praos).
+    \item PVSS-based protocols are suitable when high quality of unbiased uniform randomness is to be generated with a dynamic but small set of entropy providers. To scale it to a larger set of nodes, various techniques to select a subset of entropy providers can be used.
+    \item Protocols requiring DKG (vs PKI) for setup (DVRF, threshold encryption based) scale better in $n$ but with a relatively static (to avoid a new DKG per reconfiguration) set of entropy providers.
+    \item Out of those generating pseudorandom outputs, VDF-based protocols stand out due to their ease of setup and ability to generate randomness even with a dishonest majority.
+    \item Protocols based on private lottery are suitable for generating quick but biasable pseudorandomness with a large dynamic set of entropy providers, allow ad-hoc/independent participation, and are commonly used as subroutine to protocols that require randomness as part of their overall construction (Algorand, Ouroboros Praos).
     % escrow based protocols are suitable when used in conjunction with a lottery/jackpot/ associated with generating randomness.
 \end{itemize}
-With the emergence of PoS based blockchains, recent years has seen growing interest in the problem of generating unbiasable verifiable randomness. While significant development has been made to address it, we identify the following areas which could benefit from further research. 
+
+With the emergence of Proof of Stake blockchains, recent years has seen growing interest in the problem of generating unbiasable verifiable randomness. While significant development has been made to address it, we identify the following areas which could benefit from further research. 
 \begin{itemize}
     \item Formalizing the security parameters for VDF based protocols.
     \item Extending private lottery based protocols to generate unbiased pseudorandomness. Though SSLE provides a way around it, the issue of withholding still remains.
     \item Combining multiple stand-alone beacons in a modular way to build a heterogeneous beacon. Mt.Random \cite{cascudomt} explores this idea by building a multi-tiered randomness beacon with each tier providing different tradeoff between cost and quality of randomness.
-    \item While most of the existing DRB protocols rely on the assumptions of synchronous or semi-synchronous communication model, the underlying timing assumptions are potential subject for violation. Extending/modifying existing protocols to support fully asynchronous communication is an important area for future research.
+    \item While most of the existing DRB protocols rely on the assumptions of synchronous or semi-synchronous communication model, the underlying timing assumptions are potential subject for violation. Extending protocols to support fully asynchronous communication is an important area for future research.
     % communication cost bottleneck due to consensus
     % proactively detecting corruption and automatic recovery
 \end{itemize}
@@ -648,6 +649,7 @@ $$s = p(0) = \sum_{j \in A} p(j) \lambda_{0, j, A}$$
 Effectively, what Pedersen-VSS is able to achieve is the decoupling of $g^s$ (as the public key corresponding to the secret key $s$) and $g^{s} h^{s'}$ (as a published commitment for verification purposes). In other words, the share verification process does not (even information-theoretically) leak any information regarding the initial secret $s$, a fact that is not true with Feldman-VSS. This is useful when VSS is used as a subprotocol for distributed key generation, where an adversary is otherwise able to bias the outcome.
 \fi
 
+\iffalse
 \section{RandShare}
 \label{appendix:randshare}
 RandShare \cite{syta2017scalable} uses VSS as a subprotocol, extended by adopting the concept of barrier, a specific point in the protocol execution after which the output is fixed and guaranteed to complete successfully. In RandShare, the barrier is reached when the first honest node reveals his shares.
@@ -660,6 +662,7 @@ RandShare proceeds as follows.
     \item \textbf{Aggregation.} Final randomness is $\mathcal{O}_r = \sum_{j \in \mathcal{S}} s^{(j)}$.
     
 \end{enumerate}
+\fi
 
 \iffalse
 \section{Distributed Key Generation (DKG)}
@@ -849,7 +852,6 @@ In Albatross, we assume $n$ participants, of which the static adversary corrupts
         \end{itemize}
 \end{enumerate}
 
-\fi
 \subsection{SecRand}
 \label{appendix:secRand}
 SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After initial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
@@ -861,6 +863,7 @@ SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrap
     $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
     \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t + 1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(\tilde{s})$.
 \end{enumerate}
+\fi
 \iffalse
 \section{Threshold Encryption}
 \label{appendix:thresholdEnc}
@@ -884,7 +887,7 @@ SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrap
 \fi
 \section{Threshold ElGamal Cryptosystem}
 \label{appendix:thrElGamal}
-$(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, cherniaeva2019homomorphic} over an Elliptic Curve $E$ defined in field $\mathbb{F}_p$ ($p$ being a very large prime number), and its cyclic subgroup $\mathbb{G} \in E(\mathbb{F}_p)$ with generator $G$ and prime order $q$, is implemented as follows:
+$(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic} over an Elliptic Curve $E$ defined in field $\mathbb{F}_p$ ($p$ being a very large prime number), and its cyclic subgroup $\mathbb{G} \in E(\mathbb{F}_p)$ with generator $G$ and prime order $q$, is implemented as follows:
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs DKG protocol and generates the common public key $pk$, individual secret keys $\vec{SK}$ and the corresponding individual public keys $\vec{PK}$.
      \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ takes as input a point $m \in \mathbb{G}$ and the group public key $pk$ and generates ciphertext $c = (A, B) = (rG, m+D) $ where $D = r \cdot pk$.
