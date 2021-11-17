@@ -167,8 +167,8 @@ We next begin our discussion of various approaches to realizing an ideal DRB gen
 \label{section:vdf}
 One way to prevent the last revealer attack is to add a delay function after collecting entropy contributions from nodes, delaying the derivation of $\mathcal{O}_r$. As long as the delay is suitably long, no one would be able to preemptively determine the final beacon output and attempt to withhold. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this.
 
-\begin{definition}[Verifiable Delay Function]
-A Verifiable Delay Function (VDF) is a function that takes a specified number of sequential steps to compute which cannot be parallelized. However, the output can be quickly verified by anyone such that for every input $x$, there exists a unique output $y$ only which will be verified successfully. A VDF can be described via a set of three algorithms.
+\begin{definition}[Verifiable delay function]
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute which cannot be parallelized. However, the output can be quickly verified by anyone such that for every input $x$, there exists a unique output $y$ only which will be verified successfully. A VDF can be described via a set of three algorithms.
 \begin{itemize}
 \item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that takes a security parameter $\lambda$ and a time bound $T$ and outputs public parameters $pp$ sampled from some parameter space $PP$.
 \item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ takes public parameters $pp\in PP$, an input $x$ and outputs $y$ and a proof $\pi$.
@@ -182,12 +182,12 @@ A VDF can be used to derive unbiasable randomness either from biasable randomnes
 
 \subsection{Extending Commit-Reveal}
 \label{subsection:extending-commit-reveal}
-The work of \cite{lenstra2015random} extends commit-reveal using the Sloth function (a VDF precursor involving modular square roots in modulo prime) via Unicorn. The Sloth function in Unicorn can be replaced with a VDF, desirably achieving an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as Unicorn++. In Unicorn++ (as well as Unicorn), participants can skip the commit step and send their contributions directly. It runs as follows.
+Extending commit-reveal by adding a delay, Unicorn \cite{lenstra2015random} uses the Sloth function (a VDF precursor involving modular square roots in modulo prime), which can be replaced with a VDF to desirably achieve an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as Unicorn++. In Unicorn++ (as well as Unicorn), participants can skip the commit step and send their contributions directly. It runs as follows.
 \begin{enumerate}
-    \item \textbf{Collect.} Every participant $P_i$ broadcasts its entropy contribution $e_i$ between time $t_1$ and $t_2$ (assuming synchronized clocks). At $t_2$, they are combined such that $seed_r = H(e_1,\ldots, e_n)$.
-    \item \textbf{Evaluate.} Every participant computes the output of VDF $y_r$ and the corresponding proof $\pi_r$ with a chosen delay parameter $T$ (part of $pp$) as follows:
+    \item \textbf{Collect.} Every participant $P_i$ broadcasts its entropy contribution $e_i$ between time $t_1$ and $t_2$ (assuming synchronized clocks). At $t_2$, they are combined into $seed_r = H(e_1,\ldots, e_n)$.
+    \item \textbf{Evaluate.} Every participant evaluates the VDF with $seed_r$ and a chosen delay parameter $T$ (part of $pp$) via
     $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
-    The beacon output is calculated as $\mathcal{O}_r = H(y_r)$, which is then posted and can be efficiently verified using $\pi_r$ via $\mathsf{VDF.Verify}$.
+    such that $\mathcal{O}_r = H(y_r)$, which is posted and can be efficiently verified using $\pi_r$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
 
 As long as $T$ is longer than the time period during which the values may be submitted including $\Delta$, even the last entropy provider cannot bias the final beacon output. Also notably, Unicorn++ is unbiasable by an adversary that controls $n - 1$ of the participants, as the entropy from even one honest participant would require computation of $\mathsf{VDF.Eval}$ from scratch.
@@ -203,17 +203,17 @@ Adding a VDF prevents miners (or any other party) from determining the beacon ou
 \label{subsection:randrunner}
 Aforementioned VDF-based schemes require consensus on the inputs to VDF every round and the rate at which random numbers are generated is limited by $T$. RandRunner \cite{schindler2021randrunner} tackles these issues by using a VDF design that builds a deterministic chain of outputs (no consensus on ordering required) and allows the participant that sets up the VDF to quickly compute it and broadcast the output. This results in lower communication overhead and shorter intervals between random outputs when the network is not under attack. Trapdoor VDFs, initially described in \cite{wesolowski2019efficient} can be used to realize this. RandRunner uses \emph{strongly unique trapdoor VDFs}, which ensure that the result obtained with trapdoor and that without it are always equal.
 
-\begin{definition}[Strongly Unique Trapdoor VDF]
-A Strongly Unique Trapdoor VDF extends VDF by allowing any participant who knows the trapdoor to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides uniqueness even when the public parameters for the VDF are generated by the adversary. This is called strong uniqueness. A Strongly Unique Trapdoor VDF can be described by the algorithms $\mathsf{TVDF = (Setup,VerifySetup, TrapdoorEval, Eval, Verify)}$. It extends the algorithms of a traditional VDF with:
+\begin{definition}[Strongly unique trapdoor VDF]
+A \textit{strongly unique trapdoor VDF} extends VDF by allowing any participant who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides \textit{strong uniqueness}, i.e. uniqueness even when VDF's public parameters are adversarially generated. It can be described by the algorithms $\mathsf{TVDF} = (\mathsf{Setup}, \mathsf{VerifySetup}, \mathsf{TrapdoorEval}, \mathsf{Eval}, \mathsf{Verify})$, extending those of a traditional VDF with the following.
 \begin{itemize}
     \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ is used to verify the validity of the public parameters $pp$.
     \item $\mathsf{TrapdoorEval}(pp,x,sk) \rightarrow (y, \pi)$ takes an input $x$ along with trapdoor $sk$ and outputs $y$ and a proof $\pi$ in less than time $T$ unlike $\mathsf{Eval}$.
 \end{itemize}
 \end{definition}
 
-Wesolowski’s VDF \cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$ for different invalid outputs. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}. RandRunner starts with a one-time Setup and Bootstrapping phase. It is followed by Execution phase which generates random outputs every round. The phases proceed as follows.
+Wesolowski's VDF \cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF \cite{pietrzak2018simple}. After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
 \begin{enumerate}
-    \item \textbf{Setup and Bootstrapping Phase.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$, which is verified by other participants using $\mathsf{TVDF.VerifySetup}$. This ensures that the assumptions for uniqueness property of Pietrzak’s VDF \cite{pietrzak2018simple} are fulfilled. At the end, every participant should have the same set of public parameters $\mathcal{P} = \{ pp_1, pp_2, \ldots pp_n \}$. The initial value $\mathcal{O}_0$ used to bootstrap the protocol serves as input to the first VDF.
+    \item \textbf{Setup and Bootstrapping Phase.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$, which is verified by other participants using $\mathsf{TVDF.VerifySetup}$. This ensures that the assumptions for uniqueness property of Pietrzak's VDF \cite{pietrzak2018simple} are fulfilled. At the end, every participant should have the same set of public parameters $\mathcal{P} = \{pp_1, pp_2, \ldots pp_n\}$. The initial value $\mathcal{O}_0$ used to bootstrap the protocol serves as input to the first VDF.
     
     \item \textbf{Execution Phase.} Every round $r$ has a unique leader $l_r$ whose duty is to advance the protocol into the next round. $l_r$ can be selected via either round-robin (i.e. taking turns in some permuted order) or random selection (i.e. using $\mathcal{O}_{r - 1}$ as seed, originally called randomized sampling). The implications of each will be discussed in Section \ref{subsubsection:public-committee-selection}. Each round can proceed in two ways depending on $l_r$'s honesty.
     \begin{itemize}
@@ -251,11 +251,11 @@ Economically Viable Randomness (EVR) \cite{david2020economically}, on the other 
 EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
 
 \begin{definition}[$(t, n)$-secret sharing]
-A $(t, n)$-secret sharing scheme (also known as Shamir's secret sharing \cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ of degree $t$ among $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
+A \textit{$(t, n)$-secret sharing} scheme (also known as Shamir's secret sharing \cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ of degree $t$ among $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
 \end{definition}
 
-\begin{definition}[Verifiable Secret Sharing]
-Verifiable Secret Sharing (VSS) \cite{feldman1987practical, pedersen1991non} protects a $(t, n)$-secret sharing scheme against a malicious dealer providing incorrect shares by allowing every participant to verify the share they've received from the dealer is a valid piece of the secret without revealing the secret. VSS can be described by the following algorithms.
+\begin{definition}[Verifiable secret sharing]
+\textit{Verifiable secret sharing} (VSS) \cite{feldman1987practical, pedersen1991non} protects a $(t, n)$-secret sharing scheme against a malicious dealer providing incorrect shares by allowing every participant to verify the share they've received from the dealer is a valid piece of the secret without revealing the secret. VSS can be described by the following algorithms.
 \begin{itemize}
     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$ and is an implicit input to all other algorithms.
     \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ is executed by the dealer with secret $s$ to generate secret shares $\{s_i\}$ (each of which is sent to node $i$ correspondingly) as well as commitment $C$ to the secret sharing polynomial of degree $t$.
@@ -265,8 +265,8 @@ Verifiable Secret Sharing (VSS) \cite{feldman1987practical, pedersen1991non} pro
 % Feldman-VSS and Pedersen-VSS are two of the most popular VSS protocols. See Appendix \ref{appendix:vss} for details.
 \end{definition}
 
-\begin{definition}[Distributed Key Generation]
-A Distributed Key Generation (DKG) \cite{gennaro1999secure, gennaro3revisiting} protocol allows $n$ participants to collectively generate a group public key, the individual secret keys, and the corresponding public keys without the help of a trusted third party. It does so by running multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. However, unlike secret sharing schemes, DKG shares can be used repeatedly for an unlimited number of time without ever recovering the group secret explicitly. A DKG is described by the following algorithm.
+\begin{definition}[Distributed key generation]
+A \textit{distributed key generation} (DKG) \cite{gennaro1999secure, gennaro3revisiting} protocol allows $n$ participants to collectively generate a group public key, the individual secret keys, and the corresponding public keys without the help of a trusted third party. It does so by running multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. However, unlike secret sharing schemes, DKG shares can be used repeatedly for an unlimited number of time without ever recovering the group secret explicitly. A DKG is described by the following algorithm.
 \begin{itemize}
     \item $\mathsf{DKG}(1^{\lambda}, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ is a distributed key generation algorithm that takes a input security parameter $1^\lambda$, the number of participants $n$ and the threshold parameter $t$ and outputs a group public key $pk$, the individual secret keys $\vec{SK} = \{sk_1, sk_1, \ldots, sk_n\}$, and the corresponding public keys $\vec{PK} = \{pk_1, pk_2, \ldots, pk_n\}$
 \end{itemize}
@@ -298,10 +298,10 @@ While a node's malicious behaviors in EVR are limited to withholding secrets to 
 Instead of using an escrow to enforce desired behaviors, commit-reveal-recover variants extend commit-reveal and defend against the last revealer attack by providing a mechanism to \textit{recover} or \textit{reconstruct} one's secret if withheld. This can be achieved by either threshold secret sharing or threshold encryption. Protocols based on commit-reveal-recover assume a $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct a secret such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while $t$ Byzantine nodes cannot collude to preemptively reconstruct a secret.
 
 \subsection{From Threshold Secret Sharing}
-Building on $(t, n)$-secret sharing, commit-reveal-recover variants based on threshold secret sharing often use Publicly Verifiable Secret Sharing (PVSS) \cite{schoenmakers1999simple, cascudo2017scrape} instead of VSS as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of the sharing and reconstruction.
+Building on $(t, n)$-secret sharing, commit-reveal-recover variants based on threshold secret sharing often use PVSS (publicly verifiable secret sharing) \cite{schoenmakers1999simple, cascudo2017scrape} instead of VSS as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of the sharing and reconstruction.
 
-\begin{definition}[Publicly Verifiable Secret Sharing]
-Publicly Verifiable Secret Sharing (PVSS) extends VSS by allowing any external party to verify the correctness of sharing and reconstruction of a secret via zero-knowledge proofs posted by the dealer and the reconstructing participants, respectively. A PVSS scheme can be realized by the algorithms $\mathsf{PVSS} = (\mathsf{Setup}, \mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec}, \mathsf{ShareGen}, \mathsf{ShareVerify}, \mathsf{Recon})$. To provide public verifiability, PVSS extends VSS by requiring $\mathsf{PVSS.ShareGen}$ to use keys generated by $\mathsf{PVSS.KeyGen}$ to encrypt and decrypt shares via $\mathsf{PVSS.Enc}$ and $\mathsf{PVSS.Dec}$ as subroutines and to generate auxiliary proofs for public verification as another subroutine. Then $\mathsf{PVSS.ShareVerify}$ can be run by anyone (not just the participants as in VSS). See Appendix \ref{appendix:pvss} for details.
+\begin{definition}[Publicly verifiable secret sharing]
+\textit{Publicly verifiable secret sharing} (PVSS) extends VSS by allowing any external party to verify the correctness of sharing and reconstruction of a secret via zero-knowledge proofs posted by the dealer and the reconstructing participants, respectively. A PVSS scheme can be realized by the algorithms $\mathsf{PVSS} = (\mathsf{Setup}, \mathsf{KeyGen}, \mathsf{Enc}, \mathsf{Dec}, \mathsf{ShareGen}, \mathsf{ShareVerify}, \mathsf{Recon})$. To provide public verifiability, PVSS extends VSS by requiring $\mathsf{PVSS.ShareGen}$ to use keys generated by $\mathsf{PVSS.KeyGen}$ to encrypt and decrypt shares via $\mathsf{PVSS.Enc}$ and $\mathsf{PVSS.Dec}$ as subroutines and to generate auxiliary proofs for public verification as another subroutine. Then $\mathsf{PVSS.ShareVerify}$ can be run by anyone (not just the participants as in VSS). See Appendix \ref{appendix:pvss} for details.
 \end{definition}
 
 The idea is that these commit-reveal-recover variants start with each of $n$ nodes generating a secret, distributing its PVSS shares, and receiving $n$ respective shares of $n$ secrets. These shares are then used to yield a beacon output via Lagrange interpolation (as part of $\mathsf{PVSS.Recon}$) in case some nodes withhold. Based on when and how such Lagrange interpolation takes place within a protocol, we subdivide the schemes into the following categories: commit-reveal-recover, share-reconstruct-aggregate, and share-aggregate-reconstruct.
@@ -332,7 +332,7 @@ Another alternative is to harness the homomorphic properties of a PVSS sharing w
 While protocols based on threshold secret sharing can incur high communication cost of $O(n^4)$ due to $O(n)$ runs of Lagrange interpolation, protocols relying on a different cryptographic primitive, namely threshold encryption, offer a variant where only 1 Lagrange interpolation suffices even in the worst case. Though reminiscent of share-aggregate-reconstruct, these protocols differ in that they do not necessarily assume a PKI (mandatory in PVSS) but rather a DKG, which may be run multiple times to refresh keys. In this section, we define threshold encryption and summarize how a protocol like HERB \cite{cherniaeva2019homomorphic} exhibits above.
 
 \begin{definition}[$(t, n)$-threshold encryption]
-A $(t, n)$-threshold encryption scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
+A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs a typical DKG.
     \item $\mathsf{Enc}(pk, m) \rightarrow c$ encrypts message $m$ with group public key $pk$ and outputs ciphertext $c$.
@@ -454,7 +454,7 @@ While DRB protocols can have all nodes or some subset of nodes contribute entrop
 Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on the concept of distributed VRF \cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF \cite{cascudomt}), which is a distributed version of VRF. The idea is that the usual VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a VRF output (as well as its proof) as if the computation involves one node with the knowledge of $sk$.
 
 \begin{definition}[Distributed verifiable random function]
-A distributed verifiable random function (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
+A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
 \begin{itemize}
 \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) given security parameter $1^\lambda$, total number of nodes $n$, and threshold parameter $t$.
 \item $\mathsf{PartialEval}(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
@@ -606,7 +606,7 @@ Due to the introduction of trapdoors and strong uniqueness, in contrast to tradi
     VSS schemes have two security requirements:
     \begin{itemize}
         \item Secrecy. If the dealer is honest, then the probability of an adversary learning
-        any information about the dealer’s secret in the sharing phase is $\mathsf{negl}(\lambda)$.
+        any information about the dealer's secret in the sharing phase is $\mathsf{negl}(\lambda)$.
         \item Correctness. If the dealer is honest, then the honest nodes output the secret
         $s$ at the end of the reconstruction phase with a high probability of $1 - \mathsf{negl}(\lambda)$.
     \end{itemize}
@@ -1125,7 +1125,7 @@ Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment & 1 & \cmark
 \midrule
 Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & None & $O(1)$ \\
 Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$ & None & $O(1)$ \\
-RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$ & \cmark & \xmark & $O(\log T)$ & $O(n^2)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
+RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$ & \cmark & \xmark & $O(\log T)$ & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
 \midrule
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$ & Halt & $O(n)$ \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^2)$ & $O(n^3)$ & Halt & $O(n)$ \\
