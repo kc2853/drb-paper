@@ -87,7 +87,7 @@ Generating periodic trustworthy randomness is crucial to applications ranging fr
 
 \textbf{Centralized Beacons.} While relying on a trusted third party like NIST \cite{fischer2011public} or random.org \cite{haahr2010random} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, such as the risk of tampering and the inability of the end user to verify the correctness of the beacon. For this reason, it is strongly desirable to construct a beacon with no trusted party or central point of failure.
 
-\textbf{Public External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock market data \cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin \cite{nakamoto2019bitcoin, bentov2016bitcoin, han2020randchain} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders.
+\textbf{Public External Beacons.} The other alternative is to construct a beacon using publicly available external sources of entropy such as stock market data \cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin \cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} as formalized in \cite{bonneau2015bitcoin}. However, such beacons are vulnerable to malicious insiders.
 
 Beacons realized using stock market data are susceptible to manipulation by high-frequency traders via unnatural trades, particularly near the closing time of the market. The extent to which the financial exchanges are in fact trusted parties that could manipulate also remains unclear.
 
@@ -98,7 +98,7 @@ A natural approach to further distribute and decentralize trust is to rely on a 
 
 \textbf{Contribution.} The goal of the paper is to systematize the current progress on the problem of generating reliable distributed randomness and devise a theoretical framework and generalization encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. Drawing from a body of knowledge based on heuristics, we identify two key components of a practical DRB's design --- selection of entropy providers and beacon output generation, which can be decoupled from each other. This enables a more holistic analysis of existing protocols as well as future protocols of similar nature. Finally, we provide new insights and discussion on potential attack vectors, countermeasures that a DRB can benefit from, and techniques that lead to better efficiency and scalability.
 
-\textbf{Paper organization.} We organize the paper as follows. Preliminaries including our system model, a strawman DRB leveraging perfect synchrony (an ideal assumption), commit-reveal, and the definition of an ideal DRB are described in Section \ref{section:preliminaries}. Section \ref{section:vdf} introduces fairly recent protocols using verifiable delay functions \cite{boneh2018verifiable}, which help achieve both security and simplicity. Then from Section \ref{section:commit-reveal-punish} to \ref{section:dvrf}, protocols are introduced in decreasing order of number of nodes providing \textit{marginal entropy} (i.e. randomness that is independently generated at a node level and is broadcast during the newest round of a DRB). Accordingly, Section \ref{section:commit-reveal-punish} and \ref{section:commit-reveal-recover} review protocols in which all nodes must provide marginal entropy while erroneous behaviors by some nodes are successfully counteracted, respectively, by financial punishment \cite{youcai2017randao, david2020economically} and threshold secret sharing \cite{schoenmakers1999simple, cascudo2017scrape} or threshold encryption \cite{de1994share, desmedt1990Threshold}. Section \ref{section:committee-based} illustrates protocols that include in the beginning of each round an extra step of committee selection, enabling only a committee (non-empty proper subset) of nodes to provide marginal entropy for the sake of efficiency (overall computational and communication complexity). In Section \ref{section:dvrf}, we furthermore have protocols that do not require any marginal entropy to generate a beacon output. Lastly, various discussion topics (e.g. attack vectors and an overall comparison of DRBs in Table \ref{table:comparison}) are dived into in Section \ref{section:discussions}.
+\textbf{Paper organization.} We organize the paper as follows. Preliminaries including our system model, a strawman DRB leveraging perfect synchrony (an ideal assumption), commit-reveal, and the definition of an ideal DRB are described in Section \ref{section:preliminaries}. Section \ref{section:vdf} introduces fairly recent protocols using verifiable delay functions \cite{boneh2018verifiable}, which help achieve both security and simplicity. Then from Section \ref{section:commit-reveal-punish} to \ref{section:dvrf}, protocols are introduced in decreasing order of number of nodes providing \textit{marginal entropy} (i.e. randomness that is independently generated at a node level and is broadcast during the newest round of a DRB). Accordingly, Section \ref{section:commit-reveal-punish} and \ref{section:commit-reveal-recover} review protocols in which all nodes must provide marginal entropy while erroneous behaviors by some nodes are successfully counteracted, respectively, by financial punishment \cite{youcai2017randao, david2020economically} and threshold secret sharing \cite{schoenmakers1999simple, cascudo2017scrape} or threshold encryption \cite{de1994share, desmedt1990Threshold}. Section \ref{section:committee-based} illustrates protocols that include in the beginning of each round an extra step of committee selection, enabling only a committee (non-empty proper subset) of nodes to provide marginal entropy. In Section \ref{section:dvrf}, we have protocols that do not require any marginal entropy. Lastly, various discussion topics (e.g. attack vectors and an overall comparison of DRBs in Table \ref{table:comparison}) are dived into in Section \ref{section:discussions}.
 
 \section{Preliminaries}
 \label{section:preliminaries}
@@ -165,24 +165,24 @@ We next begin our discussion of various approaches to realizing an ideal DRB gen
 
 \section{VDF-Based Protocols}
 \label{section:vdf}
-One way to prevent the last revealer attack is to add a delay function after collecting entropy contributions from nodes, delaying the derivation of $\mathcal{O}_r$. As long as the delay is suitably long, no one would be able to preemptively determine the final beacon output and attempt to withhold. A verifiable delay function (VDF) \cite{boneh2018verifiable} can be used to accomplish this.
+One way to prevent the last revealer attack is to add a delay function after collecting entropy contributions from nodes, delaying the derivation of $\mathcal{O}_r$. As long as the delay is suitably long, no one would be able to predict the final beacon output and attempt to withhold. A verifiable delay function (VDF) \cite{boneh2018verifiable,boneh2018survey} can be used to accomplish this.
 
 \begin{definition}[Verifiable delay function]
-A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute which cannot be parallelized. However, the output can be quickly verified by anyone such that for every input $x$, there exists a unique output $y$ only which will be verified successfully. A VDF can be described via a set of three algorithms.
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute even via parallel computing but takes exponentially less time to verify once computed. It can be described by the following algorithms.
 \begin{itemize}
-\item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that takes a security parameter $\lambda$ and a time bound $T$ and outputs public parameters $pp$ sampled from some parameter space $PP$.
-\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ takes public parameters $pp\in PP$, an input $x$ and outputs $y$ and a proof $\pi$.
-\item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the correct evaluation of the VDF on input $(pp, x)$ and 0 otherwise.
+\item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and time bound $T$.
+\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ outputs $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
+\item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the correct evaluation of the VDF on input $x$ and 0 otherwise.
 \end{itemize}
 \end{definition}
 
 The two well-regarded VDF proposals, one due to Pietrzak \cite{pietrzak2018simple} and the other due to Wesolowski \cite{wesolowski2019efficient}, make use of the serial nature of exponentiation in a group of unknown order to implement a VDF.
 
-A VDF can be used to derive unbiasable randomness either from biasable randomness (such as commit-reveal or public external beacons based on stock prices or Bitcoin) or from an entirely new protocol (like RandRunner \cite{schindler2021randrunner}) altogether. These approaches are summarized in the following sections.
+A VDF can be used to derive unbiasable randomness either from biasable protocols (e.g. commit-reveal or public external beacons based on stock prices or Bitcoin) or from an entirely new protocol (like RandRunner \cite{schindler2021randrunner}) altogether. These approaches are summarized below.
 
 \subsection{Extending Commit-Reveal}
 \label{subsection:extending-commit-reveal}
-Extending commit-reveal by adding a delay, Unicorn \cite{lenstra2015random} uses the Sloth function (a VDF precursor involving modular square roots in modulo prime), which can be replaced with a VDF to desirably achieve an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as Unicorn++. In Unicorn++ (as well as Unicorn), participants can skip the commit step and send their contributions directly. It runs as follows.
+Extending commit-reveal by adding a delay, Unicorn \cite{lenstra2015random} uses the Sloth function (a VDF precursor involving modular square roots in modulo prime), which can be replaced with a VDF to desirably achieve an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as \textit{Unicorn++}. In Unicorn++ (as well as Unicorn), participants can skip the commit step and send their contributions directly. It runs as follows.
 \begin{enumerate}
     \item \textbf{Collect.} Every participant $P_i$ broadcasts its entropy contribution $e_i$ between time $t_1$ and $t_2$ (assuming synchronized clocks). At $t_2$, they are combined into $seed_r = H(e_1,\ldots, e_n)$.
     \item \textbf{Evaluate.} Every participant evaluates the VDF with $seed_r$ and a chosen delay parameter $T$ (part of $pp$) via
@@ -190,9 +190,9 @@ Extending commit-reveal by adding a delay, Unicorn \cite{lenstra2015random} uses
     such that $\mathcal{O}_r = H(y_r)$, which is posted and can be efficiently verified using $\pi_r$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
 
-As long as $T$ is longer than the duration of Collect phase (including $\Delta$), even the last entropy provider cannot bias the final beacon output. Also notably, Unicorn++ is unbiasable by an adversary that controls $n - 1$ of the participants, as the entropy from even one honest participant would require computation of $\mathsf{VDF.Eval}$ from scratch.
+As long as $T$ is longer than the duration of Collect phase (including $\Delta$), Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch.
 
-Additionally, as proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation can be used to supply $seed_r$ in Collect phase.
+We quickly note a variation of above: as proposed in \cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices \cite{clark2010use} or PoW blockchains \cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_r$ in Collect phase. Such scheme is denoted by \textit{Ext. Beacon+VDF} in Table \ref{table:comparison}.
 
 \iffalse
 \subsection{Extending Public Randomness}
@@ -205,13 +205,13 @@ Adding a VDF prevents miners (or any other party) from determining the beacon ou
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
-Aforementioned VDF-based schemes require consensus on the inputs to VDF every round and the rate at which random numbers are generated is limited by $T$. RandRunner \cite{schindler2021randrunner} tackles these issues by using a VDF design that builds a deterministic chain of outputs (no consensus on ordering required) and allows the participant that sets up the VDF to quickly compute it and broadcast the output. This results in lower communication overhead and shorter intervals between random outputs when the network is not under attack. Trapdoor VDFs, initially described in \cite{wesolowski2019efficient} can be used to realize this. RandRunner uses \emph{strongly unique trapdoor VDFs}, which ensure that the result obtained with trapdoor and that without it are always equal.
+The disadvantage of the above approaches is that each round may require consensus on inputs to the VDF, incurring communication cost. In addition, the rate at which beacon outputs are generated is limited by $T$. RandRunner \cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-round consensus while allowing each round's duration to be independent of $T$ in the optimistic case. As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame. Trapdoor VDFs \cite{wesolowski2019efficient} with the strong uniqueness property \cite{schindler2021randrunner} serve as RandRunner's key building block.
 
 \begin{definition}[Strongly unique trapdoor VDF]
 A \textit{strongly unique trapdoor VDF} extends VDF by allowing any participant who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides \textit{strong uniqueness}, i.e. uniqueness even when VDF's public parameters are adversarially generated. It can be described by the algorithms $\mathsf{TVDF} = (\mathsf{Setup}, \mathsf{VerifySetup}, \mathsf{TrapdoorEval}, \mathsf{Eval}, \mathsf{Verify})$, extending those of a traditional VDF with the following.
 \begin{itemize}
-    \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ is used to verify the validity of the public parameters $pp$.
-    \item $\mathsf{TrapdoorEval}(pp,x,sk) \rightarrow (y, \pi)$ takes an input $x$ along with trapdoor $sk$ and outputs $y$ and a proof $\pi$ in less than time $T$ unlike $\mathsf{Eval}$.
+    \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ verifies the validity of $pp$.
+    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in time less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
 \end{itemize}
 \end{definition}
 
@@ -246,9 +246,9 @@ To ensure that honest participants are fully compensated when a participant fail
 Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required \cite{bartoletti2017constant, miller2017zero} by constructing a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per \cite{andrychowicz2014fair, andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
 
 \subsection{Rational Threshold Randomness}
-Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability by introducing an informing mechanism. If the escrow is notified of collusion, it rewards the informer and slashes the deposits of all other participants (``collective punishment''). Realizing this, entities are discouraged to collude, fearing another entity would frame. To ensure unbiasability and robustness, any withholding of shares or failure to reconstruct $\mathcal{O}_r$ also results in collective punishment enforced by the escrow.
+Economically Viable Randomness (EVR) \cite{david2020economically}, on the other hand, does provide an alternative requiring constant deposits to output a random number while tolerating withholding to some extent. The escrow used in EVR ensures unpredictability by introducing an informing mechanism. If the escrow is notified of collusion, it rewards the informer and slashes the deposits of all other participants (\textit{collective punishment}). Realizing this, entities are discouraged to collude, fearing another entity would inform. To ensure unbiasability and robustness, any withholding of shares or failure to reconstruct $\mathcal{O}_r$ also results in collective punishment enforced by the escrow.
 
-EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of Distributed Key Generation (DKG) protocol \cite{gennaro1999secure, gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair of private and public keys, $(x,X = g^x )$, in such a way that $X$ is publicly known while $x$ is shared by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
+EVR uses Escrow-DKG \cite{david2019rational}, which is an extension of DKG (distributed key generation) \cite{pedersen1991threshold,gennaro1999secure,gennaro3revisiting}. DKG allows a set of $n$ participants to collectively generate a pair $(x, X = g^x)$ of group private and public keys such that $x$ is shared and ``implied'' (i.e. never computed explicitly) by $n$ servers via a verifiable $(t, n)$-secret sharing scheme.
 
 \begin{definition}[$(t, n)$-secret sharing]
 A \textit{$(t, n)$-secret sharing} scheme (also known as Shamir's secret sharing \cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some $p \in \mathbb{Z}_q[X]$ of degree $t$ among $n$ participants each holding $p(i)$ for $i = 1, ..., n$ in such a way that any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix \ref{appendix:lagrange}), but subsets of size $t$ or fewer cannot.
@@ -266,9 +266,9 @@ A \textit{$(t, n)$-secret sharing} scheme (also known as Shamir's secret sharing
 \end{definition}
 
 \begin{definition}[Distributed key generation]
-A \textit{distributed key generation} (DKG) \cite{gennaro1999secure, gennaro3revisiting} protocol allows $n$ participants to collectively generate a group public key, the individual secret keys, and the corresponding public keys without the help of a trusted third party. It does so by running multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. However, unlike secret sharing schemes, DKG shares can be used repeatedly for an unlimited number of time without ever recovering the group secret explicitly. A DKG is described by the following algorithm.
+A \textit{distributed key generation} (DKG) \cite{pedersen1991threshold,gennaro1999secure,gennaro3revisiting} protocol allows $n$ participants to collectively generate a group public key, the individual secret keys, and the corresponding public keys without the help of a trusted third party. It does so by running multiple instances of VSS, with each participant acting as a dealer for its corresponding share of secret. However, unlike secret sharing schemes, DKG shares can be used repeatedly for an unlimited number of times without ever recovering the group secret explicitly.
 \begin{itemize}
-    \item $\mathsf{DKG}(1^{\lambda}, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ is a distributed key generation algorithm that takes a input security parameter $1^\lambda$, the number of participants $n$ and the threshold parameter $t$ and outputs a group public key $pk$, the individual secret keys $\vec{SK} = \{sk_1, sk_1, \ldots, sk_n\}$, and the corresponding public keys $\vec{PK} = \{pk_1, pk_2, \ldots, pk_n\}$
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and group public key $pk$ (e.g. $pk = g^{sk}$) where group secret key $sk$ is implied given security parameter $1^\lambda$, total number of nodes $n$, and threshold parameter $t$.
 \end{itemize}
 % Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix \ref{appendix:dkg} for details.
 \end{definition}
@@ -334,10 +334,10 @@ While protocols based on threshold secret sharing can incur high communication c
 \begin{definition}[$(t, n)$-threshold encryption]
 A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
 \begin{itemize}
-    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs a typical DKG.
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
     \item $\mathsf{Enc}(pk, m) \rightarrow c$ encrypts message $m$ with group public key $pk$ and outputs ciphertext $c$.
-    \item $\mathsf{DecShare}(pk, sk_i, pk_i, c) \rightarrow d_i$ generates decryption share $d_i$ for ciphertext $c$ using individual key pair $(sk_i, pk_i)$ and $pk$.
-    \item $\mathsf{Rec}(pk, \vec{PK}, c, \vec{d}) \rightarrow \{m, \perp\}$ is a recovery algorithm that takes $pk$, ciphertext $c$, and a subset of $t + 1$ valid decryption shares $\vec{d} = \{d_1, d_2,\ldots, d_{t + 1}\}$ together with the individual public keys $\vec{PK} = \{pk_1, pk_2,\ldots, pk_{t + 1}\}$ and outputs the message $m$ via Lagrange interpolation or $\perp$.
+    \item $\mathsf{DecShare}(sk_i, c) \rightarrow d_i$ generates decryption share $d_i$ for ciphertext $c$ using individual secret key $sk_i$.
+    \item $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) \rightarrow \{m, \perp\}$ is a recovery algorithm that takes ciphertext $c$, $pk$, and a set $A$ of $t + 1$ nodes with valid decryption shares along with their individual public keys and outputs the message $m$ via Lagrange interpolation or $\perp$.
 \end{itemize}
 \end{definition}
 
@@ -423,7 +423,7 @@ The beacon output generation process involving fresh (also referred to as true r
 
 \noindent\textbf{Share-Aggregate-Reconstruct.} In SPURT and BRandPiper, nodes in $\mathcal{C}_r$ perform a SecRand-style share-aggregate-reconstruct to output $\mathcal{O}_r$. BRandPiper has a caveat, however: it utilizes the idea of buffering PVSS shares in advance. While there exists one entropy provider per round, $n$ secrets (one from each node) are combined such that it provides the ideal 1-unpredictability property as opposed to $t$-unpredictability (as in HydRand or GRandPiper). The trick is that each round leader generates $n$ fresh secrets that become combined with others' secrets in the next $n$ rounds, respectively. In other words, one node distributes $O(n^2)$ PVSS shares (which become buffered by other nodes) per round in BRandPiper whereas, in a typical share-aggregate-reconstruct like SPURT, each of $O(n)$ nodes distributes $O(n)$ PVSS shares per round (with no buffering).\\
 
-\noindent\textbf{From Threshold Encryption.} Similar to HERB, entropy providers of NV \cite{nguyen2019scalable} contribute their fresh entropy using ElGamal although they use its classical, non-threshold version due to NV's centralized model in which a third party called Requester is the direct recipient of a beacon output. As a result, each entropy provider generates and encrypts its entropy and sends it to the Requester, which then decrypts all the messages received from entropy providers and outputs their sum as $\mathcal{O}_r$. Naturally, this Requester version of NV can be modified into what we call NV++, which differs from NV in two ways. First, those in $\mathcal{C}_r$ (once finalized) can be made to perform HERB among themselves. This eliminates the existence of the Requester and its centralized nature. Second, entropy provision (i.e. actually broadcasting one's entropy) is coupled with proof of membership to $\mathcal{C}_r$ (i.e. broadcasting the fact that a node has won the VRF private lottery). In NV, these two are separate steps potentially incurring adaptive insecurity (a concept delineated in Section \ref{subsection:adaptive}). Thus, NV++ distributes the Requester and achieves adaptive security.
+\noindent\textbf{From Threshold Encryption.} Similar to HERB, entropy providers of NV \cite{nguyen2019scalable} contribute their fresh entropy using ElGamal although they use its classical, non-threshold version due to NV's centralized model in which a third party called Requester is the direct recipient of a beacon output. As a result, each entropy provider generates and encrypts its entropy and sends it to the Requester, which then decrypts all the messages received from entropy providers and outputs their sum as $\mathcal{O}_r$. Naturally, this Requester version of NV can be modified into what we call \textit{NV++}, which differs from NV in two ways. First, those in $\mathcal{C}_r$ (once finalized) can be made to perform HERB among themselves. This eliminates the existence of the Requester and its centralized nature. Second, entropy provision (i.e. actually broadcasting one's entropy) is coupled with proof of membership to $\mathcal{C}_r$ (i.e. broadcasting the fact that a node has won the VRF private lottery). In NV, these two are separate steps potentially incurring adaptive insecurity (a concept delineated in Section \ref{subsection:adaptive}). Thus, NV++ distributes the Requester and achieves adaptive security.
 
 \subsubsection{Combining Previous Output and Precommitted Per-Node Entropy}
 \label{subsubsection:precommitted}
@@ -456,7 +456,7 @@ Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on 
 \begin{definition}[Distributed verifiable random function]
 A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
 \begin{itemize}
-\item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) given security parameter $1^\lambda$, total number of nodes $n$, and threshold parameter $t$.
+\item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
 \item $\mathsf{PartialEval}(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
 \item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i) \rightarrow \{0, 1\}$ verifies the correctness of the partial evaluation $y_i$ given its proof $\pi_i$, an input $x$, and a node's public key $pk_i$.
 \item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A}) \rightarrow (y, \pi)$ outputs the DVRF evaluation $y$ as well as its proof of correctness $\pi$ given a set $A$ of $t + 1$ nodes and their outputs of $\mathsf{PartialEval}(sk_i, x)$, all of which pass $\mathsf{PartialVerify}$.
@@ -507,7 +507,7 @@ Two countermeasures (depending on the protocol) are given by the following examp
 \subsection{Withholding Attack}
 On the other hand, there exists an attack without much countermeasure, namely withholding attack. Any leader-based protocol is vulnerable to this attack due to heavy reliance on a leader's availability. Any protocol with a private lottery is also vulnerable due to its nature where the lottery winner has to announce itself as a winner in the first place or can withhold this announcement if desirable.\\
 
-\noindent\textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In RandRunner, a beacon output will not be aborted but delayed at worst due to the usage of VDFs. In any case, desirable is some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).\\
+\noindent\textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In any case, desirable is some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).\\
 
 \noindent\textbf{Protocols with a private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can bias via withholding after privately computing $\mathcal{O}_r$). The crux is that private lottery winners are indeed private: there is no way to detect once a winner withholds its leadership, i.e. there is no accountability. This is an unavoidable tradeoff to the two notable benefits of a private lottery: resilience to DoS attack (due to its property of delayed unpredictability \cite{azouvi2018winning} where one cannot predict the eligibility of honest nodes until they reveal) and independent participation (i.e. nodes do not have to know other participants in advance in order to participate). \kevinnote{benefits of private lottery, in that section?}
 
@@ -585,7 +585,7 @@ Trapdoor VDFs can be described by a set of four algorithms as follows.
     \item $\mathsf{Setup}(\lambda, T) \rightarrow (pp, sk)$ is a randomized algorithm that takes a security parameter $\lambda$ and a delay parameter $T$ and outputs public parameters $pp$ and a trapdoor secret key $sk$.
     \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ returns 1 if the validity of $pp$ can be successfully checked, returns 0 otherwise.
     \item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ takes an input $x$ along with the public parameters $pp$ and outputs $y$ and a proof $\pi$.
-    \item $\mathsf{TrapdoorEval}(pp,x,sk) \rightarrow (y, \pi)$ takes an input $x$ and $pp$ along with trapdoor $sk$ and outputs $y$ and a proof $\pi$ such that the algorithm takes less than time $T$ to complete unlike $\mathsf{Eval}$.
+    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ takes an input $x$ and $pp$ along with trapdoor $sk$ and outputs $y$ and a proof $\pi$ such that the algorithm takes less than time $T$ to complete unlike $\mathsf{Eval}$.
     \item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the correct evaluation of the VDF on input $x$ and $T$.
 \end{itemize}
 
@@ -593,7 +593,7 @@ Due to the introduction of trapdoors and strong uniqueness, in contrast to tradi
 
 \begin{itemize}
     \item $\epsilon$-evaluation time. $\mathsf{Eval}(pp, x)$ runs in time at most $(1 + \epsilon) T$, for all $x$ and all $pp$ output by $\mathsf{Setup}(\lambda)$.
-    \item Sequentiality without trapdoor. A parallel algorithm $\mathcal{A}$, using at most $poly(\lambda)$ processors, that runs in time less than $T$ cannot compute the function without the knowledge of a secret trapdoor. Specifically, for a random $x$ and all $pp$ output by $\mathsf{Setup}(\lambda, T)$, if $(y, \pi)$ is the output of $\mathsf{Eval}(pp, x)$ or $\mathsf{TrapdoorEval}(pp,x,sk)$, then the probability that $\mathcal{A}$ can compute $y$ in less than $T$ steps is negligible.
+    \item Sequentiality without trapdoor. A parallel algorithm $\mathcal{A}$, using at most $poly(\lambda)$ processors, that runs in time less than $T$ cannot compute the function without the knowledge of a secret trapdoor. Specifically, for a random $x$ and all $pp$ output by $\mathsf{Setup}(\lambda, T)$, if $(y, \pi)$ is the output of $\mathsf{Eval}(pp, x)$ or $\mathsf{TrapdoorEval}(pp, x, sk)$, then the probability that $\mathcal{A}$ can compute $y$ in less than $T$ steps is negligible.
     \item Strong uniqueness. For each input $x$ and all public parameters $pp$, exactly one $y$ will be accepted by $\mathsf{Verify}$ with negligible error probability even if the public parameters have been adversarially generated. Specifically, let $\mathcal{A}$ be an efficient algorithm that outputs $(pp, x, y, \pi)$ such that $\mathsf{Verify}(pp, x, y, \pi) = 1$. Then $Pr[\mathsf{Eval}(pp, x) \neq y]$ is negligible.
 \end{itemize}
 
@@ -680,13 +680,13 @@ RandShare proceeds as follows.
         \item Secrecy. No information on $x$ can be learned by the adversary except for what is implied by the value $y = g^x$.
     \end{itemize}
 \fi
-One of the best known DKG schemes is Joint-Feldman \cite{pedersen1991threshold}, proposed by Pedersen. As discussed in \cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper uses Pedersen's commitments to guarantees uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.
+One of the best known DKG schemes is Joint-Feldman \cite{pedersen1991threshold}, proposed by Pedersen. As discussed in \cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper, uses Pedersen's commitments to guarantees uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.
 
 \subsection{Joint-Feldman}
 \label{appendix:jointFeldman}
 In Joint-Feldman DKG scheme, each participant use Feldman-VSS to share a randomly chosen secret. The protocol is implemented as follows:
 \begin{itemize}
-    \item $\mathsf{DKG}(1^{\lambda}, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ proceeds in two phases---Sharing and Reconstruction.
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ proceeds in two phases---Sharing and Reconstruction.
     \begin{enumerate}
         \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and sending a subshare $s_{ij} = p_i(j)$ mod $q$ to each participant $P_j$ privately. \\
         To satisfy the verifiability portion of VSS, $P_i$ also broadcasts $C_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$. Let the commitment corresponding to the secret be denoted by $y_i = C_{i0}$.
@@ -704,7 +704,7 @@ In Joint-Feldman DKG scheme, each participant use Feldman-VSS to share a randoml
 \label{appendix:jointPedersen}
 The biasability of Joint-Feldman comes from the fact that the decision on who will be part of $\mathcal{C}$ is made after the adversary has seen the $y_i$'s of all the participants. This happens because $y_i = C_{i0}$ is published as part of the commitment (required to prove correctness of sharing). Joint-Pedersen solves this by decoupling the output $y_i$ from the commitments for proving correctness by using Pedersen-VSS. This results in $\mathcal{C}$ and the secret $x$ being determined first, and an additional run of Feldman-VSS to recover $y_i$'s. It is implemented as follows:
 \begin{itemize}
-    \item $\mathsf{DKG}(1^{\lambda}, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ involves two phases---Sharing and Reconstruction. However, the Reconstruction phase requires an additional run of Feldman-VSS to recover the public keys. 
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ involves two phases---Sharing and Reconstruction. However, the Reconstruction phase requires an additional run of Feldman-VSS to recover the public keys. 
     \begin{enumerate}
     \item Sharing phase involves each participant $P_i$ running Pedersen-VSS by choosing two random polynomials over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and $p'_i(z) = \sum_{j = 0}^{t} b_{ij} z^j$ and sending subshares ($s_{ij} = p_i(j)$, $s'_{ij} = p'_i(j)$) in mod $q$ to each participant $P_j$ privately and broadcasting the commitments $C_{ik} = g^{a_{ik}} h^{b_{ik}}$ for $k = 0, \ldots, t$ to prove correctness. Note that unlike Joint-Feldman, publishing $C_{ik}$ does not reveal any information about $y_i = g^{a_{i0}}$.\\
     Each participant $P_j$ verifies the shares he receives from other participants by performing share verification step of Pedersen-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$.
@@ -870,14 +870,14 @@ SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrap
 
     Following the work of \cite{cortier2013distributed}, a $(t, n)$-threshold encryption scheme should provide the following properties:
     \begin{itemize}
-        \item Completeness. For any $1\le t\le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{DecShare}(sk_i, pk_i, c)$, then we require $\mathsf{Rec}(pk, \vec{PK}, c, \vec{d} ) = m$.
-        \item Robustness. For any ciphertext $c$ and any two $(t + 1)-$subsets of decryption shares $d \neq d'$ such that $\mathsf{Rec}(pk, c, d) \neq 0$ and $\mathsf{Rec}(pk, c, d') \neq 0$, then it holds that $\mathsf{Rec}(pk, c, d) = \mathsf{Rec}(pk, c, d')$.
+        \item Completeness. For any $1 \le t \le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{DecShare}(sk_i, c)$, then we require $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) = m$.
+        \item Robustness. For any ciphertext $c$ and any two sets $A \neq A'$ of $t + 1$ nodes with valid decryption shares such that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) \neq 0$ and $\mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'}) \neq 0$, it holds that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) = \mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'})$.
         \item IND-CPA against static corruptions. A $(t, n)$ threshold cryptosystem is said to be IND-CPA secure if for any polynomial time adversary $\mathcal{A}$ corrupting at most $t$ participants at the beginning of the protocol, $\mathcal{A}$, who acts on behalf of corrupted nodes, has negligible advantage in a game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ played against challenger, who acts on behalf of the remaining servers. In other words,
         $$|Pr[\mathsf{Exp}_{\mathcal{A}}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \mathsf{negl}(\lambda)$$
         
         The game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ proceeds as follows:
         \begin{enumerate}
-            \item The adversary $\mathcal{A}$ and the challenger run together $\mathsf{DKG}(1^\lambda, t, n)$, at the end of which the adversary learns the individual secret keys of all the corrupted nodes $sk_1, sk_2, \ldots, sk_t$. It also obtains the group public key $pk$ and the public keys of all the participants $\vec{PK}$.
+            \item The adversary $\mathcal{A}$ and the challenger run together $\mathsf{DKG}(1^\lambda, t, n)$, at the end of which the adversary learns the individual secret and public keys of all the corrupted nodes. It also obtains the group public key $pk$.
             \item $\mathcal{A}$ then chooses two admissible messages $m_0$, $m_1$ of equal length and sends it to the challenger.
             \item The challenger randomly chooses one of them $\beta \leftarrow \{0, 1\}$ and sends $\mathsf{Enc}(pk, m_{\beta})$ back to the adversary.
             \item Finally, $\mathcal{A}$ outputs its guess $\beta' \in \{0,1\}$.
@@ -889,10 +889,10 @@ SecRand \cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrap
 \label{appendix:thrElGamal}
 $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic} over an Elliptic Curve $E$ defined in field $\mathbb{F}_p$ ($p$ being a very large prime number), and its cyclic subgroup $\mathbb{G} \in E(\mathbb{F}_p)$ with generator $G$ and prime order $q$, is implemented as follows:
 \begin{itemize}
-    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (\vec{SK}, \vec{PK}, pk)$ runs DKG protocol and generates the common public key $pk$, individual secret keys $\vec{SK}$ and the corresponding individual public keys $\vec{PK}$.
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
      \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ takes as input a point $m \in \mathbb{G}$ and the group public key $pk$ and generates ciphertext $c = (A, B) = (rG, m+D) $ where $D = r \cdot pk$.
-     \item $\mathsf{DecShare}(pk, sk_i, c) \rightarrow D_i$ takes ciphertext $c = (A, B)$, the individual secret key $sk_i$ and the group public key $pk$ as input and generates the decrypted share $D_i = sk_i \cdot A$.
-     \item $\mathsf{Rec}(pk, c, D_i, \ldots, D_{t + 1} ) \rightarrow m$ reconstructs the point $D$ from the public shares $D_i, \ldots, D_{t + 1}$ using Lagrange interpolation and outputs the decrypted message $m = B - D$.
+     \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ takes ciphertext $c = (A, B)$, the individual secret key $sk_i$ and the group public key $pk$ as input and generates the decrypted share $D_i = sk_i \cdot A$.
+     \item $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{D_i\}_{i \in A}) \rightarrow m$ reconstructs the point $D$ from the valid decryption shares $\{D_i\}_{i \in A}$ via Lagrange interpolation and outputs the decrypted message $m = B - D$.
 \end{itemize}
 
 \iffalse
@@ -949,9 +949,9 @@ for any probabilistic polynomial-time algorithm $\mathcal{A}$, which does not qu
 \section{Distributed Verifiable Random Function (DVRF)}
 \subsection{DDH-DVRF}
 \label{appendix:ddh-dvrf}
-DDH-DVRF is described by the following DVRF algorithms.
+DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the following DVRF algorithms.
 \begin{enumerate}
-\item $\mathsf{DKG}(1^\lambda, t, n)$ runs a typical DKG (a la Joint-Feldman or Joint-Pedersen).
+\item $\mathsf{DKG}(1^\lambda, t, n)$ runs a typical DKG (a la Joint-Feldman \cite{pedersen1991threshold} or Joint-Pedersen \cite{gennaro1999secure}).
 \item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the Chaum-Pedersen protocol (see Appendix \ref{appendix:dleq}) non-interactively proving that the discrete log involving the first two parameters to $\mathsf{DLEQ}(\cdot)$ is equal to that involving the last two parameters without revealing the discrete logarithm value itself.
 \item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g, pk_i, H(x), y_i, \pi_i)$ and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
 \item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix \ref{appendix:lagrange}.
@@ -1124,31 +1124,31 @@ Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where 
 \cmidrule{11-12}
  & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment & 1 & \cmark & All & \xmark & \xmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Bias & $O(1)$ \\
+Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment & 1 & \cmark & All & \xmark & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
-Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & None & $O(1)$ \\
-Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$ & None & $O(1)$ \\
+Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
 RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$ & \cmark & \xmark & $O(\log T)$ & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
 \midrule
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$ & Halt & $O(n)$ \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^2)$ & $O(n^3)$ & Halt & $O(n)$ \\
 \midrule
 Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^4)$ & Predict & $O(n^2)$ \\
-Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(1)$ & $O(n^2)$ & Predict & $O(n^2)$ \\
-RandShare & & PVSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(1)$ \\
+Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(1)$ & $O(1)$ & $O(n^2)$ & Predict & $O(n^2)$ \\
+RandShare & & (P)VSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(1)$ \\
 SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
 HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^3)$ \\
 \midrule
 HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
 GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
-BRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
-Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^3)$ & $O(n^4)$ & $O(n^4)$ & Bias & $O(n^2)$ \\
-RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c^2 n)$ & $O(c^2n)$ & $O(c^2n)$ & Bias & $O(n^2)$ \\
-SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
-Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(cn)$ & $O(cn)$ & Bias & $O(n^2)$ \\
-Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$ & Bias & $O(n^2)$ \\
-Caucus & & Hash chain & $n/2$ & \cmark & Committee\tnote{*} & $t$ & \xmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-NV++ & & VRF, thr. ElGamal & $n$ & \xmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
+BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^2)$ \\
+Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^4)$ & $O(n^4)$ & Bias & $O(n^2)$ \\
+RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2n)$ & $O(c^2n)$ & Bias & $O(n^2)$ \\
+SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^2)$ \\
+Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(cn)$ & $O(cn)$ & Bias & $O(n^2)$ \\
+Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$ & Bias & $O(n^2)$ \\
+Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n^3)$ & $O(n^3)$ & Bias & $O(n^2)$ \\
 \midrule
 drand & \multirow{4}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
 RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 \log n)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
