@@ -184,7 +184,7 @@ We quickly note a variation of above: as proposed in \cite{bunz2017proofs, bonne
 % $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
 % where $seed_r = H(e_r)$ with $e_r$ denoting the output of a public external beacon.
 
-% Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network. 
+% Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network.
 % \fi
 
 \subsection{Chain of VDFs}
@@ -259,22 +259,23 @@ A \textit{distributed key generation} (DKG) \cite{pedersen1991threshold,gennaro1
 \begin{definition}[Escrow-DKG]
 Escrow-DKG \cite{david2019rational} is a rational variant of DKG with the following variations.
 \begin{itemize}
-    \item Unlike traditional DKG, Escrow-DKG does not a priori assume a $t$-limited adversary. However, it assumes the participants are rational in a setting where collusion of more than $t$ nodes would be financially punished such that, effectively, we have a $t$-limited adversary.
+    \item Unlike traditional DKG, Escrow-DKG does not a priori assume a $t$-limited adversary. However, it assumes the participants are rational in a setting where collusion of more than $t$ participants would be financially punished such that, effectively, we have a $t$-limited adversary.
     \item It assumes an escrow denoted by $\mathcal{G}$.
     \item Escrow-DKG has a deposit requirement, considers how a DKG may fail, and associates a financial penalty to each failure case to disincentivize misbehavior.
 \end{itemize}
 \end{definition}
 
-While Escrow-DKG is usually used to generate keys for secret sharing, EVR adapts it to realize a DRB by using the group secret (i.e. the implied group secret key $sk$ after a DKG) as $\mathcal{O}_r$. EVR proceeds in five phases---Register, Setup, Commit, Inform, and Reveal.
+The crux is that EVR adapts Escrow-DKG to realize a DRB by using the group secret (i.e. the implied group secret key $sk$ after a DKG) as $\mathcal{O}_r$, retrievable from $t + 1$ $sk_i$'s. EVR proceeds in four phases---Setup, Commit, Inform, and Reveal.
 \begin{enumerate}
-    \item \textbf{Register.} Every participant registers by depositing 1 coin per secret (i.e. entropy contribution).
-    \item \textbf{Setup.} Based on the number of coins collected, $\mathcal{G}$ sets the total count of participants registered $n$ and threshold parameter $t = 2n / 3$ required for DKG. It also sets a bound on the illicit profit that EVR can sustain $P = n - t = n / 3$ and the informing reward $\ell = n$.
-    \item \textbf{Commit.} Each registered participant executes $\mathsf{VSS.ShareGen}$ to generate and share its secret. Detection of any misbehavior during Commit results in $\mathcal{G}$ aborting the protocol and returning the deposits.
-    \item \textbf{Inform.} Any colluding participant who knows $\mathcal{O}_r$ in advance can inform $\mathcal{G}$ to earn high informing reward ($\ell$), which comes from the initial deposits (confiscated in this case). The incentive is that no one should collude due to this phase.
-    \item \textbf{Reveal.} The participants reveal $sk_i$ and reconstruct $\mathcal{O}_r = sk$. Its correctness is verified by $\mathcal{G}$. Participants get their deposits back if successfully verified. In case the participants fail to reconstruct and publish $\mathcal{O}_r$ in a timely manner, $\mathcal{G}$ confiscates the deposits of all the participants.
+    \item \textbf{Setup.} Every participant registers by depositing 1 coin per secret (i.e. entropy contribution), and $\mathcal{G}$ accordingly sets the threshold parameter $t = 2n / 3$ required for Escrow-DKG. It also sets the \textit{illicit profit bound} (i.e. bound on extra profit an adversary can gain as a result of using EVR's beacon output as opposed to an ideal beacon's output) $P = n - t = n / 3$ and the \textit{informing reward} $\ell = n$.
+    \item \textbf{Commit.} Escrow-DKG is run, and each participant ends up with an individual key pair $(sk_i, pk_i)$ as well as $pk$.
+    \item \textbf{Inform.} Any colluding participant that preemptively knows $\mathcal{O}_r$ can inform $\mathcal{G}$ to earn a high informing reward ($\ell$) via collective punishment. Due to this phase, the incentive is that no one should collude.
+    \item \textbf{Reveal.} $\mathcal{O}_r = sk$ is reconstructed once $t + 1$ (or more) honest participants reveal their $sk_i$'s. Initial deposits are returned after verification by $\mathcal{G}$. If $\mathcal{O}_r$ is not reconstructed by the end, $\mathcal{G}$ also initiates collective punishment.
 \end{enumerate}
 
-While a node's malicious behaviors in EVR are limited to withholding secrets to abort the protocol during Reveal or colluding to learn $\mathcal{O}_r$ before Reveal, its security comes from the fact that both are disincentivized. With $n$ total coins deposited during Register, EVR assumes that no participant owns more than $n / 3$ of the coins, either deposited to escrow or externally and sets a bound on the maximum illicit profit that EVR can sustain (denoted by $P$). First, setting $P$ to $n - t$ makes withholding unprofitable to $n - t$ or more participants that can collectively withhold to abort the protocol as any profit they would make would not be greater than what they would lose by $\mathcal{G}$ slashing all the deposits. Second, setting the informing reward $\ell$ to $n$ makes informing more profitable than any illicit profit and thus disincentivizes any coalition of nodes colluding to learn $\mathcal{O}_r$ before others. The idea is that any coalition of malicious actors (deviating from EVR) is going to have yet another malicious actor (deviating from the coalition to earn $\ell$).
+While a node's malicious behaviors in EVR are limited to withholding to abort the protocol during Reveal or colluding to learn $\mathcal{O}_r$ before Reveal, its security comes from the fact that both are disincentivized. First (to disincentivize biasability), setting $P$ to $n - t$ makes withholding unprofitable to $n - t$ or more nodes that can collectively withhold to abort the protocol, as profit they would make would not be greater than what they would lose by $\mathcal{G}$ slashing all the deposits. Second (to disincentivize predictability), setting the informing reward $\ell$ to $n$ makes informing more profitable than any illicit profit and thus disincentivizes any nodes colluding to learn $\mathcal{O}_r$ before others. The idea is that any coalition of malicious actors (deviating from EVR) is going to have yet another malicious actor (deviating from the coalition to earn $\ell$).
+
+Despite the benefits of the threshold nature and constant deposits enabling a flexible incentive mechanism, EVR needs to assume certain bounds on the amount of coins, e.g. $P$ (an assumed limit on illicit profit) or $n / 3$ (a participant with more coins than this is not allowed to join EVR as per decentralization assumption \cite{david2020economically}), and thus can be limited in scope.
 
 \section{Commit-Reveal-Recover Variants}
 \label{section:commit-reveal-recover}
@@ -404,7 +405,7 @@ The beacon output generation process involving fresh (also referred to as true r
 
 \noindent\textbf{Share-Aggregate-Reconstruct.} In SPURT and BRandPiper, nodes in $\mathcal{C}_r$ perform a SecRand-style share-aggregate-reconstruct to output $\mathcal{O}_r$. BRandPiper has a caveat, however: it utilizes the idea of buffering PVSS shares in advance. While there exists one entropy provider per round, $n$ secrets (one from each node) are combined such that it provides the ideal 1-unpredictability property as opposed to $t$-unpredictability (as in HydRand or GRandPiper). The trick is that each round leader generates $n$ fresh secrets that become combined with others' secrets in the next $n$ rounds, respectively. One node distributes $O(n^2)$ PVSS shares (buffered by other nodes) per round in BRandPiper whereas, in a typical share-aggregate-reconstruct like SPURT, each of $O(n)$ nodes distributes $O(n)$ PVSS shares per round (with no buffering).\\
 
-\noindent\textbf{From Threshold Encryption.} Similar to HERB, entropy providers of NV \cite{nguyen2019scalable} contribute their fresh entropy using ElGamal although they use its classical, non-threshold version due to NV's centralized model in which a third party called Requester is the direct recipient of a beacon output. As a result, each entropy provider generates and encrypts its entropy and sends it to the Requester, which then decrypts all the messages received from entropy providers and outputs their sum as $\mathcal{O}_r$. Naturally, this Requester version of NV can be modified into what we call \textit{NV++}, which differs from NV in two ways. First, those in $\mathcal{C}_r$ (once finalized) can be made to perform HERB among themselves. This eliminates the existence of the Requester and its centralized nature. Second, entropy provision (i.e. actually broadcasting one's entropy) is coupled with proof of membership to $\mathcal{C}_r$ (i.e. broadcasting the fact that a node has won the VRF private lottery). In NV, these two are separate steps potentially incurring adaptive insecurity (a concept delineated in Section \ref{subsection:adaptive}). Thus, NV++ distributes the Requester and achieves adaptive security.
+\noindent\textbf{From Threshold Encryption.} Similar to HERB, entropy providers of NV \cite{nguyen2019scalable} contribute their fresh entropy using ElGamal although they use its classical, non-threshold version due to NV's centralized model in which a third party called Requester is the direct recipient of a beacon output. As a result, each entropy provider generates and encrypts its entropy and sends it to the Requester, which then decrypts all the messages received from entropy providers and outputs their sum as $\mathcal{O}_r$. Naturally, this Requester version of NV can be modified into what we call \textit{NV++}, which differs from NV in two ways. First, those in $\mathcal{C}_r$ (once finalized) can be made to perform HERB among themselves. This eliminates the existence of the centralized Requester. Second, entropy provision (i.e. broadcasting one's entropy) can be coupled with proof of membership to $\mathcal{C}_r$ (i.e. broadcasting the fact that a node has won the VRF private lottery). In NV, these two are separate steps potentially incurring adaptive insecurity (a concept delineated in Section \ref{subsection:adaptive}). Thus, NV++ distributes the Requester and achieves adaptive security.
 
 \subsubsection{Combining Previous Output and Precommitted Per-Node Entropy}
 \label{subsubsection:precommitted}
@@ -481,7 +482,7 @@ While grinding attack is not a threat in commit-reveal-recover variants or proto
 
 Two countermeasures (depending on the protocol) are given by the following examples. First, inclusion of fresh marginal entropy from at least one honest node can be required, in which case grinding fails due to the adversary's inability to control such entropy. Second, precommitted entropy must indeed be precommitted, in which case grinding vacuously fails due to the lack of any grindable entropy.
 \begin{enumerate}
-\item \textbf{Requirement of fresh marginal entropy from at least one honest node.} Due to the $t$-limited adversary assumption, it is possible to force the inclusion of fresh marginal entropy from at least one honest node if we require more than $t$ entropy providers each round. Such requirement is relevant in protocols like RandHound (where committee selection via LS has an explicit size requirement), Ouroboros (where the size of each epoch can be controlled to be large), and NV++ (where the VRF's target used for committee selection can be adjusted).
+\item \textbf{Requirement of fresh marginal entropy from at least one honest node.} Due to the $t$-limited adversary assumption, it is possible to force the inclusion of fresh marginal entropy from at least one honest node if we require more than $t$ entropy providers each round. Such requirement is relevant in protocols like RandHound (where committee selection via LS has an explicit size requirement), Ouroboros (where the size of each epoch can be made large), and NV++ (where the VRF's target used for committee selection can be adjusted).
 \item \textbf{Requirement of precommitted entropy.} No grindable entropy naturally means no possible grinding attack. In HydRand (and similarly GRandPiper), it is required that the precommitted entropy ($e_{\tilde{r}}$ from $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$ as per Section \ref{subsubsection:precommitted}) used in round $r$ is precommitted in round $\tilde{r}$ where $r - \tilde{r} > t$ such that it is ungrindable due to the protocol's $t$-unpredictability property. In the protocols based on private lottery (i.e. Algorand, Ouroboros Praos, and Caucus), the private inputs to the lottery (VRF's $sk$ or each $h_r$ of a hash chain) are configured to be ungrindable.
 \end{enumerate}
 
@@ -500,7 +501,7 @@ A DRB is \textit{adaptively secure} if its security properties remain unaffected
 
 \begin{enumerate}
 \item \textbf{$|\mathcal{C}_r|$ is greater than $t$ or equal to 0.} Due to the $t$-limited adversary assumption, a large enough $\mathcal{C}_r$ (or an empty one as per Section \ref{section:dvrf}) leads to adaptive security. Otherwise, a protocol may be vulnerable. In HydRand and GRandPiper (where $|\mathcal{C}_r| = 1$), an adaptive adversary can corrupt the next $t$ round leaders to predict $t + 1$ future rounds. In Ouroboros, it can adaptively corrupt the entire $\mathcal{C}_r$ (which could probabilistically be less than or equal to $t$ in size) publicly known in advance.
-\item \textbf{Protocols with private lottery require lottery winners to broadcast selection into $\mathcal{C}_r$ and contribute entropy for beacon output generation in the same message.} While private lottery schemes (i.e. Algorand, Ouroboros Praos, Caucus, and NV++) may involve less than or equal to $t$ entropy providers per round, the fact that one message (per entropy provider) comprises both announcement of winning the lottery and provision of entropy contributing to the beacon output is what keeps them adaptively secure. The idea is that by the time an adversary corrupts a node adaptively after the node reveals its identity as an entropy provider in round $r$ via one message, there is no extra step left to be corrupted, as the node's contribution to $\mathcal{O}_r$ has been broadcast already in the same message.
+\item \textbf{Protocols with private lottery require lottery winners to broadcast selection into $\mathcal{C}_r$ and contribute entropy for beacon output generation in the same message.} While some private lottery schemes (i.e. Algorand, Ouroboros Praos, and Caucus) may involve less than or equal to $t$ entropy providers per round, the fact that one message (per entropy provider) comprises both announcement of winning the lottery and provision of entropy contributing to the beacon output is what keeps them adaptively secure. The idea is that by the time an adversary corrupts a node adaptively after the node reveals its identity as an entropy provider in round $r$ via one message, there is no extra step left to be corrupted, as the node's contribution to $\mathcal{O}_r$ has been broadcast already in the same message.
 \item \textbf{There is no concept of a round leader.} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, an adversary can still adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the round leader allows biasability if the leader aborts after seeing $\mathcal{O}_r$ as aforementioned. In SPURT, corrupting the next $t$ leaders to withhold endangers liveness.
 \end{enumerate}
 
@@ -564,11 +565,15 @@ GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & 
 \end{table*}
 
 \subsection{Comparison of DRBs}
-We provide Table \ref{table:comparison} to offer an overall comparison of DRBs. \textit{Fault Tolerance} indicates the minimum number of faulty nodes that can abort a protocol (after the initial setup). In other words, a protocol with fault tolerance $f$ can tolerate at most $f - 1$ faulty nodes. Protocols with \textit{Independent Participation} allows a node to contribute to beacon output without the knowledge of other participating nodes. However, it differs from a permissionless setting in the sense that a node would still have to register before becoming one of the entropy providers to allow verification of its contribution and prevent grinding attacks. \textit{Verification Complexity} refers to the computational cost for a passive node to verify a beacon output. We exclude the cost associated with the initial setup for both verification and communication complexities. Verification complexities for threshold based protocols are computed assuming a cost of $O(n)$ per Lagrange interpolation. PVSS-based protocols use Scrape's optimization \cite{cascudo2017scrape}. \textit{Communication Complexity} is calculated assuming bitwise point-point communication between the participating nodes by default. We consider a publicly accessible bulletin board (PBB) as a reliable and stable information exchange channel in protocols where it is intrinsic to the protocol's construction. For PBB, both the bitwise communication cost for writing as well as reading data from the bulletin board contribute to the total cost. In the absence of PBB, byzantine consensus incurs a cost of $O(n^2)$ per decision by default. \textit{Max Damage} refers to the maximum damage possible when $n-1$ adversarial nodes cooperate to predict or bias the protocol's output. For escrow-based protocols, we assume the adversaries are rational. Any protocol suffers the most when the adversaries are able to bias the output undetected. \textit{Recovery} refers to the cost associated with recovering from an adversarial corruption, once detected. Running $\mathsf{PVSS.KeyGen}$ for PVSS based protocols, $\mathsf{VDF.Setup}$ for RandRunner, and regenerating keys for private lottery based protocols incurs $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB). Protocols that use DKG for setup have a higher recovery cost of $O(n^4)$ for regenerating the keys.
+We provide Table \ref{table:comparison} to offer an overall comparison of DRBs. \textit{Fault Tolerance} indicates the minimum number of faulty nodes that can abort a protocol (after the initial setup). Protocols with \textit{Independent Participation} allows a node to contribute to beacon output without the knowledge of other nodes in advance. However, it differs from a permissionless setting in the sense that a node may still have to register in advance to allow verification of its contribution.
+
+\textit{Verification Complexity} refers to the computational cost for a passive node to verify a beacon output. We exclude the cost associated with the initial setup for both verification and communication complexities. Verification complexities for threshold-based protocols are computed assuming a cost of $O(n)$ per Lagrange interpolation or PVSS run (based on Scrape \cite{cascudo2017scrape}). \textit{Communication Complexity} concerns bitwise point-to-point communication between nodes by default. We also consider a public bulletin board (PBB) as a reliable and stable information exchange medium in protocols where it is intrinsic to the protocol's construction. For PBB, we assume both the bitwise writing cost (amount of data posted to PBB) and the reading cost (by all nodes where each node only reads data relevant to it) contribute to the total cost. In the absence of PBB, Byzantine consensus incurs a cost of $O(n^2)$ per decision by default.
+
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ adversarial nodes cooperate to predict or bias the beacon output. For escrow-based protocols, we assume the adversaries are rational. \textit{Recovery} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
 % \iffalse
 % \subsection{Quality vs Efficiency}
 % % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective
-% The protocols that we have seen so far provide a range of efficiency and quality tradeoffs under different setups, assumptions and adversarial models. PVSS/VSS based protocols offers uniform randomness, but comes at quartic communication complexity. 
+% The protocols that we have seen so far provide a range of efficiency and quality tradeoffs under different setups, assumptions and adversarial models. PVSS/VSS based protocols offers uniform randomness, but comes at quartic communication complexity.
 % VRF based protocols require very little communication and computation but the output is biasable by withholding. DVRF based protocols get rid of the bias by allowing a set of participants greater than a threshold to recover the output. VDF based protocols require high computational cost (sequential squarings) but generates uniform pseudorandom outputs with quadratic communication cost. While these protocols can be used on their own, they can also be combined in a modular way to build a distributed randomness beacon. Mt. Random \cite{cascudomt}, a multi-tiered randomness beacon is one such example.
 
 % \joenote{should there be a separate section on protocols that combine other protocols?}
@@ -587,7 +592,7 @@ In this paper, we provide an overview and comparison of various DRB protocols wi
     % escrow based protocols are suitable when used in conjunction with a lottery/jackpot/ associated with generating randomness.
 \end{itemize}
 
-With the emergence of Proof of Stake blockchains, recent years has seen growing interest in the problem of generating unbiasable verifiable randomness. While significant development has been made to address it, we identify the following areas which could benefit from further research. 
+With the emergence of Proof of Stake blockchains, recent years has seen growing interest in the problem of generating unbiasable verifiable randomness. While significant development has been made to address it, we identify the following areas which could benefit from further research.
 \begin{itemize}
     \item Though using repeated modular squaring to provide delay in VDF works well on paper, practical applications of VDFs require a good estimate of the lower bound of wall-clock time required for modular squaring. To guarantee the security of VDF based protocols, designs for efficient modular squaring targeting different hardware is an important area of research.
     \item Extending private lottery based protocols to generate unbiased pseudorandomness. Though SSLE provides a way around it, the issue of withholding still remains.
@@ -713,7 +718,7 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 %     \item \textbf{Share Verification and Consensus.} To ensure that all honest participants have a consistent view of the secrets that will be recovered after the barrier or if the protocol run has already failed , a Byzantine agreement protocol is run in combination with $\mathsf{VSS.ShareVerify}$. This ensures that at least $t + 1$ honest participants have verified the secret and will be able to recover it. Let $\mathcal{S}$ be the set of secrets that have been agreed upon by the participants.
 %     \item \textbf{Share Reconstruction.} If $\lvert \mathcal{S} \rvert \ge t + 1$, each of these secrets $s^{(j)}$ where $j \in \mathcal{S}$ is recovered by collecting at least $t + 1$ shares of the secret and reconstructing it using $\mathsf{VSS.Recon}$. Otherwise, the protocol fails.
 %     \item \textbf{Aggregation.} Final randomness is $\mathcal{O}_r = \sum_{j \in \mathcal{S}} s^{(j)}$.
-    
+
 % \end{enumerate}
 % \fi
 
@@ -728,7 +733,7 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 %         \item All honest participants have the same value of public key $y=g^x$, where $x$ is the unique secret guaranteed above.
 %         \item $x$ is uniformly distributed in $\mathbb{Z}_q$, and thus $y$ is uniformly distributed in $\mathbb{G}_q$ (subgroup of $\mathbb{Z}^*_p$ generated by $g$).
 %         \end{enumerate}
-        
+
 %     \item Secrecy. No information on $x$ can be learned by the adversary except for what is implied by the value $y = g^x$.
 % \end{itemize}
 % One of the best known DKG schemes is Joint-Feldman \cite{pedersen1991threshold}, proposed by Pedersen. As discussed in \cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper, uses Pedersen's commitments to guarantees uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.
@@ -741,9 +746,9 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 %     \begin{enumerate}
 %         \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and sending a subshare $s_{ij} = p_i(j)$ mod $q$ to each participant $P_j$ privately. \\
 %         To satisfy the verifiability portion of VSS, $P_i$ also broadcasts $C_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$. Let the commitment corresponding to the secret be denoted by $y_i = C_{i0}$.
-        
+
 %         Each participant $P_j$ also verifies the shares he receives from other participants by performing verification steps of Feldman-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$. If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified. Otherwise, $P_i$ reveals the subshare $s_{ij}$ for every $P_j$ that has broadcast a complaint. We call $\mathcal{C}$ the set of non-disqualified participants.
-        
+
 %         \item Reconstruction phase calculates the keys based on $\mathcal{C}$.
 %         The group public key is calculated as $pk = \prod_{i \in \mathcal{C}} y_i$ where the individual public keys are $pk_i = y_i$. Each participant $P_j$'s share of the group secret is computed as $sk_j = \sum_{i \in \mathcal{C}} s_{ij}$ mod $q$. Though not computed explicitly, the group secret key $sk$ is equal to both $\sum_{i \in \mathcal{C}} a_{i0}$ mod $q$ and the Lagrange interpolation involving the shares $\{sk_j\}_{j \in \mathcal{C}}$.
 %     \end{enumerate}
@@ -755,19 +760,19 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 % \label{appendix:jointPedersen}
 % The biasability of Joint-Feldman comes from the fact that the decision on who will be part of $\mathcal{C}$ is made after the adversary has seen the $y_i$'s of all the participants. This happens because $y_i = C_{i0}$ is published as part of the commitment (required to prove correctness of sharing). Joint-Pedersen solves this by decoupling the output $y_i$ from the commitments for proving correctness by using Pedersen-VSS. This results in $\mathcal{C}$ and the secret $x$ being determined first, and an additional run of Feldman-VSS to recover $y_i$'s. It is implemented as follows:
 % \begin{itemize}
-%     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ involves two phases---Sharing and Reconstruction. However, the Reconstruction phase requires an additional run of Feldman-VSS to recover the public keys. 
+%     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ involves two phases---Sharing and Reconstruction. However, the Reconstruction phase requires an additional run of Feldman-VSS to recover the public keys.
 %     \begin{enumerate}
 %     \item Sharing phase involves each participant $P_i$ running Pedersen-VSS by choosing two random polynomials over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and $p'_i(z) = \sum_{j = 0}^{t} b_{ij} z^j$ and sending subshares ($s_{ij} = p_i(j)$, $s'_{ij} = p'_i(j)$) in mod $q$ to each participant $P_j$ privately and broadcasting the commitments $C_{ik} = g^{a_{ik}} h^{b_{ik}}$ for $k = 0, \ldots, t$ to prove correctness. Note that unlike Joint-Feldman, publishing $C_{ik}$ does not reveal any information about $y_i = g^{a_{i0}}$.\\
 %     Each participant $P_j$ verifies the shares he receives from other participants by performing share verification step of Pedersen-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$.
 %     If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified. Otherwise, $P_i$ reveals the subshare $(s_{ij}, s'_{ij})$ for every $P_j$ that has broadcast a complaint. We call $\mathcal{C}$ the set of non-disqualified participants.
-    
-%     \item Reconstruction is a two-part process. The first part involves calculating each participant's share of group secret and implicitly recovering the group secret based on $\mathcal{C}$, like in Joint-Feldman. Each participant $P_j$'s share of the group secret is calculated as $sk_j = \sum_{i \in \mathcal{C}} s_{ij}$ mod $q$. The group secret key $sk$ is equal to the Lagrange interpolation involving the shares $\{sk_j\}_{j \in \mathcal{C}}$. 
-    
+
+%     \item Reconstruction is a two-part process. The first part involves calculating each participant's share of group secret and implicitly recovering the group secret based on $\mathcal{C}$, like in Joint-Feldman. Each participant $P_j$'s share of the group secret is calculated as $sk_j = \sum_{i \in \mathcal{C}} s_{ij}$ mod $q$. The group secret key $sk$ is equal to the Lagrange interpolation involving the shares $\{sk_j\}_{j \in \mathcal{C}}$.
+
 %     The second part of Reconstruction phase involves extracting $pk$ by an additional run of Feldman-VSS because unlike Joint-Feldman, we do not have the corresponding shares $y_i = g^{a_{i0}}$'s required its calculation. Each participant $P_i \in \mathcal{C}$ exposes $y_i = g^{a_{i0}}$ as follows:
 %         \begin{enumerate}
 %             \item Each participant $P_i \in \mathcal{C}$ broadcasts the commitment to the coefficient of the secret polynomial $p_i(z)$ as $A_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$. Let $y_i = A_{i0}$.
 %             \item Each $P_j$ verifies the values broadcast by each other participant $P_i$ are consistent with the shares $s_{ij}$ shared earlier in a similar way as Feldman-VSS. If the verification fails, $P_j$ broadcasts a complaint against $P_i$ by posting the shares $s_{ij}$ and $s'_{ij}$.
-%             \item For any participant $P_i$ that receives at least one valid complaint, all the other participants run the reconstruction phase of Pedersen-VSS to recover the secret polynomial $p_i(z)$. 
+%             \item For any participant $P_i$ that receives at least one valid complaint, all the other participants run the reconstruction phase of Pedersen-VSS to recover the secret polynomial $p_i(z)$.
 %             \item Finally, the group public key is calculated as $pk = \prod_{i \in \mathcal{C}} y_i = \prod_{i \in \mathcal{C}} g^{a_{i0}}$ where $y_i$ is individual public key $pk_i$ for participant $P_i$.
 %         \end{enumerate}
 %     \end{enumerate}
@@ -782,11 +787,11 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 % Escrow-DKG \cite{david2019rational} extends DKG to a model where the participants are not expected to follow some predetermined set of instructions and instead are driven to maximize their profit. The modification of Escrow-DKG used in EVR, with $n$ participants and threshold $t$, can be described by the following algorithms:
 % \begin{itemize}
 %     \item $\mathsf{EscrowEnroll}(d, pk, H(C_{0})) \rightarrow \{0,1\}$ is used by a participant with public encryption key $pk$ to register with the escrow with deposit $d$ and hash of commitment to her partial secret $C_{0}$. In case of Feldman-VSS, $C_{0} = g^{s}$. It returns the success of enrollment.
-    
+
 %     \item $\mathsf{Commit}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_{i})\}, C)$ is used by a participant with secret $s$ to generate encrypted subshares and commitments by executing $\mathsf{VSS.ShareGen}(s)$. For Feldman-VSS, it outputs commitments $C_j = g^{a_j}$ for $0 \le j \le t$ to the coefficients of the secret sharing polynomial and subshares for every other participant $P_i$ encrypted via $\mathsf{Enc}(pk_i, s_{i})$. Each participant verifies the correctness of the sharing. The escrow also checks if the published $C_{0}$ matches with $H(C_{0})$ for participant $P_i$. Any complaint is arbitrated by the escrow and can result in deposits being slashed.
-    
+
 %     \item $\mathsf{Reveal}(A, \{x_i\}_{i \in A}) \rightarrow (x, X)$ takes a subset of $t + 1$ individual key shares and reconstructs the shared group secret $x$ using $\mathsf{VSS.Recon}$. In Feldman-VSS, each participant $P_i$ calculates their secret key share as $x_i = \sum_{j=1}^{n} s_j$ in mod $q$ and the group secret $x$ is reconstructed via Lagrange interpolation. Additionally, it also outputs its corresponding public key $X = \prod_{i=1}^{n} C_{i0}$ for verification.
-    
+
 %     \item $\mathsf{EscrowVerify}(x, X)\rightarrow\{0,1\}$ is used by the escrow to verify that the published secret $x$ is indeed the one that corresponds to $X$.
 % \end{itemize}
 % \fi
@@ -896,7 +901,7 @@ PVSS can be described by the following algorithms.
 %     \item \textbf{Output.}
 %         \begin{itemize}
 %             \item \textit{Case 1.} When all the participants in $\mathcal{C}$ have opened their secrets correctly, we have a $(n-t) \times \ell$ matrix $S$ with rows indexed by the participants $P_a \in \mathcal{C}$ and each row corresponding to its $\ell$ opened secrets $(s^{(a)}_{0}, \ldots, s^{(a)}_{\ell-1})$. The final randomness $\mathcal{O}$ with $\ell^2$ elements is computed by each participant as $\mathcal{O} = h^U$, where $U = M \cdot S \in \mathbb{Z}_q^{\ell \times \ell}$.
-            
+
 %             \item \textit{Case 2.} Otherwise, we have a $(n-t) \times \ell$ matrix $T$ with rows indexed by the participants $P_a \in \mathcal{C}$ where the row corresponding to $P_a$ is $(h^{s^{(a)}_{0}}, \ldots, h^{s^{(a)}_{\ell-1}})$. The final $\ell \times \ell$ randomness matrix $\mathcal{O}$ is computed as $\mathcal{O} = M \diamond T$ by applying FFTE to each column $T^{(j)}$ of $T$ producing column $\mathcal{O}^{(j)}$ of $\mathcal{O}$.
 %         \end{itemize}
 % \end{enumerate}
@@ -907,7 +912,7 @@ PVSS can be described by the following algorithms.
 
 % \begin{enumerate}
 %     \setcounter{enumi}{2}
-%     \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows: 
+%     \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows:
 %     $$\tilde{s}_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)}$$
 %     $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
 %     \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t + 1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final random output is $\mathcal{O}_r = H(\tilde{s})$.
@@ -923,7 +928,7 @@ PVSS can be described by the following algorithms.
 %         \item Robustness. For any ciphertext $c$ and any two sets $A \neq A'$ of $t + 1$ nodes with valid decryption shares such that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) \neq 0$ and $\mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'}) \neq 0$, it holds that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) = \mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'})$.
 %         \item IND-CPA against static corruptions. A $(t, n)$ threshold cryptosystem is said to be IND-CPA secure if for any polynomial time adversary $\mathcal{A}$ corrupting at most $t$ participants at the beginning of the protocol, $\mathcal{A}$, who acts on behalf of corrupted nodes, has negligible advantage in a game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ played against challenger, who acts on behalf of the remaining participants. In other words,
 %         $$|Pr[\mathsf{Exp}_{\mathcal{A}}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \mathsf{negl}(\lambda)$$
-        
+
 %         The game $\mathsf{Exp}^{\mathsf{cpa}}_{\mathcal{A}}$ proceeds as follows:
 %         \begin{enumerate}
 %             \item The adversary $\mathcal{A}$ and the challenger run together $\mathsf{DKG}(1^\lambda, t, n)$, at the end of which the adversary learns the individual secret and public keys of all the corrupted nodes. It also obtains the group public key $pk$.
@@ -937,12 +942,12 @@ PVSS can be described by the following algorithms.
 
 \section{Threshold ElGamal Cryptosystem}
 \label{appendix:thrElGamal}
-$(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic} over an Elliptic Curve $E$ defined in field $\mathbb{F}_p$ ($p$ being a very large prime number), and its cyclic subgroup $\mathbb{G} \in E(\mathbb{F}_p)$ with generator $G$ and prime order $q$, is implemented as follows:
+A $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic}, with an elliptic curve $E$ over $\mathbb{F}_p$ and its cyclic subgroup $\mathbb{G}_q$ of prime order $q$ with generator $G$, is implemented as follows.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
-     \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ takes as input a point $m \in \mathbb{G}$ and the group public key $pk$ and generates ciphertext $c = (A, B) = (rG, m+D) $ where $D = r \cdot pk$.
-     \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ takes ciphertext $c = (A, B)$, the individual secret key $sk_i$ and the group public key $pk$ as input and generates the decryption share $D_i = sk_i \cdot A$.
-     \item $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{D_i\}_{i \in A}) \rightarrow m$ reconstructs the point $D$ from the valid decryption shares $\{D_i\}_{i \in A}$ via Lagrange interpolation and outputs the decrypted message $m = B - D$.
+    \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ outputs ciphertext $c = (A, B) = (r G, m G + r \cdot pk)$ given $m, r \in \mathbb{Z}_q$ and $pk = sk \cdot G$.
+    \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ outputs decryption share $D_i = sk_i \cdot A$ for $c = (A, B)$ using individual secret key $sk_i$.
+    \item $\mathsf{Rec}(\tilde{A}, c, pk, \{pk_i\}_{i \in \tilde{A}}, \{D_i\}_{i \in \tilde{A}}) \rightarrow m$ reconstructs the point $D = sk \cdot A$ from $\{D_i\}_{i \in \tilde{A}}$ (given a set $\tilde{A}$ of $t + 1$ honest nodes) via Lagrange interpolation and outputs $m = B - D$.
 \end{itemize}
 
 % \iffalse
