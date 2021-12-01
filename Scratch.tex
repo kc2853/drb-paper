@@ -65,14 +65,14 @@
 \newcommand{\kevinnote}[1]{\textcolor{green}{\textbf{KEVIN:} #1}}
 \newcommand{\aathiranote}[1]{\textcolor{purple}{\textbf{AATHIRA:} #1}}
 
-\title{\Large \bf A Survey on Distributed Randomness}
-\author{
-{\rm Kevin Choi}\\
-New York University
-\and
-{\rm Aathira Manoj}\\
-New York University
-}
+\title{\Large \bf SoK: Distributed Randomness Beacon}
+% \author{
+% {\rm Kevin Choi}\\
+% New York University
+% \and
+% {\rm Aathira Manoj}\\
+% New York University
+% }
 % \date{Spring 2021}
 
 \begin{document}
@@ -81,11 +81,7 @@ New York University
 %\tableofcontents
 
 \section{Introduction}
-Public, trustworthy randomness has been a useful tool for millennia, dating at least to the earliest known use of dice around 3000 BCE.
-Today, periodic public randomness is crucial to applications including gambling and lotteries \cite{bonneau2015bitcoin}, sampling ballots for election audits \cite{adida2008helios}, leader election in proof-of-stake protocols \cite{gilad2017algorand, kiayias2017ouroboros}, blockchain sharding \cite{al2017chainspace, kokoris2018omniledger}, and selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}.
-%The process of generating tamper-proof randomness is nontrivial, as obtaining access to good sources of randomness, even in terms of entropy alone, can be prone to errors.
-%\textbf{Randomness Beacons.}
-The concept of a \emph{randomness beacon} was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals in a way that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from centralized approaches (relying on a single source or organization) to distributed approaches (decentralizing the randomness generation among a set of nodes) are used to approximate it.
+Public, trustworthy randomness has been a useful tool for millennia, dating at least to the earliest known use of dice around 3000 BCE. Today, periodic public randomness is crucial to applications including gambling and lotteries \cite{bonneau2015bitcoin}, sampling ballots for election audits \cite{adida2008helios}, selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}, leader election in proof-of-stake protocols \cite{gilad2017algorand, kiayias2017ouroboros}, and blockchain sharding \cite{al2017chainspace, kokoris2018omniledger}. The concept of a \emph{randomness beacon} was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals in a way that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from centralized approaches (relying on a single source or organization) to distributed approaches (decentralizing the randomness generation among a set of nodes) are used to approximate it.
 
 \textbf{Centralized Beacons.} While relying on a trusted third party like NIST \cite{fischer2011public} or random.org \cite{haahr2010random} might be the simplest way to realize a beacon, it carries drawbacks typically associated with centralized services, such as the risk of tampering and the inability of the end user to verify the correctness of the beacon. For this reason, it is strongly desirable to construct a beacon with no trusted party or central point of failure.
 
@@ -191,7 +187,7 @@ We quickly note a variation of above: as proposed in \cite{bunz2017proofs, bonne
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
-The disadvantage of above is that each round may require consensus \cite{castro1999practical} on inputs to the VDF, incurring communication cost. In addition, the rate at which beacon outputs are generated is limited by $T$. RandRunner \cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-round consensus while allowing each round's duration to be independent of $T$ in the optimistic case. As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame. Trapdoor VDFs \cite{wesolowski2019efficient} with the strong uniqueness property \cite{schindler2021randrunner} serve as its key building block.
+The disadvantage of above is that each round may require consensus \cite{castro1999practical} on inputs to the VDF, incurring communication cost. Also, the rate at which beacon outputs are generated is limited by $T$. RandRunner \cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-round consensus while allowing each round's duration to be independent of $T$ in the optimistic case. As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame. Trapdoor VDFs \cite{wesolowski2019efficient} with the strong uniqueness property \cite{schindler2021randrunner} serve as its key building block.
 
 \begin{definition}[Strongly unique trapdoor VDF]
 A \textit{strongly unique trapdoor VDF} extends VDF by allowing any participant who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides \textit{strong uniqueness}, i.e. uniqueness even when VDF's public parameters are adversarially generated. It can be described by the algorithms $\mathsf{TVDF} = (\mathsf{Setup}, \mathsf{VerifySetup}, \mathsf{TrapdoorEval}, \mathsf{Eval}, \mathsf{Verify})$, extending those of a traditional VDF with the following.
@@ -359,7 +355,7 @@ That RS is randomized incurs a side effect where some nodes may, in theory, neve
 
 On the other hand, this is not an issue in RR, as its committee selection is deterministic and independent of the preceding beacon output. Nonetheless, a tradeoff of RR is that DoS attack becomes indefinitely possible (for all rounds $\tilde{r}$ for $\tilde{r} > r$ given $\mathcal{O}_r$) since each committee is publicly known in advance. All in all, RR gains unbiasability (due to determinism) at the cost of indefinite DoS attack while RS benefits from less DoS attack, i.e. that only for round $r + 1$ (due to randomization given $\mathcal{O}_r$), at the cost of grinding attack.\\
 
-\noindent\textbf{Leader-Based Selection (LS).} A third example, \textit{leader-based selection} (LS) is a hybrid method that exhibits both determinism and randomization. It runs in two steps: the first step involves electing a round leader (either by RR or RS) while the second step involves selection of $\mathcal{C}_r$ by the elected leader. It is in this way that the mechanism is deterministic from the leader's perspective while randomized from that of others.
+\noindent\textbf{Leader-Based Selection (LS).} A third example, \textit{leader-based selection} (LS) is a hybrid method that exhibits both determinism and randomization. It runs in two steps: the first step involves electing a round leader (either by RR or RS) while the second involves selection of $\mathcal{C}_r$ by the elected leader. It is in this way that the mechanism is deterministic from the leader's perspective while randomized from that of others.
 
 One requirement, due to the power delegated to the leader, is that $|\mathcal{C}_r|$ needs to be greater than $t$ so that a malicious leader wouldn't be able to choose $\mathcal{C}_r$ maliciously. RandHound \cite{syta2017scalable} and SPURT \cite{das2021spurt} demonstrate such LS.
 \begin{itemize}
@@ -377,19 +373,19 @@ f_{priv}(\cdot) < target
 \]
 where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ denotes the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that we can tinker with $target$ to make the lottery arbitrarily easy or hard to win. The idea is that each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it wins the lottery and becomes an entropy provider.
 
-As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$. Two examples of the above formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
+As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$. A prime example of the above formulation exists in the landscape: a VRF-based lottery.
 
-\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF (verifiable random function) \cite{micali1999verifiable,dodis2005verifiable} is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
+In Algorand \cite{gilad2017algorand}, a VRF (verifiable random function) \cite{micali1999verifiable,dodis2005verifiable} is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
-where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are private lotteries for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). See Table \ref{table:committee-based} for details.\\
+where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are VRF-based private lotteries for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). Similar in principle, Caucus \cite{azouvi2018winning} achieves a private lottery without a VRF. See Table \ref{table:committee-based} for details.
 
-\noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so commits to $h_{r + 1}$. Thus, each participant of Caucus independently generates a private hash chain comprising $m$ private inputs such that the lottery is given by
-\[
-H(h_r \oplus \mathcal{O}_{r - 1}) < target
-\]
-which simply involves a hash function. One downside is that the hash chain needs to be periodically regenerated, as $m$ is finite while we desire our DRB to be prolonged indefinitely.
+% \noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so commits to $h_{r + 1}$. Thus, each participant of Caucus independently generates a private hash chain comprising $m$ private inputs such that the lottery is given by
+% \[
+% H(h_r \oplus \mathcal{O}_{r - 1}) < target
+% \]
+% which simply involves a hash function. One downside is that the hash chain needs to be periodically regenerated, as $m$ is finite while we desire our DRB to be prolonged indefinitely.\\
 
 Private lottery exhibits two notable benefits: resilience to DoS attack (due to its property of delayed unpredictability \cite{azouvi2018winning} where one cannot predict the eligibility of honest nodes until they reveal) and \textit{independent participation} (i.e. nodes do not have to know other participants in advance to participate) allowing less communication cost as well as a more permissionless setting. Nonetheless, it can incur biasing via withholding in the worst case (as discussed in Section \ref{subsection:withholding}).
 
@@ -464,14 +460,14 @@ yields a computationally equivalent output to when a DVRF is computed among $n$ 
 \[
 \mathcal{O}_r = H(\mathsf{Sign}_{sk}(r \mathbin\Vert \mathcal{O}_{r - 1}))
 \]
-where $\mathsf{Sign}_{sk}(\cdot)$ is a BLS signature though computed by at least $t + 1$ nodes with $sk$ as the implied group secret key from a DKG such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures using $sk_i$ (see Appendix \ref{appendix:bls}).\\
+where $\mathsf{Sign}_{sk}(\cdot)$ is a BLS signature though computed by at least $t + 1$ nodes with $sk$ as the implied group secret key from a DKG such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures using $sk_i$ (see Appendix \ref{appendix:bls}). Some variations and optimizations include other protocols such as RandHerd \cite{syta2017scalable} via ``sharding'' nodes into a communication tree to lower communication cost, DDH-DRB \cite{galindo2020fully} (Appendix \ref{appendix:ddh-dvrf}) via replacing Dfinity's DVRF's (Appendix \ref{appendix:dfinity-dvrf}) pairing equation checks in $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ with DLEQ NIZKs (Appendix \ref{appendix:dleq}) for computational efficiency, and GLOW-DRB \cite{galindo2020fully} (Appendix \ref{appendix:glow-dvrf}) via modifying DDH-DRB to output a compact proof.
 
-\noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist other variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DRB, and GLOW-DRB \cite{galindo2020fully}.
-\begin{itemize}
-\item RandHerd. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial configuration seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This results in the notion of hierarchy among nodes and thus has the effect of reducing the communication complexity from $O(n^2)$ to $O(c^2 \log n)$. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand.
-\item DDH-DRB. Each round of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each round of Dfinity) rely on verifying pairing equations (see Appendix \ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (Appendix \ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix \ref{appendix:ddh-dvrf} for details.
-\item GLOW-DRB. Each round involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix \ref{appendix:glow-dvrf} for details.
-\end{itemize}
+% \noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist other variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DRB, and GLOW-DRB \cite{galindo2020fully}.
+% \begin{itemize}
+% \item RandHerd. Two modifications are made in RandHerd. First, ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial configuration seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This results in the notion of hierarchy among nodes in a tree structure and thus has the effect of reducing the communication complexity from $O(n^2)$ to $O(c^2 \log n)$. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand.
+% \item DDH-DRB. Each round of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each round of Dfinity) rely on verifying pairing equations (see Appendix \ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (Appendix \ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix \ref{appendix:ddh-dvrf} for details.
+% \item GLOW-DRB. Each round involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix \ref{appendix:glow-dvrf} for details.
+% \end{itemize}
 
 \section{Discussions}
 \label{section:discussions}
@@ -488,13 +484,11 @@ Two countermeasures (depending on the protocol) are given by the following examp
 
 \subsection{Withholding Attack}
 \label{subsection:withholding}
-On the other hand, there exists an attack without much countermeasure, namely withholding attack. Any leader-based protocol is vulnerable to this attack due to heavy reliance on a leader's availability. Any protocol with private lottery is also vulnerable due to its nature where the lottery winner has to announce itself as a winner in the first place or can withhold this announcement if desirable.\\
-
-\noindent\textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In any case, desirable is some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).\\
-
-\noindent\textbf{Protocols with private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can bias via withholding after privately computing $\mathcal{O}_r$). The crux is that private lottery winners are indeed private: there is no way to detect once a winner withholds its leadership, i.e. there is no accountability.
-
-There are two possible remedies. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message would be indicative of withholding. This however incurs communication cost. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of withholding. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen while the identity of the leader will only be known to itself until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. It does not prevent withholding attack by itself, however.
+On the other hand, there exists an attack without much countermeasure, namely withholding attack. Any leader-based protocol is vulnerable to this attack due to heavy reliance on a leader's availability. Any protocol with private lottery is also vulnerable due to its nature where the lottery winner has to announce itself as a winner in the first place or can withhold this announcement if desirable.
+\begin{enumerate}
+\item \textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation). In worse cases like RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\mathcal{O}_r$. In any case, desirable is some fallback in case a leader withholds (e.g. HydRand's PVSS recovery).
+\item \textbf{Protocols with private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can bias via withholding after privately computing $\mathcal{O}_r$). There is simply no way to detect once a winner withholds its leadership, i.e. there is no accountability. There are two possible remedies. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message would be indicative of withholding. This however incurs communication cost. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of withholding. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen while the identity of the leader will only be known to itself until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. It does not prevent withholding attack by itself, however.
+\end{enumerate}
 
 \subsection{Adaptive Security}
 \label{subsection:adaptive}
@@ -528,18 +522,18 @@ RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$\tnote{§} & \cmark & \xm
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
 \midrule
-Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(n^3)$ \\
-Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
-RandShare & & (P)VSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(1)$ \\
-SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Predict & $O(n^3)$ \\
-HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias\tnote{r} & $O(n^3)$ \\
+RandShare & & (P)VSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(1)$ \\
+SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
 \midrule
 HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
 GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias\tnote{b} & $O(n^2)$\tnote{†} \\
+BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
+Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias\tnote{r} & $O(n^2)$\tnote{†} \\
 RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
-SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias\tnote{b} & $O(n^3)$ \\
+SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
 Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
@@ -560,7 +554,7 @@ GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & 
 \item[†] PBB (public bulletin board) is assumed.
 \item[‡] Verification of Pietrzak's VDF is logarithmic in $T$ (VDF's delay parameter).
 \item[§] $d = t$ for RandRunner's $d$-unpredictability assuming a dishonest minority without any computational advantage. See \cite{schindler2021randrunner} for more scenarios.
-\item[b] In Ouroboros, it is in theory possible that the entire entropy-providing committee is Byzantine. In SPURT, only the round leader can be honest while all others are Byzantine.
+\item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \end{tablenotes}
 \end{threeparttable}
 \end{table*}
@@ -570,7 +564,7 @@ We provide Table \ref{table:comparison} to offer an overall comparison of DRBs. 
 
 \textit{Verification Complexity} refers to the computational cost for a passive node to verify a beacon output. We exclude the cost associated with the initial setup for both verification and communication complexities. Verification complexities for threshold-based protocols are computed assuming a cost of $O(n)$ per Lagrange interpolation or PVSS run (based on Scrape \cite{cascudo2017scrape}). \textit{Communication Complexity} concerns bitwise point-to-point communication between nodes by default. We also consider a public bulletin board (PBB) as a reliable and stable information exchange medium in protocols where it is intrinsic to the protocol's construction. For PBB, we assume both the bitwise writing cost (amount of data posted to PBB) and the reading cost (by all nodes where each node only reads data relevant to it) contribute to the total cost. In the absence of PBB, Byzantine consensus incurs a cost of $O(n^2)$ per decision by default.
 
-\textit{Max Damage} refers to the maximum damage possible when $n - 1$ adversarial nodes cooperate to predict or bias the beacon output. For escrow-based protocols, we assume the adversaries are rational. \textit{Recovery} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing \cite{gennaro1999secure} adversarial nodes cooperate to predict or bias. For escrow-based protocols, we assume the adversaries are rational. \textit{Recovery} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
 % \iffalse
 % \subsection{Quality vs Efficiency}
 % % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective
@@ -1034,6 +1028,40 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 \item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ equals that in GLOW-DVRF.
 \end{enumerate}
 
+\begin{table*}[h!]
+\aboverulesep=0ex
+\belowrulesep=0ex
+% \footnotesize
+\renewcommand{\arraystretch}{1}
+\begin{threeparttable}
+\caption{Committee-Based DRB}
+\label{table:committee-based}
+\begin{tabularx}{\textwidth}{|c|c|c|l|l|}
+\cmidrule{4-5}
+\multicolumn{3}{c|}{} & \multicolumn{2}{c|}{Step 2: Beacon Output Generation} \\
+\cmidrule{4-5}
+\multicolumn{3}{c|}{} & \multicolumn{1}{c|}{Fresh per-node entropy} & \multicolumn{1}{c|}{$\mathcal{O}_{r - 1}$ \& precommitted per-node entropy} \\
+\cmidrule{1-5}
+\multirow{5}{*}{\spheading[0.45\textwidth]{\mbox{Step 1: Committee Selection}}} & \multirow{3}{*}[-2.8cm]{Public} & RR & \begin{tabular}{@{}l@{}}\textbf{BRandPiper}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
+\cmidrule{3-5}
+& & RS & \begin{tabular}{@{}l@{}}\textbf{Ouroboros}\\\textit{Step 1}: Follow-the-satoshi \cite{bentov2014proof,kiayias2017ouroboros}\\\textit{Step 2}: Share-reconstruct-aggregate\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{HydRand}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$\\\\\textbf{GRandPiper}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(h^{e_{\tilde{r}}}, \mathcal{O}_{r - 1}, ..., \mathcal{O}_{r - t})$\end{tabular} \\
+\cmidrule{3-5}
+& & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
+\cmidrule{2-5}
+& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\tnote{1}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
+\cmidrule{3-5}
+& & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\tnote{2}\\\textit{Step 1}: $H(h_r \oplus \mathcal{O}_{r - 1}) < target$\\\textit{Step 2}: $\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}$\end{tabular} \\
+\cmidrule{1-5}
+\end{tabularx}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Note that public committee selection mechanisms (Section \ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section \ref{subsubsection:private-committee-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}.
+\item[1] The protocol is an epoch-based variant of Algorand. While $|\mathcal{C}_r|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ slots and thus $K$ per-slot lotteries. (Each epoch is a round.) Parameters $slot$ and $epoch$ denote the slot and epoch numbers, respectively, and $\rho_i = VRF_{sk_i}(\mathcal{O}_{r - 1} \mathbin\Vert slot_i \mathbin\Vert \mathsf{NONCE})$ is returned by the slot leader of $slot_i$. $\mathsf{TEST}$ and $\mathsf{NONCE}$ are strings.
+\item[2] In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one publicizes one $h_r$ at a time (i.e. $h_r$ in round $r$). While each participant independently generates a private hash chain, one downside is that the hash chain needs to be periodically regenerated, as $m$ is finite.
+\end{tablenotes}
+\end{threeparttable}
+\end{table*}
+
 \section{Other Cryptographic Primitives}
 % \iffalse
 % \subsection{Commitment Scheme}
@@ -1131,38 +1159,5 @@ Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where 
 0 & \text{otherwise}
 \end{cases}$
 \end{enumerate}
-
-\begin{table*}[pt]
-\aboverulesep=0ex
-\belowrulesep=0ex
-% \footnotesize
-\renewcommand{\arraystretch}{1}
-\begin{threeparttable}
-\caption{Committee-Based DRB}
-\label{table:committee-based}
-\begin{tabularx}{\textwidth}{|c|c|c|l|l|}
-\cmidrule{4-5}
-\multicolumn{3}{c|}{} & \multicolumn{2}{c|}{Step 2: Beacon Output Generation} \\
-\cmidrule{4-5}
-\multicolumn{3}{c|}{} & \multicolumn{1}{c|}{Fresh per-node entropy} & \multicolumn{1}{c|}{$\mathcal{O}_{r - 1}$ \& precommitted per-node entropy} \\
-\cmidrule{1-5}
-\multirow{5}{*}{\spheading[0.45\textwidth]{\mbox{Step 1: Committee Selection}}} & \multirow{3}{*}[-2.8cm]{Public} & RR & \begin{tabular}{@{}l@{}}\textbf{BRandPiper}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
-\cmidrule{3-5}
-& & RS & \begin{tabular}{@{}l@{}}\textbf{Ouroboros}\\\textit{Step 1}: Follow-the-satoshi \cite{bentov2014proof,kiayias2017ouroboros}\\\textit{Step 2}: Share-reconstruct-aggregate\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{HydRand}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})$\\\\\textbf{GRandPiper}\\\textit{Step 1}: Node $i \equiv \mathcal{O}_{r - 1} \pmod{\tilde{n}}$\\\textit{Step 2}: $\mathcal{O}_r = H(h^{e_{\tilde{r}}}, \mathcal{O}_{r - 1}, ..., \mathcal{O}_{r - t})$\end{tabular} \\
-\cmidrule{3-5}
-& & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT}\\\textit{Step 1}: Node $i \equiv r \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
-\cmidrule{2-5}
-& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)$\\\\\textbf{Ouroboros Praos}\tnote{1}\\\textit{Step 1}: $VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
-\cmidrule{3-5}
-& & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\\\textit{Step 1}: $H(h_r \oplus \mathcal{O}_{r - 1}) < target$\\\textit{Step 2}: $\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}$\end{tabular} \\
-\cmidrule{1-5}
-\end{tabularx}
-\begin{tablenotes}[flushleft]
-\footnotesize
-\item Note that public committee selection mechanisms (Section \ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section \ref{subsubsection:private-committee-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}.
-\item[1] The protocol is an epoch-based variant of Algorand. While $|\mathcal{C}_r|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ slots and thus $K$ per-slot lotteries. (Each epoch is a round.) Parameters $slot$ and $epoch$ denote the slot and epoch numbers, respectively, and $\rho_i = VRF_{sk_i}(\mathcal{O}_{r - 1} \mathbin\Vert slot_i \mathbin\Vert \mathsf{NONCE})$ is returned by the slot leader of $slot_i$. $\mathsf{TEST}$ and $\mathsf{NONCE}$ are strings.
-\end{tablenotes}
-\end{threeparttable}
-\end{table*}
 
 \end{document}
