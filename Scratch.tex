@@ -794,12 +794,20 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 \section{Publicly Verifiable Secret Sharing (PVSS)}
 \label{appendix:pvss}
 PVSS can be described by the following algorithms.
+% \begin{itemize}
+%     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
+%     \item $\mathsf{KeyGen}(\lambda) \rightarrow (sk_i, pk_i)$ generates the PVSS key pair used for encryption and decryption for node $i$.
+%     \item $\mathsf{Enc}(pk_i, m) \rightarrow c$ and $\mathsf{Dec}(sk_i, c) \rightarrow m'$ are subalgorithms used when the dealer sends an encrypted share to node $i$ and when node $i$ decrypts the encrypted share, respectively. Both $\mathsf{Enc}$ and $\mathsf{Dec}$ may optionally output a proof (e.g. $\pi_{DLEQ}$).
+%     \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i = \mathsf{Dec}(sk_i, \mathsf{Enc}(pk_i, s_i))$ is a two-part process. First, the dealer with secret $s$ generates secret shares $\{s_i\}$, encrypts them to generate $\{\mathsf{Enc}(pk_i, s_i)\}$, and sends each of them to node $i$ along with an optional encryption proof of correctness. Second, node $i$ decrypts the received encryption from the dealer to generate $s'_i$ and broadcasts it for reconstruction along with an optional decryption proof of correctness. At the protocol level, this yields $\{s'_i\}$ as a result. Note that it is possible that $s'_i \neq s_i$. In fact, $s'_i = h^{s_i}$ for some group generator $h$ is standard in the landscape due to certain PVSS implementation details. $\pi$ incorporates optional encryption and decryption proofs of correctness as well as any auxiliary proof necessary.
+%     \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if the sharing is correct overall. Again, verifying $\pi$ should involve verifying the optional proofs for encryption and decryption as well as any auxiliary proof necessary.
+%     \item $\mathsf{Recon}(A, \{s'_i\}_{i \in A}) \rightarrow s'$ reconstructs the shared secret $s'$ via Lagrange interpolation (in the exponent) from a set $A$ of $t + 1$ nodes whose contributions are passed by the $\mathsf{ShareVerify}$ algorithm. Typically, $s' = h^s$ in the landscape.
+% \end{itemize}
 \begin{itemize}
     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
     \item $\mathsf{KeyGen}(\lambda) \rightarrow (sk_i, pk_i)$ generates the PVSS key pair used for encryption and decryption for node $i$.
-    \item $\mathsf{Enc}(pk_i, m) \rightarrow c$ and $\mathsf{Dec}(sk_i, c) \rightarrow m'$ are subalgorithms used when the dealer sends an encrypted share to node $i$ and when node $i$ decrypts the encrypted share, respectively. Both $\mathsf{Enc}$ and $\mathsf{Dec}$ may optionally output a proof (e.g. $\pi_{DLEQ}$).
-    \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i = \mathsf{Dec}(sk_i, \mathsf{Enc}(pk_i, s_i))$ is a two-part process. First, the dealer with secret $s$ generates secret shares $\{s_i\}$, encrypts them to generate $\{\mathsf{Enc}(pk_i, s_i)\}$, and sends each of them to node $i$ along with an optional encryption proof of correctness. Second, node $i$ decrypts the received encryption from the dealer to generate $s'_i$ and broadcasts it for reconstruction along with an optional decryption proof of correctness. At the protocol level, this yields $\{s'_i\}$ as a result. Note that it is possible that $s'_i \neq s_i$. In fact, $s'_i = h^{s_i}$ for some group generator $h$ is standard in the landscape due to certain PVSS implementation details. $\pi$ incorporates optional encryption and decryption proofs of correctness as well as any auxiliary proof necessary.
-    \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if the sharing is correct overall. Again, verifying $\pi$ should involve verifying the optional proofs for encryption and decryption as well as any auxiliary proof necessary.
+    \item $\mathsf{Enc}(pk_i, m) \rightarrow c$ and $\mathsf{Dec}(sk_i, c) \rightarrow m'$ are subalgorithms used to encrypt and decrypt the share to node $i$, respectively. Both $\mathsf{Enc}$ and $\mathsf{Dec}$ may optionally output a proof (e.g. $\pi_{DLEQ}$).
+    \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i = \mathsf{Dec}(sk_i, \mathsf{Enc}(pk_i, s_i))$ is a two-part process. First, the dealer with secret $s$ generates secret shares $\{s_i\}$ and sends each encrypted share $\mathsf{Enc}(pk_i, s_i)$ to node $i$ with an optional encryption proof $\pi_{Enc_{i}}$. Second, node $i$ decrypts the received encrypted share to generate $s'_i$ and broadcasts it with an optional decryption proof $\pi_{Dec_{i}}$. Note that it is possible that $s'_i \neq s_i$. In fact, $s'_i = h^{s_i}$ is standard due to certain PVSS implementation details. $\pi$ incorporates $\{\pi_{Enc_{i}}\}$ and $\{\pi_{Dec_{i}}\}$ as well as any auxiliary proof necessary.
+    \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if the sharing is correct overall using $\pi$.
     \item $\mathsf{Recon}(A, \{s'_i\}_{i \in A}) \rightarrow s'$ reconstructs the shared secret $s'$ via Lagrange interpolation (in the exponent) from a set $A$ of $t + 1$ nodes whose contributions are passed by the $\mathsf{ShareVerify}$ algorithm. Typically, $s' = h^s$ in the landscape.
 \end{itemize}
 
@@ -994,39 +1002,6 @@ A $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001
 % \item Consistency. $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ should yield the same $y$ for any set $A$ of $t + 1$ nodes whose outputs of $\mathsf{PartialEval}(sk_i, x)$ are accepted by $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$.
 % \end{itemize}
 % \fi
-\section{Distributed Verifiable Random Function (DVRF)}
-\subsection{DDH-DVRF}
-\label{appendix:ddh-dvrf}
-DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the following DVRF algorithms.
-\begin{enumerate}
-\item $\mathsf{DKG}(1^\lambda, t, n)$ runs a typical DKG.
-\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the non-interactive Chaum-Pedersen protocol (see Appendix \ref{appendix:dleq}).
-\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g, pk_i, H(x), y_i, \pi_i)$ (Appendix \ref{appendix:dleq}) and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
-\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix \ref{appendix:lagrange}.
-\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies all partial proofs via $\mathsf{PartialVerify}$ for all $i \in A$ from $\pi$ and checks $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$.
-\end{enumerate}
-
-\subsection{GLOW-DVRF}
-\label{appendix:glow-dvrf}
-Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ similar to BLS (Appendix \ref{appendix:bls}) such that the setup includes hash functions $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$ and $H_2: \mathbb{G}_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While the following tuple of algorithms generally resembles that of DDH-DVRF, algebraic modifications are made accordingly due to pairings.
-\begin{enumerate}
-\item $\mathsf{DKG}(1^\lambda, t, n)$ is adapted so that $pk_i$ resides in $\mathbb{G}_1$ while $pk$ resides in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_1^{sk_i}, g_2^{sk})$ for $g_1 \in \mathbb{G}_1$ and $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate a compact proof in the final $\mathsf{Verify}$ step.
-\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g_1, g_1^{sk_i}, H_1(x), H_1(x)^{sk_i})$.
-\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g_1, pk_i, H_1(x), y_i, \pi_i)$ and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
-\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $\pi = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $y = H_2(\pi)$. Note that $\pi$ is a group element.
-\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies $y = H_2(\pi)$ and a pairing equation $e(\pi, g_2) = e(H_1(x), pk)$.
-\end{enumerate}
-
-\subsection{Dfinity-DVRF}
-\label{appendix:dfinity-dvrf}
-Dfinity-DVRF is given by the following DVRF algorithms.
-\begin{enumerate}
-\item $\mathsf{DKG}(1^\lambda, t, n)$ is adapted so that both $pk_i$ and $pk$ reside in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_2^{sk_i}, g_2^{sk})$ for $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate the check of some pairing equation in both $\mathsf{PartialVerify}$ and $\mathsf{Verify}$.
-\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \text{$\perp$}$. The reason for a null proof is that a pairing equation check is used in $\mathsf{PartialVerify}$ (i.e. the differentiator from GLOW-DVRF) with no need for any auxiliary information.
-\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ checks a pairing equation $e(y_i, g_2) = e(H_1(x), pk_i)$.
-\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ equals that in GLOW-DVRF.
-\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ equals that in GLOW-DVRF.
-\end{enumerate}
 
 \begin{table*}[h!]
 \aboverulesep=0ex
@@ -1062,6 +1037,40 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 \end{threeparttable}
 \end{table*}
 
+% \section{Distributed Verifiable Random Function (DVRF)}
+\section{DDH-DVRF}
+\label{appendix:ddh-dvrf}
+DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the following DVRF algorithms.
+\begin{itemize}
+\item $\mathsf{DKG}(1^\lambda, t, n)$ runs a typical DKG.
+\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the non-interactive Chaum-Pedersen protocol (see Appendix \ref{appendix:dleq}).
+\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g, pk_i, H(x), y_i, \pi_i)$ (Appendix \ref{appendix:dleq}) and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
+\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix \ref{appendix:lagrange}.
+\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies all partial proofs via $\mathsf{PartialVerify}$ for all $i \in A$ from $\pi$ and checks $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$.
+\end{itemize}
+
+\section{GLOW-DVRF}
+\label{appendix:glow-dvrf}
+Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ similar to BLS (Appendix \ref{appendix:bls}) such that the setup includes hash functions $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$ and $H_2: \mathbb{G}_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While resembling DDH-DVRF, the following algebraic modifications are made due to pairings.
+\begin{itemize}
+\item $\mathsf{DKG}(1^\lambda, t, n)$ is adapted so that $pk_i$ resides in $\mathbb{G}_1$ while $pk$ resides in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_1^{sk_i}, g_2^{sk})$ for $g_1 \in \mathbb{G}_1$ and $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate a compact proof in the final $\mathsf{Verify}$ step.
+\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g_1, g_1^{sk_i}, H_1(x), H_1(x)^{sk_i})$.
+\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g_1, pk_i, H_1(x), y_i, \pi_i)$ and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
+\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $\pi = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $y = H_2(\pi)$. Note that $\pi$ is a group element.
+\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies $y = H_2(\pi)$ and a pairing equation $e(\pi, g_2) = e(H_1(x), pk)$.
+\end{itemize}
+
+\section{Dfinity-DVRF}
+\label{appendix:dfinity-dvrf}
+Dfinity-DVRF is given by the following DVRF algorithms.
+\begin{itemize}
+\item $\mathsf{DKG}(1^\lambda, t, n)$ is adapted so that both $pk_i$ and $pk$ reside in $\mathbb{G}_2$. This is achieved by letting $(pk_i, pk) = (g_2^{sk_i}, g_2^{sk})$ for $g_2 \in \mathbb{G}_2$. The purpose of this is to facilitate the check of some pairing equation in both $\mathsf{PartialVerify}$ and $\mathsf{Verify}$.
+\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \text{$\perp$}$. The reason for a null proof is that a pairing equation check is used in $\mathsf{PartialVerify}$ (i.e. the differentiator from GLOW-DVRF) with no need for any auxiliary information.
+\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ checks a pairing equation $e(y_i, g_2) = e(H_1(x), pk_i)$.
+\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ equals that in GLOW-DVRF.
+\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ equals that in GLOW-DVRF.
+\end{itemize}
+
 \section{Other Cryptographic Primitives}
 % \iffalse
 % \subsection{Commitment Scheme}
@@ -1087,10 +1096,10 @@ Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagra
 \subsection{BLS Signature}
 \label{appendix:bls}
 Introduced by Boneh, Lynn, and Shacham in 2003, the BLS signature scheme \cite{boneh2001short} consists of the following tuple of algorithms given a key pair $(sk, pk)$.
-\begin{enumerate}
+\begin{itemize}
 \item $\mathsf{Sign}_{sk}(m) \rightarrow H_1(m)^{sk}$ outputs a digital signature $\sigma = H_1(m)^{sk}$ given secret key $sk$ and message $m$ where $H_1$ is a hash function such that $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$.
 \item $\mathsf{Verify}_{pk}(m, \sigma) \rightarrow \{0, 1\}$ verifies $\sigma$ given signature $\sigma$, message $m$, and public key $pk$ via $e(\sigma, g_2) = e(H_1(m), pk)$.
-\end{enumerate}
+\end{itemize}
 Note that BLS uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ with $\mathbb{G}_1 = \langle g_1 \rangle$, $\mathbb{G}_2 = \langle g_2 \rangle$, $\mathbb{G}_T$ denoting a cyclic group of prime order $q$, and the following requirements.
 \begin{itemize}
 \item Bilinearity. $e(g_1^x, g_2^y) = e(g_1, g_2)^{x y}$ for all $x, y \in \mathbb{Z}^*_q$.
