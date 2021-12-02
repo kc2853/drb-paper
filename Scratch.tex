@@ -1,7 +1,10 @@
-\documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix-2020-09}
-\usepackage[backend=bibtex,sortcites]{biblatex}
-\addbibresource{bib.bib}
+\documentclass[conference]{IEEEtran}
+% \documentclass[letterpaper,twocolumn,10pt]{article}
+% \usepackage{usenix-2020-09}
+% \usepackage[backend=bibtex,sortcites]{biblatex}
+% \addbibresource{bib.bib}
+\bibliographystyle{IEEEtranS}
+\usepackage[noadjust]{cite}
 % Language and font encodings
 % \usepackage[english]{babel}
 % \usepackage[utf8]{inputenc}
@@ -15,7 +18,7 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{graphicx}
-% \usepackage{hyperref}
+\usepackage{hyperref}
 \usepackage{seqsplit}
 \usepackage{indentfirst}
 \usepackage{tabu}
@@ -45,8 +48,8 @@
 \AtEndEnvironment{quote}{\vspace{1em}\endsinglespace}
 \renewcommand{\arraystretch}{1.5}
 \tabulinesep = 2mm
-\setlist[itemize]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
-\setlist[enumerate]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
+% \setlist[itemize]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
+% \setlist[enumerate]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -78,7 +81,12 @@
 \begin{document}
 
 \maketitle
-%\tableofcontents
+\thispagestyle{plain}
+\pagestyle{plain}
+% \tableofcontents
+\begin{abstract}
+    Motivated by the emergence of Proof of Stake blockchains, the problem of generating publicly verifiable randomness in a distributed yet reliable fashion has seen many solutions in the recent years. These protocols work under different setups and assumptions, use various cryptographic tools, and entail unique tradeoffs and characteristics. In this paper, we devise a framework consisting of two components---selection of entropy providers and randomness generation---to systematize the design of distributed randomness protocols realizing a distributed randomness beacon (DRB), whose security properties include unbiasability, unpredictability, liveness, and public verifiability. We start by delving into protocols where every node plays an active role contributing to the final randomness. Next, we provide an overview of techniques used to select and generate the randomness with only a subset of active nodes to improve scalability. However, this may come at the cost of diminished quality of randomness or vulnerability to biasing by an adversary. We then discuss some attack vectors for predicting or biasing the beacon and the countermeasures employed by protocols. Finally, we provide insights on the applicability of different protocols based on various scenarios and possible directions for further research.
+\end{abstract}
 
 \section{Introduction}
 Public, trustworthy randomness has been a useful tool for millennia, dating at least to the earliest known use of dice around 3000 BCE. Today, periodic public randomness is crucial to applications including gambling and lotteries \cite{bonneau2015bitcoin}, sampling ballots for election audits \cite{adida2008helios}, selecting parameters for cryptographic protocols \cite{baigneres2015trap, lenstra2015random}, leader election in proof-of-stake protocols \cite{gilad2017algorand, kiayias2017ouroboros}, and blockchain sharding \cite{al2017chainspace, kokoris2018omniledger}. The concept of a \emph{randomness beacon} was first formalized by Rabin \cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals in a way that no party can manipulate. Because no such ideal beacon exists, various solutions ranging from centralized approaches (relying on a single source or organization) to distributed approaches (decentralizing the randomness generation among a set of nodes) are used to approximate it.
@@ -373,19 +381,19 @@ f_{priv}(\cdot) < target
 \]
 where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ denotes the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that we can tinker with $target$ to make the lottery arbitrarily easy or hard to win. The idea is that each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it wins the lottery and becomes an entropy provider.
 
-As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$.
+As it is possible for an adversary to perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$. Two examples of the above formulation exist in the landscape: a VRF-based lottery and Caucus' \cite{azouvi2018winning} lottery involving a hash chain.\\
 
-A prime example of the above formulation is a VRF-based lottery. In Algorand \cite{gilad2017algorand}, a VRF (verifiable random function) \cite{micali1999verifiable,dodis2005verifiable} is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
+\noindent\textbf{VRF-based approach.} In Algorand \cite{gilad2017algorand}, a VRF (verifiable random function) \cite{micali1999verifiable,dodis2005verifiable} is used each round to process a lottery. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as the versions do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key such that the lottery is given by
 \[
 VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert role) < target
 \]
-where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are VRF-based private lotteries for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). Similar in principle, Caucus \cite{azouvi2018winning} achieves a private lottery without a VRF. See Table \ref{table:committee-based} for details.
+where $role$ is some parameter specific to Algorand. As both $\mathcal{O}_{r - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is derived from some threshold number of rounds ago. Similar are private lotteries for protocols like Ouroboros Praos \cite{david2018ouroboros} and NV (from Nguyen-Van et al. \cite{nguyen2019scalable}). See Table \ref{table:committee-based} for details.\\
 
-% \noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so commits to $h_{r + 1}$. Thus, each participant of Caucus independently generates a private hash chain comprising $m$ private inputs such that the lottery is given by
-% \[
-% H(h_r \oplus \mathcal{O}_{r - 1}) < target
-% \]
-% which simply involves a hash function. One downside is that the hash chain needs to be periodically regenerated, as $m$ is finite while we desire our DRB to be prolonged indefinitely.\\
+\noindent\textbf{Replacing VRF with $H(\cdot)$ and hash chain.} In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one can publicize one $h_r$ at a time (i.e. $h_r$ in round $r$) such that doing so commits to $h_{r + 1}$. Thus, each participant of Caucus independently generates a private hash chain comprising $m$ private inputs such that the lottery is given by
+\[
+H(h_r \oplus \mathcal{O}_{r - 1}) < target
+\]
+which simply involves a hash function. One downside is that the hash chain needs to be periodically regenerated, as $m$ is finite while we desire our DRB to be prolonged indefinitely.\\
 
 Private lottery exhibits two notable benefits: resilience to DoS attack (due to its property of delayed unpredictability \cite{azouvi2018winning} where one cannot predict the eligibility of honest nodes until they reveal) and \textit{independent participation} (i.e. nodes do not have to know other participants in advance to participate) allowing less communication cost as well as a more permissionless setting. Nonetheless, it can incur biasing via withholding in the worst case (as discussed in Section \ref{subsection:withholding}).
 
@@ -412,16 +420,16 @@ In order to optimize and lower communication cost, we can require generally less
 \mathcal{O}_r = H(\mathcal{O}_{r - 1} \mathbin\Vert h^{e_{\tilde{r}}})
 \]
 while PVSS recovery is used in case the leader fails to open $e_{\tilde{r}}$ in round $r$. Notable in HydRand is the fact (achieving ungrindability of $h^{e_{\tilde{r}}}$) that one honest node must be present in any $t + 1$ consecutive rounds due to the requirement that a leader cannot gain another leadership in the next $t$ rounds. Similar overall is GRandPiper's beacon output generation (see Table \ref{table:committee-based}).
-\item Algorand, Ouroboros Praos, and Caucus. In VRF-based schemes that use a VRF for beacon output generation (rather than only for committee selection as in NV++), the secret key $sk$ of the round leader often corresponds to precommitted per-node entropy as long as the assumption that nodes cannot switch their $sk$ at the time of VRF's computation holds. Algorand's beacon output is therefore given by
+\item Algorand and Ouroboros Praos. In VRF-based schemes that use a VRF for beacon output generation (rather than only for committee selection as in NV++), the secret key $sk$ of the round leader often corresponds to precommitted per-node entropy as long as the assumption that nodes cannot switch their $sk$ at the time of VRF's computation holds. Algorand's beacon output is therefore given by
 \[
 \mathcal{O}_r = VRF_{sk}(\mathcal{O}_{r - 1} \mathbin\Vert r)
 \]
-combining the previous output $\mathcal{O}_{r - 1}$ with the precommitted entropy $sk$. Note that the input to the VRF in beacon output generation is different from that in committee selection, as the VRF output in committee selection is always going to be less than $target$ by design. Similar overall is Ouroboros Praos' beacon output generation. Similar in principle, Caucus replaces $sk$ with a hash chain's private input as precommitted entropy. See Table \ref{table:committee-based} for details.
-% \item Caucus. Each new reveal ($h_r$ in round $r$) of one's private hash chain in Caucus corresponds to an entropy provider's precommitted entropy. The beacon output is given by
-% \[
-% \mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}
-% \]
-% such that it naturally follows its committee selection mechanism $H(h_r \oplus \mathcal{O}_{r - 1}) < target$.
+combining the previous output $\mathcal{O}_{r - 1}$ with the precommitted entropy $sk$. Note that the input to the VRF in beacon output generation is different from that in committee selection, as the VRF output in committee selection is always going to be less than $target$ by design. Similar overall is Ouroboros Praos' beacon output generation (see Table \ref{table:committee-based}).
+\item Caucus. Each new reveal ($h_r$ in round $r$) of one's private hash chain in Caucus corresponds to an entropy provider's precommitted entropy. The beacon output is given by
+\[
+\mathcal{O}_r = h_r \oplus \mathcal{O}_{r - 1}
+\]
+such that it naturally follows its committee selection mechanism $H(h_r \oplus \mathcal{O}_{r - 1}) < target$.
 \end{itemize}
 
 \section{Protocols With No Marginal Entropy}
@@ -460,14 +468,14 @@ yields a computationally equivalent output to when a DVRF is computed among $n$ 
 \[
 \mathcal{O}_r = H(\mathsf{Sign}_{sk}(r \mathbin\Vert \mathcal{O}_{r - 1}))
 \]
-where $\mathsf{Sign}_{sk}(\cdot)$ is a BLS signature though computed by at least $t + 1$ nodes with $sk$ as the implied group secret key from a DKG such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures using $sk_i$ (see Appendix \ref{appendix:bls}). Some variations and optimizations include other protocols such as RandHerd \cite{syta2017scalable} via ``sharding'' nodes into a communication tree to lower communication cost, DDH-DRB \cite{galindo2020fully} (Appendix \ref{appendix:ddh-dvrf}) via replacing Dfinity's DVRF's (Appendix \ref{appendix:dfinity-dvrf}) pairing equation checks in $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ with DLEQ NIZKs (Appendix \ref{appendix:dleq}) for computational efficiency, and GLOW-DRB \cite{galindo2020fully} (Appendix \ref{appendix:glow-dvrf}) via modifying DDH-DRB to output a compact proof.
+where $\mathsf{Sign}_{sk}(\cdot)$ is a BLS signature though computed by at least $t + 1$ nodes with $sk$ as the implied group secret key from a DKG such that the actual computation of $\mathcal{O}_r$ involves combining of partial signatures using $sk_i$ (see Appendix \ref{appendix:bls}).\\
 
-% \noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist other variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DRB, and GLOW-DRB \cite{galindo2020fully}.
-% \begin{itemize}
-% \item RandHerd. Two modifications are made in RandHerd. First, ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial configuration seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This results in the notion of hierarchy among nodes in a tree structure and thus has the effect of reducing the communication complexity from $O(n^2)$ to $O(c^2 \log n)$. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand.
-% \item DDH-DRB. Each round of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each round of Dfinity) rely on verifying pairing equations (see Appendix \ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (Appendix \ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix \ref{appendix:ddh-dvrf} for details.
-% \item GLOW-DRB. Each round involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix \ref{appendix:glow-dvrf} for details.
-% \end{itemize}
+\noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist other variations in the landscape, such as RandHerd \cite{syta2017scalable}, DDH-DRB, and GLOW-DRB \cite{galindo2020fully}.
+\begin{itemize}
+\item RandHerd. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial configuration seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This results in the notion of hierarchy among nodes in a tree structure and thus has the effect of reducing the communication complexity from $O(n^2)$ to $O(c^2 \log n)$. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_r$ where $t_r$ denotes the timestamp at the beginning of round $r$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = r \mathbin\Vert \mathcal{O}_{r - 1}$ a la Dfinity or drand.
+\item DDH-DRB. Each round of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each round of Dfinity) rely on verifying pairing equations (see Appendix \ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (Appendix \ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix \ref{appendix:ddh-dvrf} for details.
+\item GLOW-DRB. Each round involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix \ref{appendix:glow-dvrf} for details.
+\end{itemize}
 
 \section{Discussions}
 \label{section:discussions}
@@ -490,30 +498,22 @@ On the other hand, there exists an attack without much countermeasure, namely wi
 \item \textbf{Protocols with private lottery.} The issue is more fundamental with private lottery schemes like Algorand (where the leader can bias via withholding after privately computing $\mathcal{O}_r$). There is simply no way to detect once a winner withholds its leadership, i.e. there is no accountability. There are two possible remedies. First, we can require all participants to post their private lottery outputs every single round even if they lose the lottery, in which case any lack of message would be indicative of withholding. This however incurs communication cost. Second, a technique called SSLE (single secret leader election) \cite{boneh2020single} can be used to guarantee one winner per round, enabling detection of withholding. In a nutshell, SSLE allows a setup where exactly one leader from a group is randomly chosen while the identity of the leader will only be known to itself until it publicly reveals its identity. Note that the guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. It does not prevent withholding attack by itself, however.
 \end{enumerate}
 
-\subsection{Adaptive Security}
-\label{subsection:adaptive}
-A DRB is \textit{adaptively secure} if its security properties remain unaffected when given an adaptive adversary instead of a static one. Otherwise, it is \textit{adaptively insecure}. In this section, we discuss three ways in which adaptive security is achieved and see how DRBs in the landscape satisfy adaptive security accordingly or adaptive insecurity otherwise.
-
-\begin{enumerate}
-\item \textbf{$|\mathcal{C}_r|$ is greater than $t$ or equal to 0.} Due to the $t$-limited adversary assumption, a large enough $\mathcal{C}_r$ (or an empty one as per Section \ref{section:dvrf}) leads to adaptive security. Otherwise, a protocol may be vulnerable. In HydRand and GRandPiper (where $|\mathcal{C}_r| = 1$), an adaptive adversary can corrupt the next $t$ round leaders to predict $t + 1$ future rounds. In Ouroboros, it can adaptively corrupt the entire $\mathcal{C}_r$ (which could probabilistically be less than or equal to $t$ in size) publicly known in advance.
-\item \textbf{Protocols with private lottery require lottery winners to broadcast selection into $\mathcal{C}_r$ and contribute entropy for beacon output generation in the same message.} While some private lottery schemes (i.e. Algorand, Ouroboros Praos, and Caucus) may involve less than or equal to $t$ entropy providers per round, the fact that one message (per entropy provider) comprises both announcement of winning the lottery and provision of entropy contribution is what allows adaptive security. The idea is that by the time an adversary corrupts a node adaptively after the node reveals its identity as an entropy provider in round $r$ via one message, there is no extra step left to be corrupted, as the node's contribution to $\mathcal{O}_r$ has been broadcast already in the same message.
-\item \textbf{There is no concept of a round leader.} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, an adversary can still adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the round leader allows biasability if the leader aborts after seeing $\mathcal{O}_r$ as aforementioned. In SPURT, corrupting the next $t$ leaders to withhold endangers liveness.
-\end{enumerate}
-
 \begin{table*}[h!]
 % \footnotesize
 \scriptsize
+% \tiny
 \begin{threeparttable}
 \caption{DRB Comparison}
 \label{table:comparison}
-\begin{tabularx}{\textwidth}{@{} l *{20}c}
+% \begin{tabularx}{\textwidth}{@{} l *{20}c}
 % \begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{x}}c@{\phantom{x}}}}
+\begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{w}}c@{\phantom{w}}}}
 \toprule
 \spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive} & \spheading{Fault Tolerance (less than)} & \spheading{Independent Participation} & \spheading{Per-Round Entropy Provider} & \spheading{Unpredictability} & \spheading{Immunity to Withholding} & \spheading{Adaptive Security} & \spheading{Verifier Complexity} & \multicolumn{2}{c}{\spheading{Communication Complexity}} & \spheading{Max Damage} & \spheading{Recovery Cost}\\
 \cmidrule{11-12}
  & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{2} & Commitment & 1 & \cmark & All & \xmark & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
+Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & \xmark & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
 Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
@@ -559,6 +559,16 @@ GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & 
 \end{threeparttable}
 \end{table*}
 
+\subsection{Adaptive Security}
+\label{subsection:adaptive}
+A DRB is \textit{adaptively secure} if its security properties remain unaffected when given an adaptive adversary instead of a static one. Otherwise, it is \textit{adaptively insecure}. In this section, we discuss three ways in which adaptive security is achieved and see how DRBs in the landscape satisfy adaptive security accordingly or adaptive insecurity otherwise.
+
+\begin{enumerate}
+\item \textbf{$|\mathcal{C}_r|$ is greater than $t$ or equal to 0.} Due to the $t$-limited adversary assumption, a large enough $\mathcal{C}_r$ (or an empty one as per Section \ref{section:dvrf}) leads to adaptive security. Otherwise, a protocol may be vulnerable. In HydRand and GRandPiper (where $|\mathcal{C}_r| = 1$), an adaptive adversary can corrupt the next $t$ round leaders to predict $t + 1$ future rounds. In Ouroboros, it can adaptively corrupt the entire $\mathcal{C}_r$ (which could probabilistically be less than or equal to $t$ in size) publicly known in advance.
+\item \textbf{Protocols with private lottery require lottery winners to broadcast selection into $\mathcal{C}_r$ and contribute entropy for beacon output generation in the same message.} While some private lottery schemes (i.e. Algorand, Ouroboros Praos, and Caucus) may involve less than or equal to $t$ entropy providers per round, the fact that one message (per entropy provider) comprises both announcement of winning the lottery and provision of entropy contribution is what allows adaptive security. The idea is that by the time an adversary corrupts a node adaptively after the node reveals its identity as an entropy provider in round $r$ via one message, there is no extra step left to be corrupted, as the node's contribution to $\mathcal{O}_r$ has been broadcast already in the same message.
+\item \textbf{There is no concept of a round leader.} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, an adversary can still adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the round leader allows biasability if the leader aborts after seeing $\mathcal{O}_r$ as aforementioned. In SPURT, corrupting the next $t$ leaders to withhold endangers liveness.
+\end{enumerate}
+
 \subsection{Comparison of DRBs}
 We provide Table \ref{table:comparison} to offer an overall comparison of DRBs. \textit{Fault Tolerance} indicates the minimum number of faulty nodes that can abort a protocol (after the initial setup). Protocols with \textit{Independent Participation} allows a node to contribute to beacon output without the knowledge of other nodes in advance. However, it differs from a permissionless setting in the sense that a node may still have to register in advance to allow verification of its contribution.
 
@@ -603,14 +613,14 @@ Accordingly, we identify the following areas that could benefit from further res
     % proactively detecting corruption and automatic recovery
 \end{itemize}
 
-
-\printbibliography
+% \printbibliography
+\bibliography{IEEEabrv,bib.bib}
 \appendix
-\section*{Appendix}
-\addcontentsline{toc}{section}{Appendix}
-\renewcommand{\thesection}{\arabic{section}}
+% \section*{Appendix}
+% \addcontentsline{toc}{section}{Appendix}
+% \renewcommand{\thesection}{\arabic{section}}
 
-\section{Public Verifiability}
+\subsection{Public Verifiability}
 \label{appendix:pv}
 Public verifiability of a DRB can be defined by the following game. Suppose the advantage of $\mathcal{A}$ is given by
 \[
@@ -796,23 +806,15 @@ where the protocol runs among honest participants and $\mathcal{A}$ (which has a
 % \end{itemize}
 % \fi
 
-\section{Publicly Verifiable Secret Sharing (PVSS)}
+\subsection{Publicly Verifiable Secret Sharing (PVSS)}
 \label{appendix:pvss}
 PVSS can be described by the following algorithms.
-% \begin{itemize}
-%     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
-%     \item $\mathsf{KeyGen}(\lambda) \rightarrow (sk_i, pk_i)$ generates the PVSS key pair used for encryption and decryption for node $i$.
-%     \item $\mathsf{Enc}(pk_i, m) \rightarrow c$ and $\mathsf{Dec}(sk_i, c) \rightarrow m'$ are subalgorithms used when the dealer sends an encrypted share to node $i$ and when node $i$ decrypts the encrypted share, respectively. Both $\mathsf{Enc}$ and $\mathsf{Dec}$ may optionally output a proof (e.g. $\pi_{DLEQ}$).
-%     \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i = \mathsf{Dec}(sk_i, \mathsf{Enc}(pk_i, s_i))$ is a two-part process. First, the dealer with secret $s$ generates secret shares $\{s_i\}$, encrypts them to generate $\{\mathsf{Enc}(pk_i, s_i)\}$, and sends each of them to node $i$ along with an optional encryption proof of correctness. Second, node $i$ decrypts the received encryption from the dealer to generate $s'_i$ and broadcasts it for reconstruction along with an optional decryption proof of correctness. At the protocol level, this yields $\{s'_i\}$ as a result. Note that it is possible that $s'_i \neq s_i$. In fact, $s'_i = h^{s_i}$ for some group generator $h$ is standard in the landscape due to certain PVSS implementation details. $\pi$ incorporates optional encryption and decryption proofs of correctness as well as any auxiliary proof necessary.
-%     \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if the sharing is correct overall. Again, verifying $\pi$ should involve verifying the optional proofs for encryption and decryption as well as any auxiliary proof necessary.
-%     \item $\mathsf{Recon}(A, \{s'_i\}_{i \in A}) \rightarrow s'$ reconstructs the shared secret $s'$ via Lagrange interpolation (in the exponent) from a set $A$ of $t + 1$ nodes whose contributions are passed by the $\mathsf{ShareVerify}$ algorithm. Typically, $s' = h^s$ in the landscape.
-% \end{itemize}
 \begin{itemize}
     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
     \item $\mathsf{KeyGen}(\lambda) \rightarrow (sk_i, pk_i)$ generates the PVSS key pair used for encryption and decryption for node $i$.
     \item $\mathsf{Enc}(pk_i, m) \rightarrow c$ and $\mathsf{Dec}(sk_i, c) \rightarrow m'$ are subalgorithms used to encrypt and decrypt the share to node $i$, respectively. Both $\mathsf{Enc}$ and $\mathsf{Dec}$ may optionally output a proof (e.g. $\pi_{DLEQ}$).
     \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i = \mathsf{Dec}(sk_i, \mathsf{Enc}(pk_i, s_i))$ is a two-part process. First, the dealer with secret $s$ generates secret shares $\{s_i\}$ and sends each encrypted share $\mathsf{Enc}(pk_i, s_i)$ to node $i$ with an optional encryption proof $\pi_{Enc_{i}}$. Second, node $i$ decrypts the received encrypted share to generate $s'_i$ and broadcasts it with an optional decryption proof $\pi_{Dec_{i}}$. Note that it is possible that $s'_i \neq s_i$. In fact, $s'_i = h^{s_i}$ is standard due to certain PVSS implementation details. $\pi$ incorporates $\{\pi_{Enc_{i}}\}$ and $\{\pi_{Dec_{i}}\}$ as well as any auxiliary proof necessary.
-    \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if the sharing is correct overall using $\pi$.
+    \item $\mathsf{ShareVerify}(\{\mathsf{Enc}(pk_i, s_i)\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies if $\mathsf{ShareGen}$ is correct overall using $\pi$.
     \item $\mathsf{Recon}(A, \{s'_i\}_{i \in A}) \rightarrow s'$ reconstructs the shared secret $s'$ via Lagrange interpolation (in the exponent) from a set $A$ of $t + 1$ nodes whose contributions are passed by the $\mathsf{ShareVerify}$ algorithm. Typically, $s' = h^s$ in the landscape.
 \end{itemize}
 
@@ -948,7 +950,7 @@ PVSS can be described by the following algorithms.
 %     \end{itemize}
 % \fi
 
-\section{Threshold ElGamal Cryptosystem}
+\subsection{Threshold ElGamal Cryptosystem}
 \label{appendix:thrElGamal}
 A $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic}, with an elliptic curve $E$ over $\mathbb{F}_p$ and its cyclic subgroup $\mathbb{G}_q$ with generator $G$, is implemented as follows.
 \begin{itemize}
@@ -1043,7 +1045,7 @@ A $(t, n)$-threshold ElGamal cryptosystem \cite{desmedt1990Threshold, fouque2001
 \end{table*}
 
 % \section{Distributed Verifiable Random Function (DVRF)}
-\section{DDH-DVRF}
+\subsection{DDH-DVRF}
 \label{appendix:ddh-dvrf}
 DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the following DVRF algorithms.
 \begin{itemize}
@@ -1054,7 +1056,7 @@ DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the fol
 \item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies all partial proofs via $\mathsf{PartialVerify}$ for all $i \in A$ from $\pi$ and checks $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$.
 \end{itemize}
 
-\section{GLOW-DVRF}
+\subsection{GLOW-DVRF}
 \label{appendix:glow-dvrf}
 Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G}_1 \times \mathbb{G}_2 \rightarrow \mathbb{G}_T$ similar to BLS (Appendix \ref{appendix:bls}) such that the setup includes hash functions $H_1: \{0, 1\}^* \rightarrow \mathbb{G}_1$ and $H_2: \mathbb{G}_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While resembling DDH-DVRF, the following algebraic modifications are made due to pairings.
 \begin{itemize}
@@ -1065,7 +1067,7 @@ Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \mathbb{G
 \item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies $y = H_2(\pi)$ and a pairing equation $e(\pi, g_2) = e(H_1(x), pk)$.
 \end{itemize}
 
-\section{Dfinity-DVRF}
+\subsection{Dfinity-DVRF}
 \label{appendix:dfinity-dvrf}
 Dfinity-DVRF is given by the following DVRF algorithms.
 \begin{itemize}
@@ -1076,7 +1078,7 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 \item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ equals that in GLOW-DVRF.
 \end{itemize}
 
-\section{Other Cryptographic Primitives}
+\subsection{Other Cryptographic Primitives}
 % \iffalse
 % \subsection{Commitment Scheme}
 % \label{appendix:commitment}
@@ -1094,11 +1096,11 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 % For further details (e.g. perfectly vs computationally binding and hiding), refer to \cite{damgaard1998commitment}.
 % \fi
 
-\subsection{Lagrange Interpolation}
+\subsubsection{Lagrange Interpolation}
 \label{appendix:lagrange}
 Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \mathbb{Z}_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \mathbb{Z}_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \mathbb{Z}_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
 
-\subsection{BLS Signature}
+\subsubsection{BLS Signature}
 \label{appendix:bls}
 Introduced by Boneh, Lynn, and Shacham in 2003, the BLS signature scheme \cite{boneh2001short} consists of the following tuple of algorithms given a key pair $(sk, pk)$.
 \begin{itemize}
@@ -1118,7 +1120,7 @@ H_1(m)^{sk} = \prod_{i \in A} \left(H_1(m)^{sk_i}\right)^{\lambda_{0, i, A}}
 \]
 via Lagrange interpolation in the exponent.
 
-\subsection{NIZK of Discrete Logarithm Equality (DLEQ)}
+\subsubsection{NIZK of Discrete Logarithm Equality (DLEQ)}
 \label{appendix:dleq}
 Also known as the Chaum-Pedersen protocol \cite{chaum1992wallet}, the $\Sigma$ protocol \cite{damgaard2002sigma} for proving that the two discrete logarithms are equal without revealing the discrete logarithm value itself can be turned into a NIZK by applying the Fiat-Shamir heuristic \cite{fiat1986prove}. Namely, the prover can non-interactively prove the knowledge of $\alpha$ such that $(h_1, h_2) = (g_1^\alpha, g_2^\alpha)$ via $\pi_{DLEQ} = \mathsf{DLEQ}(g_1, h_1, g_2, h_2)$ with group elements in $\mathbb{G}_q$.\\
 
@@ -1146,7 +1148,7 @@ Also known as the Chaum-Pedersen protocol \cite{chaum1992wallet}, the $\Sigma$ p
 \end{cases}$
 \end{enumerate}
 
-\subsection{NIZK of Correct ElGamal Encryption (CE)}
+\subsubsection{NIZK of Correct ElGamal Encryption (CE)}
 \label{appendix:ce}
 Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$ \cite{cherniaeva2019homomorphic} where $G \in \mathbb{G}_q$ and $(Q, A, B) = (x G, r G, m G + r Q)$, the prover can non-interactively prove the knowledge of $(m, r)$ and thus prove the legitimacy of an ElGamal encryption (e.g. as opposed to exploiting its malleability). Note that the additive notation is used to handle points on an elliptic curve.\\
 
