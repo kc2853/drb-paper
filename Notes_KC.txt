@@ -6,10 +6,6 @@ General notes
 • Byzantine broadcast (BB): leader broadcasts
 • Byzantine agreement (BA): everyone has inputs -> agree on output
 • BB ~= leader sends once + BA
-• 
-• 
-• 
-• 
 
 1. Feldman's VSS paper
 2. Pedersen's paper (DKG)
@@ -55,6 +51,10 @@ General notes
 42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
 43. Distributed ElGamal a la Pedersen - Application to Helios
 44. ALBATROSS: publicly AttestabLe BATched Randomness based On Secret Sharing
+45. Efficient CCA Timed Commitments in Class Groups
+46. Efficient verifiable delay functions
+47. BLS Multi-Signatures With Public-Key Aggregation
+48. MuSig1
 
 1. Feldman's VSS paper
 https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
@@ -66,7 +66,6 @@ https://www.cs.umd.edu/~gasarch/TOPICS/secretsharing/feldmanVSS.pdf
 2. Pedersen's paper (DKG)
 https://link.springer.com/content/pdf/10.1007/3-540-46416-6_47.pdf
 • Parallel Feldman's
-• Can get group secret without knowing individual secrets b/c sum of individual secrets
 
 3. Gennaro's DKG (based on Pedersen)
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.6445&rep=rep1&type=pdf
@@ -93,18 +92,15 @@ https://dfinity.org/pdf-viewer/library/dfinity-consensus.pdf
 • Random beacon output -> block proposals -> block notarizations
 • Threshold sig: 2 attacks (prediction & aborting); non-interactiveness; uniqueness
 • Joint-Feldman DKG: yields a verification vector (commitment to final coefficients)
-• Sign with individual share on group poly -> can combine bc homomorphic?
 • Final signature: depends on current round number + previous number
-• drand vs Dfinity: Pedersen/Gennaro DKG vs Joint-Feldman DKG -- not sure
 
 5. Gennaro's DKG Revisited paper
 http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.5426&rep=rep1&type=pdf
 • Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
-• Schnorr threshold sig: still secure with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
+• Schnorr threshold sig: still secure (paper's main idea!) with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
 • "Additive" share pooling (paper uses this) vs "polynomial" share pooling
 • Setup: computational, communication, adversary, DL assumption, security of threshold sig, simulation proof technique, ROM
 • Generalized presentation of the 1/2 -> 3/4 attack for biasing Joint-Feldman
-• <"secrecy-like" property of this protocol is good enough> -- adversary cannot bias the public key too much either?!
 • Main idea: Joint-Feldman should be good enough (even if biasing possible) for threshold sig -> ex: Schnorr threshold sig with additive pooling
 • Notion of security for threshold sig: robustness & unforgeability -> proving threshold Schnorr's security via SIM
 • Tradeoff: security reduction leads to degradation by a factor compared to security of DLP (discrete log problem) -> need stronger security parameter -> bigger field -> less efficiency
@@ -216,13 +212,14 @@ https://eprint.iacr.org/2020/096.pdf
 
 14. Timed Commitments
 https://www.iacr.org/archive/crypto2000/18800237/18800237.pdf
-• Verifiable recovery (just recovery) + recovery with proof (outsiders can verify too) + immunity against parallelism
+• 3 properties: verifiable recovery + recovery with proof (outsiders can verify too) + immunity against parallelism
 • Contract signing, honest auction
 • Timed signature (with a new definition of valid signature) < timed commitment
 • ∃zk proof that the scheme is a timed commitment (from Alice before she commits)
-• Think about original definition of commitment b/c timed commitment is unorthodox
-• Basic idea: open (allows faster verification) vs forced open (verifier needs to compute the "VDF")
+• Basic idea: open (allows faster verification) vs forced open (receiver needs to compute the "VDF")
 • Q. Pietrzak's & Wesolowski's can help with efficient verification?
+• Section 3 (timed commitment construction): hides message M via BBS generator; but the proof doesn't seem to be related to M?
+• Q. paper's intro talks about 2 proofs (committer generating a proof & receiver generating a proof as part of open/forced-open) vs Section 3's proof -- a gap?
 
 15. RandRunner
 https://eprint.iacr.org/2020/942.pdf
@@ -730,3 +727,59 @@ https://eprint.iacr.org/2020/644.pdf
 • Reconstruction verification of PPVSS (packed PVSS): uses Local_LDEI
 • Figure 8 & 9: Albatross protocol
 • Subset selection (i.e. distributed computation protocol) if PVSS recovery: for reducing computational complexity
+
+45. Efficient CCA Timed Commitments in Class Groups
+https://eprint.iacr.org/2021/1272.pdf
+```
+• Step I: We construct a homomorphic time-lock puzzle from class groups of imaginary quadratic order. The scheme has a transparent setup and supports homomorphic evaluations of linear functions over Z𝑞, for some prime 𝑞
+• Step II: We turn our time-lock puzzle into a CCA timed com- mitment by augmenting it with a simulation-extractable NIZK. We then propose a new special-purpose efficient NIZK scheme with a transparent setup
+• Step III: We show how our CCA timed commitments give raise to a distributed randomness generation protocol that is concretely efficient and satisfies many desirable properties
+• 𝑍 :=(𝐺𝑟,𝜓𝑞(𝐻𝑟)·𝐹𝑚)
+• A technical point is the fact that one can efficiently compute square roots in 𝐶𝑙(Δ𝐾)
+• The kernel of 𝜑𝑞 is a subgroup of 𝐶𝑙(Δ𝑞)of order 𝑞 where the discrete logarithm problem is easy
+• How to Sample 𝑝𝑘?; There is no known algorithm to obliviously sample a well-formed public key 𝐾. In other words, the only efficient method to sample an element 𝐾 (public key) in the cyclic subgroup G of the class group uniformly at random is to first sample an integer 𝑘 (the secret key) and set 𝐾 :=𝐺𝑘 where 𝐺 is the generator of the group. This however requires a fully trusted (private-coin) setup
+• This difficulty seems to be curtailed to the class group set- tings, as for standard prime-order groups  ̃G we know of ef- ficient algorithms to sample a uniform  ̃pk without knowing the corresponding secret key. With this observation in mind, we can implement the above paradigm bridging both groups G and  ̃G
+• Efficient NIZK for Cross-Group Relations; To do this, we circle back to our original idea, except that now we let the committer sample the public key 𝐾 in the class group, instead of placing it in the common reference string. This way, we can use the trivial algorithm that samples an integer 𝑘 and sets 𝐾 :=𝐺𝑘
+• 1) The public key 𝐾 is correctly sampled from the class group.; 2) The class group ciphertexts {𝑐𝑖,0,𝑐𝑖,1}𝑖∈[𝛼] encrypt the bit decomposition of the randomness 𝑟 used in 𝑍1.; 3) Both 𝑖-th ciphertexts ( ̃𝑐𝑖,0,  ̃𝑐𝑖,1)and (𝑐𝑖,0,𝑐𝑖,1)either encrypt 0 or 1
+• We first revisit the setup algorithm of the so-called faster variant of the CL linearly homomorphic encryption scheme introduced by Castagnos and Laguillaumie in [27]. To start with, 𝑞 is a 𝜆-bit prime describing the message space Z𝑞, and we consider a fundamental discriminant Δ𝐾 =−𝑝𝑞 whose size 𝜂(𝜆)is chosen such that best algorithm to compute the class number takes 𝑂(2𝜆)time. The CL setting considers another discriminant Δ𝑞 =𝑞2Δ𝐾 and relies on the relations between the class group 𝐶𝑙(Δ𝑞)and the class group 𝐶𝑙(Δ𝐾)
+• In such a setting, the factorization of the discriminant Δ𝐾 is usually public. As a consequence one can efficiently compute square roots in G ⊂𝐶𝑙(Δ𝐾)using an algorithm from Lagarias [49], while it is not possible in Z/𝑛Z when 𝑛 is an RSA modulus of unknown factorization; suggests that we gain only a 5% time improvement using this strategy, we means that one has to increase Tby 5%
+• Highly Efficient Heuristic Variant. Provided we assume the sigma protocol for language L2 is simulation extractable1 with a straight-line (i.e. non-rewinding) extractor, we can omit proofs for languages L2 and L3. Note that simulation sound- ness of the sigma protocol can be proven, but extraction re- quires rewinding. Our heuristic has a flavor of “knowledge”- type assumptions which we believe is a reasonable compro- mise for a significant gain in efficiency
+```
+• CCA: chosen commitment attack (a la non-malleability)
+• Idea: homomorphic time-lock puzzle / timed commitment (ElGamal) s.t. if no reveal, can combine all commitments & compute once => scalability
+• Idea2: class group => transparent setup
+• DRB: commit-reveal-recover with CCA timed commitment
+• Naor-Yung paradigm: to achieve CCA; basically send an extra encryption with NIZK?
+• 3 NIZK proofs (L_1, L_2, L_3): all for CCA though?; the heuristic variant omits L_2 and L_3 (not sure why)
+• Figure 3: complete overview of CCA timed commitment
+• Some experimental evaluation: not extensive
+
+46. Efficient verifiable delay functions
+https://eprint.iacr.org/2018/623.pdf
+```
+• To construct our VDF, we actually build a trapdoor VDF
+• we note that our construction features two other useful properties: the proofs can be aggregated and watermarked. Aggregating consists in producing a single short proof that simultaneously proves the correctness of several VDF evaluations. Watermarking consists in tying a proof to the evaluator’s identity; in a blockchain setting, this allows to give credit (and a reward) to the party who spent time and resources evaluating the VDF
+• One can easily generate an imaginary quadratic order by choosing a random discriminant, and when the discriminant is large enough, the order of the class group cannot be computed
+• To this day, the best known algorithms for computing the order of the class group of an imaginary quadratic field of discriminant d are still of complexity L|d|(1/2) under the generalised Riemann hypothesis, for the usual function Lt(s) = exp
+• we actually need to work in (Z/NZ) ×/{±1}, and we call this the RSA setup
+• The construction is simple. Choose a random, negative, square-free integer d, of large absolute value, and such that d ≡ 1 mod 4. Then, let G = Cl(d) be the class group of the imaginary quadratic field Q(√d). Just as we wish, there is no known algorithm to efficiently compute the order of this group. The multiplication can be performed efficiently, and each class can be represented canonically by its reduced ideal. Note that the even part of |Cl(d)| can be computed if the factorisation of d is known. Therefore one should choose d to be a negative prime, which ensures that |Cl(d)| is odd. See [8] for a review of the arithmetic in class groups of imaginary quadratic orders
+• Remark 3. Instead of hashing the input x into the group G as g = HG(x), one could simply consider x ∈ G. However, the function x 7 → x2t being a group homomorphism, bypassing the hashing step has undesirable consequences. For instance, given x2t , one can compute (xα)2t for any integer α at the cost of only an exponentiation by α
+• In this section, we present two useful properties of the VDF: the proofs can be aggregated, and watermarked
+• Let the evaluator’s identity be given as a string id. One proposed method (see [12]) essentially consists in computing the VDF twice: once on the actual input, and once on a combination of the input with the evaluator’s identity id. Implemented carefully, this method could allow to reliably reward the evaluators for their work, but it also doubles the required effort. In the following, we sketch two cost-effective solutions to this problem
+• The first cost-effective approach consists in having the evaluator prove that he knows some hard-to-recover intermediate value; A simple way to do so would be for the evaluator to reveal the value cid = gpid t−1 (a certificate)
+• Another approach consists in producing a single group element that plays simultaneously the role of the proof and the certificate. This element is a watermarked proof, tied to the evaluator’s identity. This can be done easily with our construction. In the evaluation procedure (Algorithm 3), replace the definition of the prime ` by Hprime(id|||bin(g)|||bin(y))
+```
+
+47. BLS Multi-Signatures With Public-Key Aggregation
+(Compact Multi-Signatures for Smaller Blockchains)
+https://archive.vn/BtJs1
+• Idea: multisig with BLS satisfying 1. plain public key model (no need to prove knowledge of secret key); 2. no need to have distinct messages
+• Aggregation (can be all different msgs) vs multisig (all same msg)
+• Construction: need hash function for n pk's s.t. any attempt to rogue public key attack -> would change the target public key -> attack fails
+• Schnorr multisig: can only happen at the time of signing & interactive among the signers?
+
+48. MuSig1
+https://archive.vn/WO86t
+• BN multisig (sacrifices key aggregation for security in the plain public key model) -> MuSig1 (allows key aggregation)
+• Idea: aggregate public key = ∏ pk_i^{t_i}
+• 3 round: 1. precommitment of nonce (R); 2. share nonce; 3. share signature (s)
