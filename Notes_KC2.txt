@@ -1,0 +1,311 @@
+31. Fair Two-Party Computations via Bitcoin Deposits
+32. Zero-Collateral Lotteries in Bitcoin and Ethereum
+33. Secure and Efficient Asynchronous Broadcast Protocols
+34. Asynchronous Verifiable Secret Sharing and Proactive Cryptosystems
+35. APSS: Proactive Secret Sharing in Asynchronous Systems
+36. BanFEL: A Blockchain based Smart Contract for Fair and Efficient Lottery Scheme
+37. Probabilistic Smart Contracts: Secure Randomness on the Blockchain
+38. How to Share Secret Efficiently over Networks
+39. Distributed Key Generation in the Wild
+40. Schindler's Randomness for Blockchains
+41. Proof-of-Stake Longest Chain Protocols: Security vs Predictability
+42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
+43. Distributed ElGamal a la Pedersen - Application to Helios
+44. ALBATROSS: publicly AttestabLe BATched Randomness based On Secret Sharing
+45. Efficient CCA Timed Commitments in Class Groups
+46. Efficient verifiable delay functions
+47. BLS Multi-Signatures With Public-Key Aggregation
+48. MuSig1
+
+31. Fair Two-Party Computations via Bitcoin Deposits
+https://www.ifca.ai/fc14/bitcoin/papers/bitcoin14_submission_10.pdf
+• Generalizes (e.g. to contract signing and more) by using Goldreich's MPC technique
+• Uses SCS (simultaneous commitment scheme) to aid
+• Still deposit-based
+• Assumes BIP + fix malleability
+
+32. Zero-Collateral Lotteries in Bitcoin and Ethereum
+https://arxiv.org/pdf/1612.05390.pdf
+• No deposit -> 2-party -> tournament style -> O(log n) rounds
+• Implementation in both Bitcoin and Ethereum
+• Note: random winner selection != DRB
+
+33. Secure and Efficient Asynchronous Broadcast Protocols
+https://www.iacr.org/archive/crypto2001/21390524.pdf
+```
+• In this paper, we present a modular approach for building robust broadcast protocols that provide reliability (all servers deliver the same messages), atomicity (a total order on the delivered messages), and secure causality (a notion that ensures no dishonest server sees a message before it is scheduled by the system)
+• We do not make any timing assumptions and work in a purely asynchronous model with a static set of servers and no probabilistic assumptions about message delay
+• In particular, there are randomized solutions that use only a constant expected number of asynchronous “rounds” to reach agreement [15, 7, 3]. Moreover, by employing modern, efficient cryptographic techniques and by resorting to the random oracle model, this approach has recently been extended to a practical yet provably secure protocol for cryptographic Byzantine agreement that withstands the maximal possible corruption
+• Two basic broadcast protocols are reliable broadcast (following Bracha and Toueg [4]), which ensures that all servers deliver the same messages, and a variation of it that we call consistent broadcast, which only provides agreement among the actually delivered messages
+• We propose a new multi-valued Byzantine agreement protocol with an external validity condition and show how it can be used for implementing atomic broadcast
+• The multi-valued Byzantine agreement protocol invokes only a constant expected number of binary Byzantine agreement sub-protocols on average and achieves this by using a cryptographic common coin protocol in a novel way
+• Our atomic broadcast protocol guarantees that a message from an honest party cannot be delayed arbitrarily by an adversary as soon as a minimum number of honest parties are aware of that message
+• We also define and implement a variation of atomic broadcast called secure causal atomic broadcast. This is a robust atomic broadcast protocol that tolerates a Byzantine adversary and also provides secrecy for messages up to the moment at which they are guaranteed to be delivered
+• Secure causal atomic broadcast works by combining an atomic broadcast protocol with robust threshold decryption
+• There is a trusted dealer that has distributed some cryptographic keys initially, but it is not used later
+• In short, the network is the adversary
+• Apart from ordinary digital signature schemes, we use collision-free hashing, pseudo-random generators, robust non-interactive dual-threshold signatures [18], threshold public-key encryption schemes [19], and a threshold pseudo-random function [13, 6]. Definitions can be found in the full version
+• Our multi-valued agreement protocol builds on top of a consistent broadcast protocol, which is a relaxation of Byzantine reliable broadcast [12]. Consistent broadcast provides a way for a distinguished party to send a message to all other parties such that two parties never deliver two conflicting messages for the same sender and sequence number
+• The standard notion of validity for Byzantine agreement implements a binary decision and requires that only if all honest parties propose the same value, this is also the agreement value. No particular outcome is guaranteed otherwise. Obviously, this still ensures that the agreement value was proposed by some honest party for the binary case. But it does not generalize to multi-valued Byzantine agreement, and indeed, all previous protocols for multi-valued agreement [15, 20, 14] may fall back to a default value in this case, and decide for a value that no honest party proposed. We solve this problem by introducing an external validity condition, which requires that the agreement value is legal
+• Theorem 1. Given a protocol for biased binary validated Byzantine agreement and a protocol for verifiable authenticated consistent broadcast, Protocol VBA provides multi-valued validated Byzantine agreement for n > 3t
+• Atomic broadcast guarantees a total order on messages such that honest parties deliver all messages with a common tag in the same order. It is well known that protocols for atomic broadcast are considerably more expensive than those for reliable broadcast because even in the crash-fault model, atomic broadcast is equivalent to consensus [8] and cannot be solved by deterministic protocols
+• Input causality can be achieved if the sender encrypts a message to broadcast with the public key of a threshold cryptosystem for which all parties share the decryption key [17]. The ciphertext is then broadcast using an atomic broadcast protocol; after delivering it, all parties engage in an additional round to recover the message from the ciphertext
+```
+• Consistent (< reliable) -> add authenticated -> add verifiable -> Thm 1 -> VBA (validated BA) -> atomic -> secure causal atomic
+• Protocol msg (auxiliary) vs payload msg (content)
+• Verifiable: delivers "proof" & also forces action?!
+• External validity: checks if agreement value is legal (not just fallback)
+
+34. Asynchronous Verifiable Secret Sharing and Proactive Cryptosystems
+https://eprint.iacr.org/2002/134.pdf
+```
+• Our protocol achieves message complexity O(n2) and communication complexity O(κn3), where κ is a security parameter, and optimal resilience n > 3t
+• Specifically, we assume hardness of the discrete-logarithm problem. Our protocol is reminiscent of Pedersen’s scheme [22], but the dealer creates a two-dimensional polynomial sharing of the secret. Then the servers exchange two asynchronous rounds of messages to reach agreement on the success of the sharing, analogous to the deterministic reliable broadcast protocol of Bracha
+• Finally, we propose an efficient proactive refresh protocol for discrete logarithm-based sharings. It builds on our verifiable secret sharing protocol and on a randomized asynchronous multi-valued Byzantine agreement primitive [3]. The refresh protocol achieves optimal resilience n > 3t and has expected message complexity O(n3) and communication complexity O(κn5)
+• We assume that every pair of servers is linked by a secure asynchronous channel that provides privacy and authenticity with scheduling determined by the adversary. (This is in contrast to [3], where the adversary observes all network traffic.)
+• We assume an adaptive adversary that may corrupt a server Pi at any point in time instead of activating it on an input message
+• Validated Byzantine agreement [3] extends this to arbitrary domains by means of a so-called external validity condition
+• The dealer computes a two-dimensional sharing of the secret by choosing a random bivariate polynomial f ∈ Zq[x,y] of degree at most k −1 with f(0,0) = s. It commits to f(x,y) =∑k−1 j,l=0 fjlxjyl using a second random polynomial f′ ∈ Zq[x,y] of degree at most k − 1 by computing a matrix C = {Cjl}with Cjl = gfjlhf′jl for j,l ∈[0,k −1]. Then the dealer sends to every server Pi a message containing the commitment matrix C as well as two share polynomials ai(y) := f(i,y) and a′i(y) := f′(i,y) and two sub-share polynomials bi(x) := f(x,i) and b′i(x) := f′(x,i), respectively
+• To this effect, Pi sends an echo message containing C, ai(j), a′i(j), bi(j), and b′i(j) to every server Pj
+• Upon receiving k echo messages that agree on C and contain valid points, every server Pi interpolates its own share and sub-share polynomials  ̄ai, ̄a′i, ̄bi, and  ̄b′i from the received points using standard Lagrange interpolation. (In case the dealer is honest, the resulting polynomials are the same as those in the send message.)
+• Once a server receives a total of k + t ready messages that agree on C, it completes the sharing. Its share of the secret is (si,s′i) = ( ̄ai(0), ̄a′i(0))
+• The reconstruction stage is straightforward. Every server Pi reveals its share (si,s′i) to every other server, and waits for k such shares from other servers that are consistent with the commitments C. Then it interpolates the secret f(0,0) from the shares
+• Intuitively, protocol AVSS performs a reliable broadcast of C using the protocol of Bracha [2], where every echo and ready message between two servers Pi and Pj additionally contains the values f(i,j), f(j,i), f′(i,j), and f′(j,i), which they have in common
+• The protocol uses O(n2) messages and has communication complexity O(κn4). The size of the messages is dominated by C; it can be reduced by a factor of n as shown in Section 3.4; The new protocol relies on a collision-resistant hash function
+• Further Improvements. Suppose instead of using just the two generators g and h of the group G, we use generators g1,...,gN, and h. Then, in order to share N secrets s1,...,sN, the dealer computes N + 1 bivariate polynomials f1,...,fN, and f′, and forms the entries of the verification matrix C as Cjl = gf1(j,l) 1 gf2(j,l) 2 ···gfn(j,l)n hf′(j,l). The rest of the protocol is carried out analogously to the protocol described above. As a result, we can have a dealer share N secrets at the cost of O(n2) messages and O(κn2(n + N)) communication
+• We stress that this works in the computational setting, whereas Canetti and Rabin [9] use an unconditional model. We also mention that in the so-called random-oracle model, a more efficient protocol exists, which is secure against a static adversary
+```
+• Idea (asynchrony): node doesn't receive his share from dealer -> gets it from others without compromising the group secret
+• Bivariate polynomials to achieve that
+• Also discusses mobile adversaries & proactive secret sharing
+
+35. APSS: Proactive Secret Sharing in Asynchronous Systems
+https://www.cs.cornell.edu/fbs/publications/apssTISS.pdf
+```
+• Secret sharing alone does not defend againstmobile adversaries[Ostrovskyand Yung 1991], which attack, compromise, and control one server for a limitedperiod before moving to another
+• PSS reduces thewindow of vulner-abilityduring which an adversary must compromise more thantservers inorder to learn the secret
+• Besides implementing secret sharing, APSS can be used forthresh-old cryptography
+• The particular secret sharing schemewe employ for APSS has the number of shares grow exponentially withtandis thus practical only iftis small
+• Safety  properties  for  protocols  designed  to  work  in  asynchronous  systemare necessarily independent of assumptions about timing. Furthermore, theperformance of such protocols depends only on actual message delivery delaysand server execution speeds—not on bounds for a worst-case scenario. However,there is a price: protocols for asynchronous systems often suffer from reducedfault-tolerance in comparison to their synchronous counterparts
+• Atmosttservers  are  compromised  within  eachwindow of vulnerability, where 3t+1≤nholds
+• To ensure thatsubsharings are generated from at leastt+1shares, at leastt+(t+1)=2t+1 subsharings must be generated from different shares on different servers be-cause up totservers might be compromised. Two problems must then be solvedto make share refreshing work
+• DISSEMINATIONPROBLEM.Because a compromised server might not follow theprotocol to generate and propagate a subsharing, there must be a mecha-nism (i) to determine the validity of subshares and (ii) to ensure that correctservers eventually get enough subshares to compute the new shares
+• CONSISTENCYPROBLEM.All correct servers must select and use subshares ofthe same set of subsharings in order to generate a new sharing for the samesecret as the old one
+• Fortunately, shares in an (n,t+1) secret sharing have intrinsicredundancy so that the secret can be reconstructed from anyt+1shares. Thesame holds for each subsharing generated in share refreshing. In Section 4,we show how to expose and leverage such redundancies in order to solve theDissemination Problem
+• It  might  seem  that  solving  the  Consistency  Problem  requires  consensusin  an  asynchronous  system—known  to  be  impossible  [Fischer  et  al.  1985]to  solve  with  any  deterministic  protocol.  Fortunately,  implementing  consen-sus  is  unnecessary
+• Each serverd,for each verifiable share(i,S[i],R[i]), wherei∈Id,performs asubsharing certification protocolto gen-erate and certify a verifiable sharing (Si,Ri,λi). The subsharing certificationprotocol is shown in Figure 4
+• A subsharing recovery protocol (see Figure 5) allows retrieval of thosesubshares
+• Solving the Consistency Problem requires that, for any new sharing gener-ated by execution of share refreshing, servers use the same set of subsharingsto construct their new shares. This would be easy to implement if there wereacoordinatorthat picks an old sharing (among possiblynold sharings) for re-freshing and selects a set of certified subsharings (from among the multiplecertified subsharings produced by the holders of each share) for each share inthe old sharing
+• Any server can be a coordinator
+• Correct servers delete old shares and subshares when new shares are gener-ated.  However,  deletion  must  wait  until  those  shares  and  subshares  are  nolonger needed—that is, untilt+1correct servers have constructed new sharesfor the sharing
+• communication complexity ofO(κnl), whereκis thesize ofp; herefore, the message complex-ity of the protocol isO(n3l)with communication complexity ofO(κn3l2)andcomputational cost ofO(n3l2); With the optimizations, the message complexity,communication complexity, and computational cost of the protocol are reducedtoO(nl),O(κnl2), andO(nl2), respectively
+```
+• Need t + 1 to recover
+• Some terms: mobile adversary, share refreshing, window of vulnerability
+• Goals (4 properties): secrecy, integrity (secret reconstruction returns correctly), availability (reconstruction terminates if subsequent share refreshing), progress (share refreshing terminates and deletes old shares for all correct servers)
+• Need to consider how share refreshing messes with secret reconstruction b/c async
+• Removing sync assumption means removing DoS attacks
+• Generic "split" & "reconstruct"
+• Idea: split share into subshares -> node receives subshares -> reconstruct (!= adding a la DKG = alternative mentioned in Section 6.4.1)
+• Atypical: (l, l) secret sharing (represents all VSS in the paper) & index sets
+• Main idea: (l, l)-style VSS allows recovery protocol (Section 4.4) s.t. recovers share/subshare only as opposed to secret/share itself
+• Solution to (dissemination, consistency) = (atypical VSS, concept of coordinator)
+• Not poly time though
+• Alternative: Cachin (says subsubshares?)
+• Protocol optimization: assuming one single honest leader (= coordinator)
+• O(n * l) for certifying (subsharing) one share
+• Herzberg's (canonical PSS): allows share recovery similar to main idea here but involves extra coordination among other nodes unlike APSS
+• Recent works allow O(1) PSS (but sync)?!
+
+36. BanFEL: A Blockchain based Smart Contract for Fair and Efficient Lottery Scheme
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8937559
+```
+• In this article, we first propose a [B]lockchain based sm[a]rt co[n]tract for [F]air and [E]fficient [L]ottery (BanFEL) scheme
+• Players send the commitment of ticket values before the deadline of purchasing, and open the commitment between the deadline of purchasing and the deadline of opening
+• Every participant submits a point (xi,yi) to a third party, the third party will calculate a polynomial f (x) = a0 + a1 x + a2 x2 + ... + an xn (1) that goes through all the points submitted by participants
+• Every player selects a number from 0 to 999 as the value of a purchased lottery ticket. If the number is the same as the winning number, the player wins the prize. If more than one player wins the prize, the money will be divided equally and if no one wins the prize, it will be used as the pool for the next round
+• The adversaries can be lottery center, players, or others who do not participant in the lottery
+• The lottery center treat all each (Hash(vi, si),vi) that submitted by players as a point (xi, yi). And the lottery center trys to get a polynomial f (x) = s0 + a1 x + a2 x2 + ... + an xn that goes through all the points
+• The lottery center publish the polynomial to all the participants. Since the coefficient of the polynomial is unpredictable and truly random, so it can be treated as the winning number. Lottery center sends result = s0mod1000 to the blockchain by smart contract. The result is the winning number of the lottery
+```
+• ∃lottery center -> deploys smart contract
+• Each player needs to register
+• Barycentric Lagrange interpolation?
+• Basically commit-reveal
+• Idea: other nodes can't see each other's reveal b/c encrypted with leader's pk
+• Seems vulnerable to last revealer (= leader) attack
+
+37. Probabilistic Smart Contracts: Secure Randomness on the Blockchain
+https://arxiv.org/ftp/arxiv/papers/1902/1902.07986.pdf
+```
+• We  provide  the  first  secure  and  well-incentivized  approach  for  generating  random  numbers  on  the blockchain.  We  do  this  by  defining  a  game  on  the blockchain that incentivizes its players to play randomly. This is the first approach that relies on incentives, and does not make any assumption about participants’ honesty
+• We use the game above to define a random bit generation  contract,  which  is  the  heart  of  our  approach
+• Otherwise, the output random bit that is returned to the client  is  the  XOR  of  all  the  bits  that  were  correctly  revealed by the participants
+```
+• Talks about game theoretic notions a la EVR
+• RBG (Random Bit Generation game): players need to choose a random bit & they get paid via utility function (which forces them to choose randomly)
+• Idea: ∃fee paid by the client (third party requesting randomness) for nodes to perform RBG
+• ∃confiscation of deposit mechanism
+• Final output = XOR of all the bits (hence limited randomness as is)
+
+38. How to Share Secret Efficiently over Networks
+https://www.hindawi.com/journals/scn/2017/5437403/
+• Uses AVSS' bivariate poly to also establish pairwise key exchange (for symmetric encryption)
+
+39. Distributed Key Generation in the Wild
+https://eprint.iacr.org/2012/377.pdf
+```
+• We present a VSS scheme (HybridVSS) that works in our system model (Section 4). Observing the necessity of a protocol for agreement on a set for asynchronous DKG, we define and prove a practical DKG protocol (HybridDKG) for use over the Internet (Section 5). We use a leader-based agreement scheme in our DKG, as we observe a few pragmatic issues with the usually suggested randomized agreement schemes
+• Compromising the unconditional security assumption, Cachin et al. [9] (AVSS), Zhou et al. [50] (APSS), and more recently Schultz et al. [45] (MPSS) suggested more practical asynchronous VSS schemes. Of these, the APSS protocol is impractical for any reasonable system size, as it uses a combinatorial secret sharing scheme by Ito, Saito and Nishizeki [27], which leads to an exponential(n t ) factor in its message complexity. MPSS, on the other hand, is developed for a more mobile setting where set of the system nodes has to change completely between two consecutive phases to maintain the secrecy and correctness properties
+• AVSS is the most general and practical scheme in the asynchronous communication model against Byzantine adversaries, but it does not handle crash recoveries
+• thus, a protocol with o(n2) message complexity does not seem to be possible. Therefore, AVSS, with its optimal message complexity, forms the basis for our HybridVSS and HybridDKG protocols
+• On the other hand, all of the protocols in the literature that are proven secure only against a static adversary have remained unattacked by an adaptive adversary for the last 25 years. Gaining some confidence from this fact and giving importance to efficiency, we stick to protocols provably secure only against a static adversary in our work
+• We achieve a constant-factor reduction in the protocol complexities using symmetric bivariate polynomials
+• we use DLog commitments instead of the Pedersen commitments used in the original AVSS protocol and achieve VSS-wS secrecy (as defined in Section 3.1). It is easily possible to use Pedersen commitments instead and achieve VSS-S secrecy
+• Definition 4.1. In session (Pd,τ), protocol VSS in our hybrid model (HybridVSS) having an asynchronous network of n ≥ 3t + 2f + 1 nodes with a t-limited Byzantine adversary and f-limited crashes and network failures satisfies the following conditions
+• Cachin et al. [9] solve a similar agreement problem in their proactive refresh protocol using a multi-valued validated Byzantine agreement (MVBA) protocol. Known (expected) constant-round MVBA protocols [10] require threshold signature and threshold coin-tossing primitives [11]. The algorithms suggested for both of these primitives in [11] require either a dealer or a DKG. As we aim to avoid the former (dealer) in this work and the latter (DKG) is our aim itself, we cannot use their MVBA protocol
+• Canetti and Rabin [13] define a dealerless distributed coin tossing protocol without DKG; however, their protocol requires n2 VSSs for each coin toss and is consequently inefficient. Therefore, we refrain from using randomized agreement
+• We use a leader-initiated reliable broadcast system with a faulty-leader change facility, inspired by Castro and Liskov’s view-change protocol
+```
+• DKG properties: correctness, secrecy, weak correctness, weak secrecy
+• Symmetric bivariate poly
+• HybridVSS -> HybridDKG
+• Idea: dealing with asynchrony
+• Cachin's MVBA requires distributed randomness (so no use) <-> leader-based BFT view-change protocol (weakly async though?)
+• HybridDKG: leader-initiated DKG to agree on which VSS instances
+
+40. Schindler's Randomness for Blockchains
+https://sec.cs.univie.ac.at/fileadmin/user_upload/i_sec/docs/teaching/thesis/pschindler_randomness_for_blockchains.pdf
+• Protocol based on hash chain: a la Caucus; leader selection based on "random sampling" (prone to DoS) rather than f < target (prone to withholding)
+• Section 6 = HydRand
+• Extension to HydRand: quorum share distribution (distribute PVSS shares to a quorum/subset rather than all); chained PVSS (PVSS-hash chain s.t. no need to commit-reveal per leadership, but just reveal -> reveal -> ...)
+
+41. Proof-of-Stake Longest Chain Protocols: Security vs Predictability
+https://arxiv.org/pdf/1910.02218.pdf
+```
+• Proof-of-stake (PoS) protocols are an energy efficient alternative; however existing protocols adopting Nakamoto’s longest chain design achieve provable security only by al- lowing long-term predictability, subjecting the system to serious bribery attacks. In this paper, we prove that a natural longest chain PoS protocol with similar predictability as Nakamoto’s PoW protocol can achieve se- curity against any adversary with less than 1/(1+e) fraction of the total stake. Moreover we propose a new family of longest chain PoS protocols that achieve security against a 50% adversary, while only requiring short- term predictability. Our proofs present a new approach to analyzing the formal security of blockchains, based on a notion of adversary-proof con- vergence
+• There are broadly two families of PoS protocols: those derived from decades of research in Byzantine Fault Tolerant (BFT) protocols and those inspired by the Nakamoto longest chain protocol
+• Attempts at blockchain design via the BFT approach include Algorand [9,16] and Hotstuff
+• Motivated and inspired by the time-tested Nakamoto longest chain protocol are the PoS designs of Snow White [6] and the Ouroboros family of protocols
+• Further, as the size of each epoch is proportional to the security parameter κ (specifically, a block is confirmed if and only if it is more than κ blocks deep in the blockchain), higher security necessarily implies that the nodes can predict further ahead into the future
+• A straightforward PoS adoption of Nakamoto protocol, which in contrast to Ouroboros and Snow White can update randomness every block, runs as follows; we term the protocol as Nakamoto-PoS
+• Due to the NaS phe- nomenon, they showed the adversary can grow a private chain faster than just growing at the tip, as though its stake increases by a factor of e. This shows that the PoS longest chain protocol is secure against the private double spend against if the adversarial fraction of stake β < 1/(1 + e)
+• Methodological Contribution. In this paper, we show that, under a for- mal security model (§3), the Nakamoto-PoS protocol is indeed secure against all attacks, i.e., it has persistence and liveness whenever β < 1/(1 + e). One can view our result as analogous to what [15] proved for Nakamoto’s PoW protocol. However, how we prove the result is based on an entirely different approach. Specifically, the security proofs of [15] are based on counting the number of blocks that can be mined by the adversary over a long enough duration (see Fig. 1), and showing that the longest chain is secure because the number of such adversarial blocks is less than the number of honest blocks whenever β < 0.5. This proof approach does not give non-trivial security results for the PoS proto- col in question, because the number of adversarial blocks is exponentially larger than the number of honest blocks, due to the NaS phenomenon. Rather, our proof takes a dynamic view of the evolution of the blockchain, and shows that, whenever β < 1/(1 + e), there are infinite many time instances, which we call adversary-proof convergence times, in which no chains that the adversary can grow from the past can ever catch up to the longest chain any time in the fu- ture (see Fig. 1).1 Whenever such an event occurs, the current longest chain will remain as a prefix of any future longest chain
+• Right: Our proof technique. Race between main chain and adversarial trees: adversary-proof convergence happens at a honest block if none of the previous NaS trees can ever catch up with the main chain downstream of the honest block. Security is proven by showing these events occur at a non-zero frequency
+• In [14] and [13], modifications of the longest chain protocol (called g-greedy and D- distance-greedy) are proposed
+• New PoS Protocol Contribution. Taking a different direction, we propose a new family of simple longest chain PoS protocols that we call c-Nakamoto- PoS (§4); the fork choice rule remains the longest chain but the randomness update in the blockchain is controlled by a parameter c, the larger the value of the parameter c, the slower the randomness is updated. The common source of randomness used to elect a leader remains the same for c blocks starting from the genesis and is updated only when the current block to be generated is at a depth that is a multiple of c. When updating the randomness, the hash of that newly appended block is used as the source of randomness. The basic PoS Nakamoto protocol corresponds to c = 1, where the NaS attack is most effective. We can increase c to gracefully reduce the potency of NaS attacks and increase the security threshold. To analyze the formal security of this family of protocols, we combine our analysis for c = 1 with results from the theory of branching random walks [28]; this allows us to characterize the largest adversarial fraction β∗c of stake that can be securely tolerated. As c → ∞, β∗c → 1/2. We should point out that the Ouroboros family of protocols [2, 10] achieves security also by an infrequent update of the randomness; however, the update is much slower than what we are considering here, at the rate of once every constant multiple of κ, the security parameter. This is needed because the epoch must be long enough for the blockchain in the previous epoch to stabilize in order to generate the common randomness for the current epoch. Here, we are considering c to be a fixed parameter independent of κ, and show that this is sufficient to thwart the NaS attack
+• We note that in any PoS protocol with confirmation-depth κ (the number of downstream blocks required to confirm a given block), a simple bribing attack is possible, where a briber requests the previous block producers to sign an alternate block for each of their previous certificates. However, such attacks are overt and easily detectable, and can be penalized with slashing penalties. If the prediction window W is greater than the confirmation-depth κ, then the following covert (undetectable) attack becomes possible
+```
+• Ouroboros: epoch-based -> leader prediction implies predictable selfish mining & bribing attacks
+• NaS (nothing at stake): allows adversary to propose exponentially large number of blocks
+• Idea: update blockchain randomness (used for leader election) every c blocks (1 or much less than Ouroboros' security parameter κ)
+• Crux?: low c means higher NaS/grinding attack but less leader prediction <-> high c means lower NaS/grinding attack but more leader prediction
+• Considers: updating of common randomness (involving VRF, block header, time, etc.) & dynamic stake
+• Blocktree?
+• Figure 1: proof technique (different from PoW)
+• Figure 2: "Ouroboros is a bit overkill" -> can reach similar adversary threshold (1 / 2) with much less c than Ouroboros
+• Table 1: comparison with other work
+• Interplay between prediction window & confirmation delay (e.g. it's both small for Algorand)
+
+42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
+https://eprint.iacr.org/2014/452.pdf
+
+43. Distributed ElGamal a la Pedersen - Application to Helios
+https://dl.acm.org/doi/pdf/10.1145/2517840.2517852
+```
+• We describe a fully distributed (with no dealer) threshold cryptosystem suitable for the Helios voting system (in particular, suitable to partial decryption), and prove it secure under the Decisional Diffie-Hellman assumption. Sec- ondly, we propose a fully distributed variant of Helios, that allows for arbitrary threshold parameters `,t, together with a proof of ballot privacy when used for referendums
+• Yet none of the existing ballot privacy proofs [15, 7, 9, 11] for Helios considers a fully distributed setup phase with an arbitrary threshold t in the total number of trustees `. That is, a setup phase where trustees generate the election pub- lic and secret keys without a trusted dealer while affording an arbitrary t-out-of-` threshold parameters selection. We will refer to any variant of Helios enjoying this property as a fully distributed Helios, for short
+• we show in Section 3 that the well-known Pedersen’s [38] Distributed Key Generation (DKG) proto- col applied to ElGamal can be proven semantically secure under the Decision Diffie-Hellman assumption, even if the resulting public key can not be guaranteed to be uniformly distributed at random [26, 28]. We do so by employing the techniques used in [27, 3, 28] to prove a similar result for fully distributed Schnorr signatures in the Random Oracle Model
+• In addition to Helios, several private and verifiable voting schemes have been proposed, including e.g. Civitas [14] and FOO [22]. Helios is currently the most usable (and used) remote voting scheme in practice
+• The notion of ballot privacy or ballot secrecy has been extensively studied. Several privacy definitions for voting schemes have been proposed, from ballot privacy [30, 34, 7, 8, 9, 11] to coercion-resistance [31, 23, 33] and applied to voting schemes: Civitas has been shown to be coercion- resistant [14], while Helios has been shown to ensure ballot and vote privacy
+• As noted before, the currently implemented version of He- lios is subject to an attack against privacy [15]: an attacker may (re)submit the ballot of an honest voter on his behalf without knowing the actual vote. The result of the election then counts the honest vote twice, which provides a bias to the attacker
+• We know from previous work that ballot private Helios- like voting protocols are tightly related to NM-CPA cryp- tosystems [9, 10]. Next we state that any IND-CPA fully dis- tributed (t,`)-threshold cryptosystem can be converted into a NM-CPA Fully Distributed (t,`)-Threshold Cryptosystem by applying the transformation in [10, 9]
+```
+• Mentions attack against privacy / duplication of votes -> ciphertext weeding (but expensive) -> their Helios does better
+• Ballot privacy game
+• Need t + 1 to recover
+• IND-CPA security of threshold cryptosystem
+• DisjProof() seems similar to CE (correct encryption) except worse?
+• "Fully distributed": just no trusted dealer
+• Idea: DKG + ElGamal a la HERB
+
+44. ALBATROSS: publicly AttestabLe BATched Randomness based On Secret Sharing
+https://eprint.iacr.org/2020/644.pdf
+```
+• Our basic stand alone protocol is based on publicly verifiable secret sharing (PVSS) and is secure under in the random oracle model under the decisional Diffie-Hellman (DDH) hardness assumption. We also address the important issue of constructing Universally Composable randomness beacons, showing two UC versions of Albatross: one based on simple UC NIZKs and another one based on novel efficient “designated verifier” homomorphic commitments. Interestingly this latter version can be instantiated from a global random oracle under the weaker Com- putational Diffie-Hellman (CDH) assumption. An execution of ALBATROSS with n parties, out of which up to t = (1/2 −ɛ) ·n are corrupt for a constant ɛ > 0, generates Θ(n2) uniformly random values, requiring in the worst case an amortized cost per party of Θ(log n) exponen- tiations per random value. We significantly improve on the SCRAPE protocol (Cascudo and David, ACNS 17), which required Θ(n2) exponentiations per party to generate one uniformly random value. This is mainly achieved via two techniques: first, the use of packed Shamir secret sharing for the PVSS; second, the use of linear t-resilient functions (computed via a Fast Fourier Transform-based algorithm) to improve the randomness extraction
+• proving that these commitments contain the same Shamir shares via discrete logarithm equality proofs, or DLEQs, and then having verifiers use a procedure to check that the shares are indeed evaluations of a low-degree polynomial. In this paper we will use a different proof, but we remark that the latter technique, which we call LocalLDEI test, will be of use in another part of our protocol (namely it is used to verify that hs is correctly reconstructed)
+• In ALBATROSS we assume that the adversary corrupts at most t parties where n −2t = l = Θ(n). The output of the protocol will be l2 elements of Gq
+• The key point is that every share is still one element of the field and therefore the sharing has the same computational cost (Θ(n) exponentiations) as using regular Shamir secret sharing. However, there is still a problem that we need to address: the complexity of the reconstruction of the secret vector from the shares increases by the same factor as the secret size (from Θ(n) to Θ(n2) exponentiations). To mitigate this we use the following strategy: each secret vector will be reconstructed only by a random subset of c parties (independently of each other)
+• In the original version of SCRAPE, parties then compute the final randomness as ∏|C| a=1 hsa, which is the same as h∑|C| a=1 sa; Instead, in ALBATROSS, we use a randomness extraction technique based on a linear t-resilient function, given by a matrix M, in such a way that the parties instead output a vector of random elements (hr1,...,hrm) where (r1,...,rm) = M(s1,...,s|C|). The resilient function has the property that the output vector is uniformly distributed as long as |C|−t inputs are uniformly distributed, even if the other t are completely controlled by the adversary. If in addition packed secret sharing has been used, one can simply use the same strategy for each of the l coordinates of the secret vectors created by the parties. In this way we can create l2 independently distributed uniformly random elements of the group
+• An obstacle to this randomness extraction strategy is that, in the presence of corrupted parties some of the inputs si may not be known if the dealers of these values have refused to open them, since PVSS reconstruction only allows to retrieve the values hsi. Then the computation of the resilient function needs to be done in the exponent which in principle appears to require either O(n3) exponentiations, or a distributed computation like in the PVSS reconstruction
+• Fortunately, in this case the following idea allows to perform this computation much more efficiently: we choose M to be certain type of Vandermonde matrix so that applying M is evaluating a polynomial (with coefficients given by the si) on several n-th roots of unity. Then we adapt the Cooley-Tukey fast Fourier transform algorithm
+• We further reduce the complexity of the PVSS used in ALBATROSS, with an idea which can also be used in SCRAPE [17]. It concerns public verification that a published sharing is correct, i.e. that it is of the form pkp(i) i for some polynomial of bounded degree, say at most k; We call this type of proof a low degree exponent interpolation (LDEI) proof
+• In addition, correctness of the shares is instead verified using the LDEI proof. This is different than in [17] where the dealer needed to commit to the shares using a different generator of the group, and correctness of the sharing was proved using a combination of DLEQ proofs and the LocalLDEI check, which is less efficient
+```
+• O(log n) exponentiation per party worst case; O(1) best case?
+• Two techniques: packed Shamir secret sharing (factor of l contribution) & linear (perfect) t-resilient function (factor of l contribution) -> l^2 outputs per round possible
+• Packed Shamir: p(0), p(-1), ..., p(-9) as 10 secrets at once; t + l to recover for some reason
+• Linear t-resilient: up to t sources of randomness could be Byzantine -> the result of M x would still be uniformly distributed
+• Thm 1: t-RF (resilient function) iff certain generator matrix (hence M is known & could be multiplied using FFT?)
+• Some broaching of UC framework
+• LDEI (low degree exponent interpolation) with {constant polynomial, constant generator (i.e. Local_LDEI)} = {DLEQ, Scrape's share verification a la dual code of RS}
+• Idea (share distribution verification != reconstruction verification): Scrape's O(n) exponentiations from O(nt) to verify n shares a la batching (need separate generator g, g^share, Local_LDEI, DLEQ) -> LDEI (no need for g, g^share, Local_LDEI, DLEQ) at the cost of "loose" polynomial p potentially?
+• Reconstruction verification of PPVSS (packed PVSS): uses Local_LDEI
+• Figure 8 & 9: Albatross protocol
+• Subset selection (i.e. distributed computation protocol) if PVSS recovery: for reducing computational complexity
+
+45. Efficient CCA Timed Commitments in Class Groups
+https://eprint.iacr.org/2021/1272.pdf
+```
+• Step I: We construct a homomorphic time-lock puzzle from class groups of imaginary quadratic order. The scheme has a transparent setup and supports homomorphic evaluations of linear functions over Z𝑞, for some prime 𝑞
+• Step II: We turn our time-lock puzzle into a CCA timed com- mitment by augmenting it with a simulation-extractable NIZK. We then propose a new special-purpose efficient NIZK scheme with a transparent setup
+• Step III: We show how our CCA timed commitments give raise to a distributed randomness generation protocol that is concretely efficient and satisfies many desirable properties
+• 𝑍 :=(𝐺𝑟,𝜓𝑞(𝐻𝑟)·𝐹𝑚)
+• A technical point is the fact that one can efficiently compute square roots in 𝐶𝑙(Δ𝐾)
+• The kernel of 𝜑𝑞 is a subgroup of 𝐶𝑙(Δ𝑞)of order 𝑞 where the discrete logarithm problem is easy
+• How to Sample 𝑝𝑘?; There is no known algorithm to obliviously sample a well-formed public key 𝐾. In other words, the only efficient method to sample an element 𝐾 (public key) in the cyclic subgroup G of the class group uniformly at random is to first sample an integer 𝑘 (the secret key) and set 𝐾 :=𝐺𝑘 where 𝐺 is the generator of the group. This however requires a fully trusted (private-coin) setup
+• This difficulty seems to be curtailed to the class group set- tings, as for standard prime-order groups  ̃G we know of ef- ficient algorithms to sample a uniform  ̃pk without knowing the corresponding secret key. With this observation in mind, we can implement the above paradigm bridging both groups G and  ̃G
+• Efficient NIZK for Cross-Group Relations; To do this, we circle back to our original idea, except that now we let the committer sample the public key 𝐾 in the class group, instead of placing it in the common reference string. This way, we can use the trivial algorithm that samples an integer 𝑘 and sets 𝐾 :=𝐺𝑘
+• 1) The public key 𝐾 is correctly sampled from the class group.; 2) The class group ciphertexts {𝑐𝑖,0,𝑐𝑖,1}𝑖∈[𝛼] encrypt the bit decomposition of the randomness 𝑟 used in 𝑍1.; 3) Both 𝑖-th ciphertexts ( ̃𝑐𝑖,0,  ̃𝑐𝑖,1)and (𝑐𝑖,0,𝑐𝑖,1)either encrypt 0 or 1
+• We first revisit the setup algorithm of the so-called faster variant of the CL linearly homomorphic encryption scheme introduced by Castagnos and Laguillaumie in [27]. To start with, 𝑞 is a 𝜆-bit prime describing the message space Z𝑞, and we consider a fundamental discriminant Δ𝐾 =−𝑝𝑞 whose size 𝜂(𝜆)is chosen such that best algorithm to compute the class number takes 𝑂(2𝜆)time. The CL setting considers another discriminant Δ𝑞 =𝑞2Δ𝐾 and relies on the relations between the class group 𝐶𝑙(Δ𝑞)and the class group 𝐶𝑙(Δ𝐾)
+• In such a setting, the factorization of the discriminant Δ𝐾 is usually public. As a consequence one can efficiently compute square roots in G ⊂𝐶𝑙(Δ𝐾)using an algorithm from Lagarias [49], while it is not possible in Z/𝑛Z when 𝑛 is an RSA modulus of unknown factorization; suggests that we gain only a 5% time improvement using this strategy, we means that one has to increase Tby 5%
+• Highly Efficient Heuristic Variant. Provided we assume the sigma protocol for language L2 is simulation extractable1 with a straight-line (i.e. non-rewinding) extractor, we can omit proofs for languages L2 and L3. Note that simulation sound- ness of the sigma protocol can be proven, but extraction re- quires rewinding. Our heuristic has a flavor of “knowledge”- type assumptions which we believe is a reasonable compro- mise for a significant gain in efficiency
+```
+• CCA: chosen commitment attack (a la non-malleability)
+• Idea: homomorphic time-lock puzzle / timed commitment (ElGamal) s.t. if no reveal, can combine all commitments & compute once => scalability
+• Idea2: class group => transparent setup
+• DRB: commit-reveal-recover with CCA timed commitment
+• Naor-Yung paradigm: to achieve CCA; basically send an extra encryption with NIZK?
+• 3 NIZK proofs (L_1, L_2, L_3): all for CCA though?; the heuristic variant omits L_2 and L_3 (not sure why)
+• Figure 3: complete overview of CCA timed commitment
+• Some experimental evaluation: not extensive
+
+46. Efficient verifiable delay functions
+https://eprint.iacr.org/2018/623.pdf
+```
+• To construct our VDF, we actually build a trapdoor VDF
+• we note that our construction features two other useful properties: the proofs can be aggregated and watermarked. Aggregating consists in producing a single short proof that simultaneously proves the correctness of several VDF evaluations. Watermarking consists in tying a proof to the evaluator’s identity; in a blockchain setting, this allows to give credit (and a reward) to the party who spent time and resources evaluating the VDF
+• One can easily generate an imaginary quadratic order by choosing a random discriminant, and when the discriminant is large enough, the order of the class group cannot be computed
+• To this day, the best known algorithms for computing the order of the class group of an imaginary quadratic field of discriminant d are still of complexity L|d|(1/2) under the generalised Riemann hypothesis, for the usual function Lt(s) = exp
+• we actually need to work in (Z/NZ) ×/{±1}, and we call this the RSA setup
+• The construction is simple. Choose a random, negative, square-free integer d, of large absolute value, and such that d ≡ 1 mod 4. Then, let G = Cl(d) be the class group of the imaginary quadratic field Q(√d). Just as we wish, there is no known algorithm to efficiently compute the order of this group. The multiplication can be performed efficiently, and each class can be represented canonically by its reduced ideal. Note that the even part of |Cl(d)| can be computed if the factorisation of d is known. Therefore one should choose d to be a negative prime, which ensures that |Cl(d)| is odd. See [8] for a review of the arithmetic in class groups of imaginary quadratic orders
+• Remark 3. Instead of hashing the input x into the group G as g = HG(x), one could simply consider x ∈ G. However, the function x 7 → x2t being a group homomorphism, bypassing the hashing step has undesirable consequences. For instance, given x2t , one can compute (xα)2t for any integer α at the cost of only an exponentiation by α
+• In this section, we present two useful properties of the VDF: the proofs can be aggregated, and watermarked
+• Let the evaluator’s identity be given as a string id. One proposed method (see [12]) essentially consists in computing the VDF twice: once on the actual input, and once on a combination of the input with the evaluator’s identity id. Implemented carefully, this method could allow to reliably reward the evaluators for their work, but it also doubles the required effort. In the following, we sketch two cost-effective solutions to this problem
+• The first cost-effective approach consists in having the evaluator prove that he knows some hard-to-recover intermediate value; A simple way to do so would be for the evaluator to reveal the value cid = gpid t−1 (a certificate)
+• Another approach consists in producing a single group element that plays simultaneously the role of the proof and the certificate. This element is a watermarked proof, tied to the evaluator’s identity. This can be done easily with our construction. In the evaluation procedure (Algorithm 3), replace the definition of the prime ` by Hprime(id|||bin(g)|||bin(y))
+```
+
+47. BLS Multi-Signatures With Public-Key Aggregation
+(Compact Multi-Signatures for Smaller Blockchains)
+https://archive.vn/BtJs1
+• Idea: multisig with BLS satisfying 1. plain public key model (no need to prove knowledge of secret key); 2. no need to have distinct messages
+• Aggregation (can be all different msgs) vs multisig (all same msg)
+• Construction: need hash function for n pk's s.t. any attempt to rogue public key attack -> would change the target public key -> attack fails
+• Schnorr multisig: can only happen at the time of signing & interactive among the signers?
+
+48. MuSig1
+https://archive.vn/WO86t
+• BN multisig (sacrifices key aggregation for security in the plain public key model) -> MuSig1 (allows key aggregation)
+• Idea: aggregate public key = ∏ pk_i^{t_i}
+• 3 round: 1. precommitment of nonce (R); 2. share nonce; 3. share signature (s)
