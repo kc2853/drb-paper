@@ -375,3 +375,4 @@ https://eprint.iacr.org/2018/248.pdf
 • Extra notes: https://archive.vn/MizCd (can grind in the time domain?), https://archive.vn/kD1Lx, https://archive.vn/BzeqV
 • Higher stake => can progress faster
 • Stake grinding: grinding (or withholding) to change the randomness itself / is a bit different?
+• Also see: long-range attack from Ouroboros pg 59
