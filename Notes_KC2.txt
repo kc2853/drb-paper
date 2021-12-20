@@ -206,7 +206,8 @@ https://arxiv.org/pdf/1910.02218.pdf
 • Figure 1: proof technique (different from PoW)
 • Figure 2: "Ouroboros is a bit overkill" -> can reach similar adversary threshold (1 / 2) with much less c than Ouroboros
 • Table 1: comparison with other work
-• Interplay between prediction window & confirmation delay (e.g. it's both small for Algorand)
+• Bribing attack is also possible (potentially worse) in Algorand
+• NaS here != NaS as in forks?
 
 42. Proof of Activity: Extending Bitcoin's Proof of Work via Proof of Stake
 https://eprint.iacr.org/2014/452.pdf
