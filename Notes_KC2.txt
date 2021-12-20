@@ -16,6 +16,7 @@
 46. Efficient verifiable delay functions
 47. BLS Multi-Signatures With Public-Key Aggregation
 48. MuSig1
+49. Stake-Bleeding Attacks on Proof-of-Stake Blockchains
 
 31. Fair Two-Party Computations via Bitcoin Deposits
 https://www.ifca.ai/fc14/bitcoin/papers/bitcoin14_submission_10.pdf
@@ -349,3 +350,28 @@ https://eprint.iacr.org/2020/1261.pdf
 ```
 • Section 2.1: concurrent attack
 • Figure 4: MuSig2
+
+49. Stake-Bleeding Attacks on Proof-of-Stake Blockchains
+https://eprint.iacr.org/2018/248.pdf
+```
+• We describe a general attack on proof-of-stake (PoS) blockchains without checkpointing. Our attack leverages transaction fees, the ability to treat transactions “out of context,” and the standard longest chain rule to completely dominate a blockchain
+• More broadly, our attack must be reflected and countered in any future PoS design that avoids checkpointing, as well as any effort to remove checkpointing from existing protocols. We describe several mechanisms for protecting against the attack that include context-sensitivity of transactions and chain density statistics
+• problem of “long-range attacks” (also related to the concept of “costless-simulation” in, e.g., [Poe15]). This refers to the ability of a minority set of stakeholders to execute the blockchain protocol starting from the genesis block (or any sufficiently old state) and produce a valid alternative history of the system
+• In the same blog post [But14], however, a glimmer of hope was also provided: it was observed that the blockchains produced by such a minority set of stakeholders may have characteristics that could be used to distinguish them from the actual blockchain maintained by the honest majority. In particular, if timestamps are included in each block, it would be the case that a simple simulation of the protocol by a minority set of stakeholders would result in a blockchain that is more sparse in the time domain
+• 1) Eventual-consensus protocols that apply some form of a longest-chain rule to the blockchain. In this setting the immutability of a block increases gradually with the number of blocks created on top of it.; 2) Blockwise-BA protocols that achieve the immutability of every single block via a full execution of a Byzantine Agreement (BA) protocol before moving on to production of any subsequent block
+• Of the above-listed PoS protocols, Algorand is a blockwise- BA protocol, while all the other protocols aim for eventual consensus
+• All of these protocols had to confront the problem of long- range attacks, which was eventually understood to be even more serious than originally thought. The additional complication— aptly named “posterior corruption” in [BPS16]—observes that simply examining time stamps will not be sufficient for dealing with long-range attacks. In fact, an attacker can attempt to corrupt the secret keys corresponding to accounts that possessed substantial stake at some past moment in the history of the system. Assuming that such accounts have small (or even zero) stake at the present time, they are highly susceptible to bribery (or simple carelessness) which would expose their secret keys to an attacker. Armed with such a set of (currently low-stake) keys, the attacker can mount the long-range attack and in this case the density of the resulting blockchain in the time domain could be indistinguishable from the honestly generated public blockchain
+• To address the posterior corruption and other long range attacks, a number of mitigating approaches have been employed (sometimes in conjunction) and can be organised into three types: (i) Introduce some type of frequent checkpointing mechanism, that enables nodes to be introduced to the system by providing them a relatively recent block.; (ii) Employ key-evolving cryptography [Fra06] that calls for users to evolve their secret keys so that past signatures cannot be forged, even when a complete exposure of their current secret state takes place.; (iii) Enforce strict chain density statistics, where the expected number of participating players at any step of the protocol is known; thus alternative protocol execution histories that exhibit significantly smaller participation can be immediately dismissed as adversarial
+• Out of the above-mentioned PoS schemes, all eventual- consensus protocols (i.e., NXT, PPCoin, Ouroboros, Snow White, and Ouroboros Praos) employ the first mitigation strategy and assume some form of checkpointing. Ouroboros Praos employs the first and the second approach (key-evolving signatures) to additionally handle adaptive corruptions, while Algorand adopts the second and the third approach (strict chain density statistics) to the same end
+• Stake-bleeding is an effective strategy for mounting a long-range attack that does not rely on posterior corruption; thus it cannot be prevented by key-evolving cryptographic techniques. The only requirement for the attack is that the underlying blockchain protocol allows transaction fees to be used as rewards for running the protocol
+• The adversary checks in every time slot whether it is allowed to extend the chain C or ˆC according to the rules of the protocol Π. It skips all opportunities to extend C, hence not contributing to its growth at all. On the other hand, whenever an opportunity to extend ˆC arises, A extends ˆC with a new block, and inserts into this new block all the transactions from the honest chain C that are not yet included in ˆC and are valid in the context of ˆC (or as many of them as allowed by the rules of Π). This entitles A to receive (on ˆC) any block-creation reward and any transaction fees coming from the included transactions
+```
+• Checkpointing (but "weak subjectivity") vs strict chain density statistics (but can be complicated/inaccurate) vs key-evolving crypto (preferable b/c algorithmic BUT still vulnerable to stake bleeding)
+• "Density" means in the time domain
+• 2 mitigations to stake bleeding: minimum chain density in the time domain & context sensitive transactions
+• Figure 2: landscape of long-range attacks
+• Figure 3: stake bleeding in a nutshell
+• Idea (stake bleeding): stall on honest chain; mine/collect all fees & rewards on private chain; stake grows on private chain -> private chain can progress faster than honest chain eventually
+• Extra notes: https://archive.vn/MizCd (can grind in the time domain?), https://archive.vn/kD1Lx, https://archive.vn/BzeqV
+• Higher stake => can progress faster
+• Stake grinding: grinding (or withholding) to change the randomness itself / is a bit different?
