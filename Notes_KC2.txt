@@ -372,7 +372,8 @@ https://eprint.iacr.org/2018/248.pdf
 • 2 mitigations to stake bleeding: minimum chain density in the time domain & context sensitive transactions
 • Figure 2: landscape of long-range attacks
 • Figure 3: stake bleeding in a nutshell
-• Idea (stake bleeding): stall on honest chain; mine/collect all fees & rewards on private chain; stake grows on private chain -> private chain can progress faster than honest chain eventually
+• Idea (stake bleeding): stall on C (honest chain); mine/collect all fees & rewards on C' (private chain); stake grows on C' -> C' can progress faster than C
+• Key?: relative stake of adversary on C' > relative stake of honest on C (eventually b/c honest on C loses fees also)
 • Extra notes: https://archive.vn/MizCd (can grind in the time domain?), https://archive.vn/kD1Lx, https://archive.vn/BzeqV
 • Higher stake => can progress faster
 • Stake grinding: grinding (or withholding) to change the randomness itself / is a bit different?
