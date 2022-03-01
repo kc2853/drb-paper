@@ -1,0 +1,148 @@
+51. STROBE: Stake-based Threshold Random Beacons
+52. Efficient Random Beacons with Adaptive Security for Ungrindable Blockchains
+53. On the Notion of Pseudo-Free Groups
+54. The Algebraic Group Model and its Applications
+55. On the Security of Time-Lock Puzzles and Timed Commitments
+56. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
+57. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
+
+51. STROBE: Stake-based Threshold Random Beacons
+https://eprint.iacr.org/2021/1643.pdf
+```
+• Existing beacon constructions are highly inefficient in practical settings whereprotocol parties need to rejoin after crashes or disconnections, and more significantlywhere  smart  contracts  may  rely  on  arbitrary  index  points  in  high-volume  streams.For this, we introduce a new notion ofhistory-generating decentralized randombeacons(HGDRBs)
+• Roughly, thehistory-generationproperty of HGDRBs allows for previous beaconoutputs to be efficiently generated knowing only the current value and the public key.At application layers, history-generation supports registering a sparser set of on-chainvalues if desired, so that apps like lotteries can utilize on-chain values without incurringhigh-frequency costs, enjoying all the benefits of DRBs implemented off-chain or withdecoupled, special-purpose chains.  Unlike rollups, HG is tailored specifically to recov-ering and verifying pseudorandom bit sequences and thus enjoys unique optimizationsinvestigated in this work
+• We  introduce  STROBE:  an  efficient  HGDRB  construction  which  generalizesthe original squaring-based RSA approach of Beaver and So.  STROBE enjoys severaluseful properties that make it suited for practical applications that use beacons: 1.history-generating: it can regenerate and verify high-throughput beacon streams,supporting sparse (thus cost-effective) ledger entries; 2.concisely self-verifying:   NIZK-free,  with  state  and  validation  employing  asingle ring element; 3.eco-friendly:  stake-based rather than work based; 4.unbounded:  refresh-free, addressing limitations of Beaver and So; 5.delay-free:  results are immediately available
+• Our  starting  point  is  to  view  RSA  decryption  as  a  trapdoor  one-way  function  in  reverse,which  can  be  efficiently  verified.   The  beacon  output  of  an  epoch  is  essentially  the  RSAdecryption of the previous epoch’s output, and this carries on perpetually.  The verificationof an output is to just RSA encrypt it with the public key and see that if it equals to theprevious epoch’s output.  In this sense, the beacon isself-certifying
+• To parties that just know aboutNas a public parameter, this provides some attractiveproperties:  (1) The next value in the beacon is hard to predict given the earlier values.  (2)It’s  easy  to  verify  a  beacon  value  against  the  last  value.   In  fact,  we  can  check  the  valueagainst any historical value, except that it gets progressively harder with the gap.  (3) Anespecially tantalizing property is that any historical beacon value, can in fact begeneratedby just knowing the current value
+• Essentially, Shamir secret sharing involves fractionalLagrange interpolation coefficients which are efficient to compute to group elements if weknow the order.  However, this is not possible to do in the exponent of RSA group elements,asφ(N) is not public.  We adapt and extend the techniques pioneered by [7] and also usedby [52] to address this challenge.  The core trick is to lift the Lagrange coefficients by a factorofn!, so that they are not fractional anymore
+• Since currently there is no knownway to sample a bi-prime (using only public randomness) for which nobody knows the factors,the only way to alleviate the trusted setup is to distribute the generation of the bi-primemodulus  via  a  dedicated  multi-party  computation  protocol
+• We leave it as an open problem toconstruct an adaptively secure protocol which retains the efficiency standard of our selectiveone.  A generic (complexity-leveraging) approach can be used to get an adaptively securescheme from a selectively secure one: the reduction simply needs to guess the set of corruptedparties and then run the selective reduction aborting if the selection of corrupted parties doesnot match the one requested by the adversary.  This, unfortunately, leads to a loss in securitythat is exponential in the number of parties,n, thus limiting the number of parties to beat most logarithmic in the security parameterλ.  There are other promising approaches inthe works for threshold RSA cryptosystems.  Canetti et al. [21] proposed a methodology fortransforming a selectively-secure threshold scheme into an adaptively-secure one, where theprotocol needs to be modified to carefully erase secrets and to use simple zero-knowledgeproofs, the adversary is rewinded in the proof which also incurs a security loss although notas large as with the complexity-leveraging approach.  A follow-up work of Almansa et al. [4]simplified this result for RSA, but at the cost of the secret’s re-sharing after every round,with an emergent benefit of making the scheme proactively secure.  In a proactively securescheme  the  adversary  can  corrupt  at  mosttplayers  in  a  time  period  determined  by  theprotocol.  Since the set of corrupted parties changes, each party can become corrupt at somepoint (i.e.  leak its secrets), but if the party recovers from a compromise then a subsequentsecret’s re-sharing will enable the party to be honest again
+• In earlier sections we observed that it is possible to check the beacon valuexTat epochTagainst the seed valuex0by checkingx0=xsTT.  However, this takes sequential timeT.  Oneway to speed up verification is to exploit the RSA repeated powering structure of this checkand use existing techniques like [47, 55] to add a proof in addition to the beacon value.In particular, we can just apply Wesolowski’s [55] proof technique
+• A better approach is to use a continuous VDF [33].  In a continuous VDF, it is efficient topublish and use intermediate proofs at every time epoch.  The Ephraim et al [33] continuousVDF  makes  use  of  the  recursive  structure  of  Pietzak’s  VDF
+```
+• Idea: Strobe = Beaver/So - pregenerated shares (s.t. each share is indeed dependent on the past beacon output) + could be any "decryption key" s (not just 2)
+• Unclear what "stake-based" means
+• Section 2: summary of RSA group without trusted setup
+• Trusted setup: no DKG -> one secret sharing poly with secret = s^{-1}
+
+52. Efficient Random Beacons with Adaptive Security for Ungrindable Blockchains
+https://eprint.iacr.org/2021/1698.pdf
+```
+• randomness beacon: a sequenceof high entropy values, continuously emitted at regular intervals, with sub-linear communication per value
+• The algorithm can tolerate a(1 −𝜖)∕2fraction of the𝑛players to be controlled by anadaptiveadversary thatmay deviate arbitrarily from the protocol
+• (i) with overwhelming probability in𝑘—the security parameter—each beacon value has highmin-entropy conditioned on the full history of the algorithm, and (ii) the total work and communication requiredper value is𝑂(𝑘)cryptographic operations
+• More broadly, we considerthe question of generating randomness for a long-lived distributed protocol that proceeds inepochs: Each epochof the protocol requires clean randomness, is responsible for carrying out a distributed computation of interest,and must furthermore generate the randomness to carry out the next epoch
+• Our principal contribution is a simple protocol𝐁that achieves𝐶 >1. The protocol isone-round, calling for each player to generate and broadcast a “nonce”𝑤𝑖∈ {0,1}𝜆
+• 1. With the seed𝑠, each player evaluates𝐹𝑖(𝑠) =𝑤𝑖. These values,𝑤𝑖, along with proofs that𝐹𝑖(𝑠) =𝑤𝑖arebroadcast to all players.; 2. All values𝑤𝑖received (with correct proofs) are sorted lexicographically. The first𝑘values are hashed to-gether to produce the new seed 𝑠′
+• Reducing broadcasts.The algorithm admits a simple optimization that yields a significant improvement in mes-sage efficiency; we call thisthe optimized version of𝐁. As written, the protocol𝐁calls for𝑛broadcast messages,one per party. However, as only those𝑤𝑖appearing among the first𝑘positions in the lexicographically sortedlist of𝑤𝑖will contribute to the final value, player𝑃𝑖can safely remain silent if𝑤𝑖≥𝓁2𝜆∕𝑛, for an appropriatelychosen threshold𝓁> 𝑘
+• Many proof-of-stake blockchain protocols,such as Ouroboros Praos [10], Genesis [2], and Snow White [5], use VRFs in their coin-flipping protocols. (VRFsare formally defined in Definition 1.) This is a multi-round protocol where each “block” contains a nonce. Thecoin-flipping output is a cryptographic hash of the XOR of the nonces recorded in the “common prefix” of allblockchains held by the honest players at the end of the epoch. (Thus, these protocols do not use a broadcastchannel.) We can call these beacon protocols “hash the blockchain” beacons. It was shown in the Ph.D. the-sis [22] that the min-entropy loss for this beacon in a single epoch (in the synchronous communication setting)grows linearly in the security parameter if the adversarial stake is9.5%or higher
+• Our simple beacon protocol can be directly incorporated into these blockchain protocols by the standard de-vice: the broadcast channel is implemented using blockchain consensus mechanism itself
+• Indeed, protocols based on publicly-verifiable secret sharing schemes (e.g., Ouroboros [18]) can achieve perfectrandomness with two rounds. The emphasis on one-round solutions arises because of adaptive security and thefact that the length of the randomness generation algorithm is an important design parameter
+• Our contribution.Recall that our objective is an𝑛-player beacon protocol with the following properties: (i) itis an iterated single-round coin-flipping protocol; (ii) it is secure against an adaptive adversary who may controlless than half the players (or, equivalently, in the proof-of-stake setting, control less than a50%stake); (iii) it isallowed to use a broadcast channel and cryptography; (iv) the setup and communication complexity is sublinearin𝑛; (v) for some parameter𝑘(which is independent of𝑛), the loss in the output min-entropy is𝑂(𝑘)except withprobability𝑒−Ω(𝑘)
+• The optimized version of our beacon protocol𝐁has all these properties. To our best knowledge, no otherbeacon does the same: 1. Algorand [9]—one of the main inspirations for this paper—provides single-round coin-flipping but guar-antees high min-entropy with only a constant probability. Our approach can be viewed as a kind of paral-lelization of the Algorand technique; see below.; 2. The coin-flipping in Ouroboros and RandHound [25] are multi-round and insecure against an adaptiveadversary who controls a minority stake or a minority coalition, respectively. DFINITY [16] uses one-roundcoin-flipping but, like Ouroboros, it is secure only against a static adversary
+• We leave the combination of VDF techniques with our randomnessgeneration algorithm as an interesting future research direction
+• As mentioned above, our protocol can be viewed as a parallelization of the Al-goRand technique; indeed, a single-round of AlgoRand coin-flipping is equivalent to setting𝑘= 1in our protocol.In contrast, our one-round protocol guarantees a “small” loss in min-entropy except with a negligible probability
+• Finally, consider the behavior of the protocol in the iterated setting. As discussed in theintroduction,𝐁𝑘is used to generate a sequence of beacons𝑠0,𝑠1,...,𝑠𝑇; We conclude that except with probability𝑇𝑐−𝑘, each beacon value has min entropy𝜆−𝑘log𝑎, as desired
+```
+• Some error probability & min entropy discussion
+• ("epoch", "nonce") = (round, entropy contribution)
+• Idea: VRF lottery -> everyone broadcasts each VRF output ("optimized" version if not all need to) -> hash the k lowest outputs
+//
+
+53. On the Notion of Pseudo-Free Groups
+https://people.csail.mit.edu/rivest/Rivest-OnTheNotionOfPseudo-FreeGroups.pdf
+• Their formulation: pseudo-free <=> no adversary can find an equation E that doesn't have a solution in the free group F(A) but has one in G
+• My formulation: pseudo-free <=> all equations that don't have a solution in F(A) shouldn't have a solution in G
+• RSA group being pseudo-free <=> Strong RSA assumption
+• Example (for understanding): x^2 = a doesn't have a solution in the free group -> also shouldn't in (mod N) assuming RSA group being pseudo-free
+//
+
+54. The Algebraic Group Model and its Applications
+https://eprint.iacr.org/2017/620.pdf
+```
+• To overcome this limitation, we propose the Algebraic Group Model (AGM), a modelthat lies in between the Standard Model and the GGM. It is the first restricted model ofcomputation covering group-specific algorithms yet allowing to derive simple and meaningfulsecurity statements. To prove its usefulness, we show that several important assumptions,among them the Computational Diffie-Hellman, the Strong Diffie-Hellman, and the interactiveLRSW assumptions, are equivalent to the Discrete Logarithm (DLog) assumption in theAGM. On the more practical side, we prove tight security reductions for two importantschemes in the AGM to DLog or a variant thereof: the BLS signature scheme and Groth’szero-knowledge SNARK (EUROCRYPT 2016), which is the most efficient SNARK for whichonly a proof in the GGM was known
+• LetGbe a cyclic group of prime orderp. Informally, we call an algorithmAalgalgebraicif itfulfills the following requirement: wheneverAalgoutputs a group elementZ∈G, it also outputsa “representation”~z= (z1,...,zt)∈Ztpsuch thatZ=∏iLzii, where~L= (L1,...,Lt)is the listof all group elements that were given toAalgduring its execution so far
+• We propose thealgebraic group model(AGM) — a computational model in which all adversariesare modeled as algebraic.  In contrast to the GGM, the AGM does not allow for provinginformation-theoretic lower bounds on the complexity of an algebraic adversary. Similar tothe Standard Model, in the AGM one proves security implications via reductions
+• The AGM is stronger (in the sense that it putsmore restrictions on the attackers) than the Standard Model, but weaker than the GGM. Inspite of this, all of our reductions are purely generic algorithms. As mentioned above, anygeneric algorithm can be modeled within the AGM. In particular, combining arbitrary genericoperations with algebraic ones will yield an algebraic algorithm. This suggests the followingidea. LetHandGbe two computational problems and letAalgbe an algebraic algorithm thatsolves problemG. If we can convertAalgby means of a generic reduction algorithmRgenintoan algorithmBalgfor problemH, then clearly,Balgis also an algebraic algorithm. However, weobtain an even stronger statement for free: Namely, ifAgenis a generic algorithm solvingG,thenBgenis a generic algorithm solvingH. This means that results in the AGM directly carryover to the GGM
+• For this reason, we believe that our model offers an alternative, perhaps simpler method ofproving the hardness of computational problems within the GGM. This applies in particularto interactive assumptions, which can be rather difficult to analyze in the GGM. For example,we prove that the discrete logarithm assumption implies the LRSW assumption in the AGM.As the discrete logarithm assumption holds in the GGM, we instantly obtain that the LRSWassumption holds in the GGM
+• As already noted, one of the main benefits of our model overthe GGM is the ability to reason about algorithms that arbitrarily exploit the structure of the group
+```
+• AGM: uses actual bitstrings (not allowed in GGM)?
+• Lemma: all generic algorithms are algebraic
+• Idea (can show GGM via AGM): breaking A via algebraic (or generic) + reduction is generic => breaking B via algebraic (or generic)
+• Std model < AGM < SAGM (Katz) < GGM -- in terms of restrictions on adversary
+• Example: DLP reduces to CDH (can break CDH to break DLP under AGM)
+//
+
+55. On the Security of Time-Lock Puzzles and Timed Commitments
+https://eprint.iacr.org/2020/730.pdf
+```
+• We give the first hardness result about the sequential-squaring con-jecture in a non-generic model. Namely, in a quantitative version ofthe algebraic group model (AGM) that we call thestrongAGM, weshow that speeding up sequential squaring is as hard as factoring N
+• We extendexisting  security  definitions  to  settings  that  may  arise  when  usingtimed commitments in higher-level protocols, and give the first con-struction ofnon-malleabletimed commitments
+• We  studythis  assumption  in  a  new,  strengthened  version  of  the  algebraic  group  model(AGM) [16] that we call thestrong AGM (SAGM), which lies between the genericgroup  model  (GGM)  [24, 32]  and  the  AGM.  Roughly,  an  algorithmAin  theAGM is allowed to utilize theactual  bitstringsrepresenting group elements inthe course of its computation (something that is not allowed in the GGM), butis  constrained  in  the  sense  that  for  any  group  elemenththatAoutputs,Amust also output coefficients showing howhwas computed from group elementspreviously  given  toAas  input.  The  SAGM  imposes  the  stronger  constraintthatAoutput  theentire  path  of  its  computation(i.e.,  all  intermediate  groupoperations) that resulted in h
+• We also show that it is not possible to reduce the hardness ofsequential squaring to factoring in the AGM (assuming factoring is hard in thefirst place). Our result is the first formal argument for the sequential hardnessof  squaring  in  a  non-generic  model,  and  immediately  implies  the  security  ofPietrzak’s VDF [28] in the SAGM (assuming the hardness of factoring)
+• In  the  SAGM  westrengthen this and require an algorithm to express any group element as either(1) aproductof two previous group elements that it has either received as inputor already computed in some intermediate step, or (2) aninverseof a previousgroup element that it has either received as input or already computed in someintermediate step
+```
+• Idea: std model < AGM < SAGM < GGM -- in terms of restrictions on adversary
+• Computational RSW is proven (breaking it implies breaking factoring), but decisional RSW is assumed?
+• Simulation-sound NIZK
+• Running time in SAGM = number of algebraic steps taken (allowing parallelism)
+• Construction 1: CPA timed encryption (Diffie-Hellman style) + decisional RSW assumption + Naor-Yung -> CCA scheme
+• Construction 2: their non-malleable TC is based on Construction 1
+//
+
+56. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8379425
+```
+• Public key encryption with equality test (PKE-ET) enables anyone to perform equivalencetest between two messages encrypted under distinct public keys. Attribute-hiding predicate encryptionis a paradigm for public key encryption that supports both attribute-hiding and fine-grained access con-trol. In this paper, we first initialize the concept of attribute-hiding predicate encryption with equalitytest (AH-PE-ET) by incorporating the notions of PKE-ET and PE, and then propose a concreteAH-PE-ET scheme
+• In the AH-PE-ET scheme, onedata receiver can calculate a trapdoor using his/her private key and delivers this trapdoor to an untrusted cloudserver, who in turn compares the ciphertexts from this receiver with other receivers’ ciphertexts. During thecomparison, the information about the trapdoor as well as the attributes associated with the ciphertexts willnot be disclosed to this cloud server
+```
+• Heavily reliant on pairings
+• Idea: ∃"trapdoor" (< individual secret key) that enables "equality test on ciphertexts" (i.e. check if messages are equal given ciphertexts)
+• Use case: IoT sensor encrypts (to its pk?) data and keywords + user requests keyword search by sending encrypted (to its pk?) keywords to untrusted cloud server => cloud is able to perform equality test on ciphertexts using trapdoors only (such that can't fully decrypt)
+//
+
+57. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
+https://eprint.iacr.org/2022/237.pdf
+```
+• We distill a simple information-theoretic model for random-ness  extraction  motivated  by  the  task  of  generating  publicly  verifiablerandomness in blockchain settings and which is closely related toYou-Only-Speak-Once (YOSO)protocols (CRYPTO 2021)
+• With the goal ofavoiding  denial-of-service  attacks,  parties  speak  only  once  and  in  se-quence by broadcasting a public value and forwarding secret values tofuture  parties.  Additionally,  an  unbounded  adversary  can  corrupt  anychosen  subset  of  at  mosttparties.  In  contrast,  existing  YOSO  proto-cols only handle random corruptions
+• With respect to feasibility, we give protocols fortcorruptions andn= 6t+ 1 orn= 5tparties depending on whether the adversarylearns secret values forwarded to corrupted parties immediately oncethey are sent or only once the corrupted party is executed, respec-tively
+• To complement our protocols, we show that low-error randomnessextraction is impossible with corruption thresholdtandn≤4tpar-ties in both settings above. This also provides a separation betweenchosen and random corruptions, since the latter allows for random-ness extraction with close ton/2 random corruptions
+• Our model is in particular motivated by the notions ofplayer-replacableprotocols  as  introduced  by  Micali  [Mic16]  andYou-Only-Speak-Once(YOSO)protocols  as  introduced  by  Gentry,  Halevi,  Krawczyk,  Magri,  Nielsen,  Rabin,and Yakoubov [GHK+21]. In these classes of protocols, each party only sendsmessages once
+• More precisely, we consider a multiparty computation model wherenpartiesP1,...,Pnare activated sequentially, with each party having access to an internalsource of randomness. To begin with,P1is executed and it outputs a public valuex1which  we  think  of  as  being  shown  to  all  parties,  including  the  adversary.Moreover,P1also gets to send secret valuess1,jto each future partyPj
+• Information may be revealed to the adversary in different ways. We considertwo  scenarios,  which  we  term  thesending-leaksandexecution-leakssettings.In  the  sending-leaks  setting,  if  partyPiis  honest  and  sends  the  secret  valuesi,jto  a  corrupted  partyPjduring  its  execution,  then  the  adversary  learnssi,jimmediately. In contrast, in the execution-leaks setting the secret valuesi,jwould only be revealed to the adversary later when the corrupted partyPjisexecuted. The motivation behind these settings is related to how the forwardingof the secret values is implemented in practice
+• In particular, one can generate unbiased randomness using this approach byhaving  all  parties  run  a  verifiable  secret  sharing  protocol  of  a  random  value,and then reconstruct all values and XOR them. Using, for instance, the protocolfrom  [CGG+21]  with  2-round  sharing  and  1-round  reconstruction  procedurestoleratingt < m/3  corruptions,  we  immediately  obtain  a  randomness  extrac-tion protocol in our model toleratingt < n/9 corruptions. However, this is notvery satisfactory
+• Can  we  improve  the  lower  and  upper  bounds  on  the  exact  maximumcorruption threshold that allows for public randomness generation in ourmodel?
+• The main difference between player-replaceable and YOSO proto-cols is that player-replaceable protocols only allow public messages and YOSOprotocols allow secret messages
+• However, there are twoadditional issues to keep in mind when performing MPC in this model:First,how does a party send a secret value to an unknown future speaker? Second, howimpartial is the selection of speakers?
+• The YOSO paper [GHK+21] studiesmainlyrandomcorruptions  (i.e.,  each  party  is  independently  corrupted  withsome constant probability). The motivation behind this is that, since rolesRareassumed to be mapped uniformly to partiesPby some perfectly random roleassignment mechanism; However, there are natural motivations for considering worst-case corruptionsin this model, as opposed to random corruptions
+• Other  works  have  considered  related  models  where  parties  publish  publicvalues in sequence but future secret values are not permitted, such as Santha-Vazirani sources [SV84], Bitcoin beacons [BGZ16], and SHELA sources [AOR+20].Crucially, in such versions it is not possible to deterministically extract uniformlyrandom bits
+• Theorem 1  (Feasibility  in  the  sending-leaks  model).There  is  a  zero-errorn-party  randomness  extraction  protocol  secure  against  any  sending-leaksadversary with corruption threshold t whenever n≥6t+ 1
+• Theorem 2  (Feasibility in the execution-leaks model).There  is  a  zero-errorn-party randomness extraction protocol secure against any execution-leaksadversary with corruption threshold t whenever n≥5t
+• Theorem 3  (Impossibility result).There is no randomness extraction pro-tocol  secure  againsttcorruptions  withn≤4tparties  and  bias  less  than1/100in both the sending-leaks or execution-leaks models
+• Extracting multiple random bits.Observe that in order to extract aλ-bitstring of unbiased random bits, we can just run our protocolsλtimes in parallel.This incurs an extra factor ofλin the total communication complexity. We leaveit as an interesting open problem to improve on this approach
+• Impossibility result.We now discuss the approach behind our impossibilityresult  in  Theorem  3.  For  the  sake  of  simplicity,  consider  a  protocol  with  fourpartiesP1,...,P4and one corruption, and assume that a (close to) final out-put  bit  is  produced  if  all  parties  behave  honestly.  Our  proof  follows  a  carefulsequential argument where we analyze what would happen if we corrupted par-tiesP4throughP1. At a high level, we show that either the behavior of partiesP1,...,Pi−1already fully determines the final output of the protocol with highprobability, or corruptingPiallows an adversary to locally control and bias thefinal output
+```
+• Chosen vs random corruptions (in YOSO?)
+• 2 "role assignment protocols" ("role" ~= code to be executed): ephemeral key method (~= sending-leaks model) & threshold IBE method (~= execution-leaks model)
+• Committee-based methodology: could be bad if entire committee could be corrupted => worse bounds
+• Section 1.3: technical overview
+• Final output = take the majority twice + XOR across sets S
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Universal
+Blum-Micali & BBS
+Chameleon sig?
+Min-entropy
+OWF => PRG (BM) => PRF (GGM) => PRP (LR = Feistel) -- converse is also true?!
+OWF, OWP, TDP (trapdoor permutation)
+BG (Blum-Goldwasser): asymmetric encryption a la BBS
+Non-uniform PPT & advice string
+IND-CPA (game-based) vs semantic security (simulation-based)
+
+Semantic security => not deterministic
+Hardcore bit/predicate
+Goldreich-Levin construction
+Hybrid argument & poly-many distributions
+Left-or-right indistinguishability ~= IND-CPA
