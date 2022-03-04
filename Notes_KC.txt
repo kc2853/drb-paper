@@ -50,7 +50,7 @@ https://link.springer.com/content/pdf/10.1007/3-540-46416-6_47.pdf
 • Parallel Feldman's
 
 3. Gennaro's DKG (based on Pedersen)
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.6445&rep=rep1&type=pdf
+https://link.springer.com/content/pdf/10.1007%2F3-540-48910-X_21.pdf
 • Joint-Feldman can allow biasing public key (how about private key?)
 • Use Pedersen-style VSS (instead of Feldman's): 2 polynomials per player + Pedersen commitments + separate public key extraction step (Step 4)
 • 3 correctness properties: 1. can recover the same secret with any honest subset over threshold; 2. public key (g^{secret}) extractable; 3. secret is uniformly distributed
@@ -81,6 +81,7 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.5426&rep=rep1&type=p
 • Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
 • Schnorr threshold sig: still secure (paper's main idea!) with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
 • "Additive" share pooling (paper uses this) vs "polynomial" share pooling
+• sk = Σ sk_i (additive): means that sk_i is reconstructed from individual poly (hence worse reusability); need all(!) sk_i to sign
 • Setup: computational, communication, adversary, DL assumption, security of threshold sig, simulation proof technique, ROM
 • Generalized presentation of the 1/2 -> 3/4 attack for biasing Joint-Feldman
 • Main idea: Joint-Feldman should be good enough (even if biasing possible) for threshold sig -> ex: Schnorr threshold sig with additive pooling
@@ -94,7 +95,7 @@ https://eprint.iacr.org/2019/985.pdf
 • Send encrypted(!) shares via Diffie-Hellman
 • Dispute phase: NIZK for DH key (to prevent false accusation)
 • Neji: use new generator h (broadcasted later) for group public key; NIZK to show relationship between g & h
-• Sign with individual share (on the group poly) not individual secret key?!
+• Idea (Neji): decoupling (a la Pedersen-VSS) of verification & extracting public key
 • mpk and mpk* (bc Neji and pairing-based?)
 
 7. Schoenmakers PVSS paper
@@ -158,7 +159,6 @@ https://eprint.iacr.org/2018/319.pdf
 • Attacker in round r can only attempt to affect round >= r + f + 1
 • Hence the claim no trusted dealer
 • No DKG
-• Drawback: can't trust first f founds then? why not similar attacks later?
 
 11. Dodis VRF
 https://eprint.iacr.org/2004/310.pdf
@@ -189,19 +189,18 @@ https://eprint.iacr.org/2020/096.pdf
 • Side result: modified BLS (more efficient) = GLOW-DVRF - last step's hash
 • Algorand DRB is not strongly pseudorandom?
 • Harmony: uses VDF?!
-• HERB (homomorphic encryption random beacon): uses ElGamal encryption
 • Verification key (vk) = g^f(i)
 
 14. Timed Commitments
 https://www.iacr.org/archive/crypto2000/18800237/18800237.pdf
-• 3 properties: verifiable recovery + recovery with proof (outsiders can verify too) + immunity against parallelism
+• 3 properties: verifiable recovery (committer generates proof) + recovery with proof ("VDF" proof s.t. outsiders can verify too) + immunity against parallelism
 • Contract signing, honest auction
 • Timed signature (with a new definition of valid signature) < timed commitment
 • ∃zk proof that the scheme is a timed commitment (from Alice before she commits)
 • Basic idea: open (allows faster verification) vs forced open (receiver needs to compute the "VDF")
 • Q. Pietrzak's & Wesolowski's can help with efficient verification?
 • Section 3 (timed commitment construction): hides message M via BBS generator; but the proof doesn't seem to be related to M?
-• Q. paper's intro talks about 2 proofs (committer generating a proof & receiver generating a proof as part of open/forced-open) vs Section 3's proof -- a gap?
+• Q. paper's intro talks about 2 proofs (committer generating a proof & receiver generating a proof as part of forced-open) vs Section 3's proof -- a gap?
 
 15. RandRunner
 https://eprint.iacr.org/2020/942.pdf
@@ -227,8 +226,8 @@ https://eprint.iacr.org/2020/1590.pdf
 • Reconfiguration friendly (dynamic set of nodes)
 • Goal: good communication complexity (quadratic for worst case too); efficient cryptographic scheme (e.g. not VDF); reconfiguration friendly
 • SMR (state machine replication) protocol
-• Can reduce communication via erasure coding scheme or accumulators
-• GRandPiper: PVSS encryption vector; additional "votes"; "to all the honest nodes" (how?); leader doesn't repeat for t epochs (a la HydRand?); Even can corrupt the next t leaders & predict
+• Can reduce communication via erasure coding scheme & accumulators
+• GRandPiper: PVSS encryption vector; additional "votes"; "to all the honest nodes" (how?); leader doesn't repeat for t epochs (a la HydRand?)
 • BRandPiper: iVSS (improved VSS; modified version of eVSS = Kate poly commitment?); homomorphic sum; leader can secret share n shares at once (key insight)
 • HydRand: cubic communication complexity worst case; t < n / 3 (but t < n / 2 for RandPiper)
 • "Buffering": using last d-th time a node was a leader -> buffer d shares?
@@ -245,9 +244,6 @@ https://eprint.iacr.org/2015/1015.pdf
 
 18. Homomorphic Encryption Random Beacon
 https://eprint.iacr.org/2019/1320.pdf
-• Threshold ElGamal
-• Provides true randomness as opposed to pseudorandomness
-• Slightly more practical communication complexity as a tradeoff
 
 19. SPURT: Scalable Distributed Randomness Beacon with Transparent Setup
 https://eprint.iacr.org/2021/100.pdf
