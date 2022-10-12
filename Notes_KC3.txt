@@ -3,10 +3,12 @@
 53. STROBE: Stake-based Threshold Random Beacons
 54. Efficient Random Beacons with Adaptive Security for Ungrindable Blockchains
 55. On the Notion of Pseudo-Free Groups
-56. The Algebraic Group Model and its Applications
-57. On the Security of Time-Lock Puzzles and Timed Commitments
-58. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
-59. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
+56. The RSA group is pseudo-free
+57. The Algebraic Group Model and its Applications
+58. On the Security of Time-Lock Puzzles and Timed Commitments
+59. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
+60. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
+61. Mt. Random: Multi-Tiered Randomness Beacons
 
 51. Stake-Bleeding Attacks on Proof-of-Stake Blockchains
 https://eprint.iacr.org/2018/248.pdf
@@ -22,6 +24,7 @@ https://eprint.iacr.org/2018/248.pdf
 • Out of the above-mentioned PoS schemes, all eventual- consensus protocols (i.e., NXT, PPCoin, Ouroboros, Snow White, and Ouroboros Praos) employ the first mitigation strategy and assume some form of checkpointing. Ouroboros Praos employs the first and the second approach (key-evolving signatures) to additionally handle adaptive corruptions, while Algorand adopts the second and the third approach (strict chain density statistics) to the same end
 • Stake-bleeding is an effective strategy for mounting a long-range attack that does not rely on posterior corruption; thus it cannot be prevented by key-evolving cryptographic techniques. The only requirement for the attack is that the underlying blockchain protocol allows transaction fees to be used as rewards for running the protocol
 • The adversary checks in every time slot whether it is allowed to extend the chain C or ˆC according to the rules of the protocol Π. It skips all opportunities to extend C, hence not contributing to its growth at all. On the other hand, whenever an opportunity to extend ˆC arises, A extends ˆC with a new block, and inserts into this new block all the transactions from the honest chain C that are not yet included in ˆC and are valid in the context of ˆC (or as many of them as allowed by the rules of Π). This entitles A to receive (on ˆC) any block-creation reward and any transaction fees coming from the included transactions
+• As the protocol progresses, with overwhelming probabilitybothCandˆCwill be growing, withCgrowing more quickly.While the relative stake ofAonCwill possibly be decreasingdue  to  the  block-creation  rewards  granted  to  block  creatorsinC, its relative stake on the chainˆCwill be growing bothdue  to  the  block  rewards  and  transaction  fees.  Under  somerealistic assumptions on the relative sizes of the transaction feesand block rewards (that are spelled out in SectionIII-B), theadversarial relative stake inˆCwill eventually exceed the honestrelative  stake  inC
 ```
 • Checkpointing (but "weak subjectivity") vs strict chain density statistics (but can be complicated/inaccurate) vs key-evolving crypto (preferable b/c algorithmic BUT still vulnerable to stake bleeding)
 • "Density" means in the time domain
@@ -29,7 +32,7 @@ https://eprint.iacr.org/2018/248.pdf
 • Figure 2: landscape of long-range attacks
 • Figure 3: stake bleeding in a nutshell
 • Idea (stake bleeding): stall on C (honest chain); mine/collect all fees & rewards on C' (private chain); stake grows on C' -> C' can progress faster than C
-• Key?: relative stake of adversary on C' > relative stake of honest on C (eventually b/c honest on C loses fees also)
+• Key?: relative stake of adversary on C' > relative stake of honest on C (eventually b/c adversary on C' gains fees also)
 • Extra notes: https://archive.vn/MizCd (can grind in the time domain?), https://archive.vn/kD1Lx, https://archive.vn/BzeqV
 • Higher stake => can progress faster
 • Stake grinding: grinding (or withholding) to change the randomness itself / is a bit different?
@@ -38,8 +41,6 @@ https://eprint.iacr.org/2018/248.pdf
 52. Global, Unpredictable Bit Generation Without Broadcast
 https://www.researchgate.net/profile/Donald-Beaver-2/publication/221348192_Global_Unpredictable_Bit_Generation_Without_Broadcast/links/5db90290a6fdcc2128eba5d9/Global-Unpredictable-Bit-Generation-Without-Broadcast.pdf
 ```
-• A fast, efficient solution is of fundamental importance to distributed protocols, especially those that rely on  broadcast  channels. We present two unpre- dictable bit generators, based on the Blum-Blum-Shub generator, that can be evaluated non-interactively; that is, each bit (or group of bits)  requires each processor merely to send one message to the other processors, without  requiring a broadcast or Byzantine Agreement
-• In this paper, we show how to generate  unpredictable bits efficiently and in  one round of communication. In fact, this  one  round of communication is very simple: it requires each processor to send the same message to all the other processors, but it does not require the system to check whether  each  processor did so. We call this weak form of broadcast "dissemination," and we show how to achieve an unpredictable coin using one round of dissemination
 • We present two solutions, one based on the QRA' and one based  on the intractability of factoring. (The first  solution is more efficient, but basing it on the weaker assumption (factoring) is not an obvious  task.) Each solution uses a homomorphic technique for secret sharing in the style of Feldman [9]. (Caution is required, however; applying Feldman's VSS scheme as a "subroutinen leads to an easily predictable generator.) In a nutshell, it applies a generalized form of the Blum-Blum-Shub  (BBS)  pseudorandom number generator (71 to a hidden seed. and reveals the bits  in a coordinated  manner: no bit is revealed until some n - t processors decide it is time to do so, according to their programs
 • The key property that we intend to capture is  that the bits are unpredictable - namely, an adversary has little better than a 50-50 chance to predict the next bit, although once it is generated, the sequence may be clearly distinguishable from uniformly random bits because other (useless) information is present; The Blum-Blum-Shub [7] generator provides a nice example
 • For simplicity, let us assume the initialization is taken care of either by a trusted party or an initial multiparty protocol requiring broadcast. Thereafter, neither trust nor broadcast is needed
@@ -102,7 +103,17 @@ https://people.csail.mit.edu/rivest/Rivest-OnTheNotionOfPseudo-FreeGroups.pdf
 • RSA group being pseudo-free <=> Strong RSA assumption
 • Example (for understanding): x^2 = a doesn't have a solution in the free group -> also shouldn't in (mod N) assuming RSA group being pseudo-free
 
-56. The Algebraic Group Model and its Applications
+56. The RSA group is pseudo-free
+https://cseweb.ucsd.edu/~daniele/papers/PseudoFree.pdf
+• This paper resolves Rivest's conjecture
+• Computational group
+• Proves even stronger version of the pseudo-freeness property: system of equations
+• Statistical distance
+• Lemma 1: generator for QR_N
+• Lemma 2: statistical distance between γ^v & uniform over G
+• Many interesting open questions in Conclusion
+
+57. The Algebraic Group Model and its Applications
 https://eprint.iacr.org/2017/620.pdf
 ```
 • To overcome this limitation, we propose the Algebraic Group Model (AGM), a modelthat lies in between the Standard Model and the GGM. It is the first restricted model ofcomputation covering group-specific algorithms yet allowing to derive simple and meaningfulsecurity statements. To prove its usefulness, we show that several important assumptions,among them the Computational Diffie-Hellman, the Strong Diffie-Hellman, and the interactiveLRSW assumptions, are equivalent to the Discrete Logarithm (DLog) assumption in theAGM. On the more practical side, we prove tight security reductions for two importantschemes in the AGM to DLog or a variant thereof: the BLS signature scheme and Groth’szero-knowledge SNARK (EUROCRYPT 2016), which is the most efficient SNARK for whichonly a proof in the GGM was known
@@ -118,7 +129,7 @@ https://eprint.iacr.org/2017/620.pdf
 • Std model < AGM < SAGM (Katz) < GGM -- in terms of restrictions on adversary
 • Example: DLP reduces to CDH (can break CDH to break DLP under AGM)
 
-57. On the Security of Time-Lock Puzzles and Timed Commitments
+58. On the Security of Time-Lock Puzzles and Timed Commitments
 https://eprint.iacr.org/2020/730.pdf
 ```
 • We give the first hardness result about the sequential-squaring con-jecture in a non-generic model. Namely, in a quantitative version ofthe algebraic group model (AGM) that we call thestrongAGM, weshow that speeding up sequential squaring is as hard as factoring N
@@ -134,7 +145,7 @@ https://eprint.iacr.org/2020/730.pdf
 • Construction 1: CPA timed encryption (Diffie-Hellman style) + decisional RSW assumption + Naor-Yung -> CCA scheme
 • Construction 2: their non-malleable TC is based on Construction 1
 
-58. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
+59. Attribute-Hiding Predicate Encryption With Equality Test in Cloud Computing
 https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8379425
 ```
 • Public key encryption with equality test (PKE-ET) enables anyone to perform equivalencetest between two messages encrypted under distinct public keys. Attribute-hiding predicate encryptionis a paradigm for public key encryption that supports both attribute-hiding and fine-grained access con-trol. In this paper, we first initialize the concept of attribute-hiding predicate encryption with equalitytest (AH-PE-ET) by incorporating the notions of PKE-ET and PE, and then propose a concreteAH-PE-ET scheme
@@ -144,7 +155,7 @@ https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8379425
 • Idea: ∃"trapdoor" (< individual secret key) that enables "equality test on ciphertexts" (i.e. check if messages are equal given ciphertexts)
 • Use case: IoT sensor encrypts (to its pk?) data and keywords + user requests keyword search by sending encrypted (to its pk?) keywords to untrusted cloud server => cloud is able to perform equality test on ciphertexts using trapdoors only (such that can't fully decrypt)
 
-59. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
+60. Public Randomness Extraction with Ephemeral Roles and Worst-Case Corruptions
 https://eprint.iacr.org/2022/237.pdf
 ```
 • We distill a simple information-theoretic model for random-ness  extraction  motivated  by  the  task  of  generating  publicly  verifiablerandomness in blockchain settings and which is closely related toYou-Only-Speak-Once (YOSO)protocols (CRYPTO 2021)
@@ -172,19 +183,25 @@ https://eprint.iacr.org/2022/237.pdf
 • Section 1.3: technical overview
 • Final output = take the majority twice + XOR across sets S
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Universal
-Blum-Micali & BBS
-Chameleon sig?
-Min-entropy
-OWF => PRG (BM) => PRF (GGM) => PRP (LR = Feistel) -- converse is also true?!
-OWF, OWP, TDP (trapdoor permutation)
-BG (Blum-Goldwasser): asymmetric encryption a la BBS
-Non-uniform PPT & advice string
-IND-CPA (game-based) vs semantic security (simulation-based)
-
-Semantic security => not deterministic
-Hardcore bit/predicate
-Goldreich-Levin construction
-Hybrid argument & poly-many distributions
-Left-or-right indistinguishability ~= IND-CPA
+61. Mt. Random: Multi-Tiered Randomness Beacons
+https://eprint.iacr.org/2021/1096.pdf
+```
+• Each tier is based on a differenttechnique  and  provides  a  constant  stream  of  random  outputsoffering progressing efficiency vs. quality trade-offs: true uniformrandomness is refreshed less frequently than pseudorandomness,which in turn is refreshed less frequently than (bounded) biasedrandomness.   This   wide   span   of   efficiency/quality   allows   forapplications  to  consume  random  outputs  from  an  optimal  pointin  this  trade-off  spectrum.  In  order  to  achieve  these  results,we  construct  two  new  building  blocks  of  independent  interest:GULL, a PVSS-based beacon that preprocesses a large batch ofrandom  outputs  but  allows  for  gradual  release  of  smaller  “sub-batches”, which is a first in the literature of randomness beacons;and  apublicly  verifiableandunbiasableprotocol  for  DistributedKey  Generation  protocol  (DKG),  which  is  significantly  moreefficient  than  most  of  previous  DKGs  secure  under  standardassumptions  and  closely  matches  the  efficiency  of  the  currentlymost  efficientbiasableDKG  protocol
+• This has the inconvenience of requiring a fixed initialseed to which the TVRF is applied in the first round, and sincethe entropy of such seed is of course finite, the unpredictabilityguarantees  of  the  process  will  on  the  long  run  necessarilydeteriorate. To the best of our knowledge there is no analysisof how this exactly plays out
+• Tier   1  -   Uniform   Randomness   via  PVSS:This  tierprovides batches of uniformly random outputs while onlyrequiring a Public Ledger and a Random Oracle as setup.However, communication and computational complexitiesare quadratic in the number of parties executing the tier
+• Tier  2  -  Uniform  Pseudorandomness  via  TVRFs:Be-sides  the  setup  required  for  Tier  1,  this  tier  requires  asetup  phase  for  distributed  key  generation,  after  which  itprovides uniformly pseudorandom outputs (one per execu-tion). Communication and computational complexities arelinear in the number of parties executing the tier. Since theseed must be periodically refreshed, this tier uses outputsfrom Tier 1 as seeds every time a refresh is needed
+• Tier 3 - Bounded-Biased Pseudorandomness via VRFs:Regarding  setup,  besides  a  Public  Ledger  and  a  RandomOracle, this tier requires a random nonce, which is obtainedfrom the outputs of Tier 2. Communication and computa-tional complexities can be adjusted at the expense of outputbias,i.e.the  lower  the  complexity  the  higher  the  upperbound for the bias an adversary can introduce
+• Due to the added threshold encryption and zero knowledgeproof  machinery,  GULL  is  understandably  slower  than  AL-BATROSS in case a full batch of random outputs is required.However, in case many fresh unpredictable uniformly randomoutputs  are  required,  the  ability  to  gradually  release  sub-batches  of  outputs  makes  GULL  significantly  more  efficientthan ALBATROSS: instead of re-executing the full protocol inorder to obtain a full batch that is completely revealed, GULLallows  for  simply  opening  an  encrypted  sub-batch
+• Noticethat  pseudorandomness  only  holds  in  case  the  key  pair  hasbeen  honestly  generated  (i.e.byKeyGen)  but  not  when  itis generated maliciously, allowing the adversary to bias VRFoutputs computed under maliciously generated keys. Indeed, inVRF based beacons (e.g.Figure 4), the adversary can generateits own key pairs maliciously. Hence, in this setting, we requirethe VRF to be unpredictable under maliciously key generationas defined in [18]. In Appendix A we present the definition anda construction of a VRF with unpredictability under maliciouskey generation
+• The  beaconproceeds iteratively as follows: Each party has a key-pair fora VRF and evaluates the VRF on the seed. The parties definethe  output  of  that  round  to  be  the  hash  of  the  XOR  of  thecorrectly  computed  evaluations  (which  the  can  check  usingthe  verification  procedure  and  the  public  keys),  and  use  thatoutput to define the seed for the next round. Note this processopens  the  door  for  biasing  strategies:  malicious  parties  maysimply  wait  until  honest  parties  publish  their  evaluations  ofthe VRF and then decide whether they publish theirs, therebydeciding the final result
+• Recall  that  our  goal  is  to  establish  a  common  public  keytpk=gtsk,  partial  public  keystpki=gtskisuch  thattskiare  Shamir  shares  fortsk,  and  in  addition  partyPireceivestski; However  we  still  have  the  problem  of  how  partyPicancomputetski. This requires to modify the secret sharing phaseso that whenPadeals a secrets(a)this party sends informationthat allowsPinot only to reconstructgσ(a)ibut alsoσ(a)i(recallσ(a)iis the Shamir share ofs(a)). We solve this by also sendinga ciphertextE(a)i=σ(a)i⊕H(gσ(a)i)containingσ(a)ithat canonly  be  decrypted  by  learninggσ(a)i,  which  in  turn  can  onlybe  obtained  by  partyPiwith  its  secret  key
+• In the original ALBATROSS [12] protocol, the full batch ofuniformly random outputs is revealed as soon as the protocolterminates. This is not an issue when seeding Tier 2, since Tier2 outputs cannot be predicted without a threshold key. How-ever, it might be a problem in the case where fresh uniformlyrandom outputs from Tier 1 are required for applications otherthan seeding Tier 2. Hence, we instantiate Tier 1 with GULL
+• The  third  tier  of  Mt.  Random  outputs  pseudorandom  val-ues  that  may  be  biased  by  the  adversary  up  to  a  certainupper  bound.  While  this  sort  of  biased  randomness  findsless applications than unbiased pseudorandomness or uniformrandomness, it is still sufficient for important applications suchas selecting block creators in Proof-of-Stake based blockchains(e.g.Ouroboros Praos [18]). In fact, we instantiate Tier 3 withthe  VRF  and  VRF-based  beacon  protocols  from  OuroborosPraos, which are secure under the CDH assumption (impliedby  DDH).  However,  differently  from  the  original  Ouroboros Praos  beacon,  which  seeds  each  of  its  execution  with  theoutput  of  its  last  execution,  we  seed  this  protocol  with  anoutput from Tier 2. This crucial difference has the advantageof reducing the potential adversarial bias in Tier 3 outputs
+```
+• 3 tiers: PVSS -> TVRF (= DVRF) -> VRF
+• Idea1: DKG using PVSS (instead of VSS) for public verifiability
+• Idea2 (GULL): Albatross but gradual release (one row of t-resilient matrix M at a time); uses threshold encryption (but using Lagrange to aggregate!) & decryption
+• Figure 3: Albatross in a nutshell
+• Quality: Tier 1 > 2 (not biasable) > 3 (bounded biasable)
+• Efficiency: Tier 1 < 2 < 3 (b/c not everyone needs to participate)
+• Mt. Random's Praos (epoch/slots under RR, but not everyone needs to participate) != Praos (epoch/slots under private lottery a la f < target)

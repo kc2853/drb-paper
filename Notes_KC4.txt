@@ -1,0 +1,257 @@
+62. Limits on the Security of Coin Flips When Half the Processors are Faulty
+63. A Lower Bound for Adaptively-Secure Collective Coin Flipping Protocols
+64. Can a Public Blockchain Keep a Secret?
+65. Random-Index PIR and Applications
+66. Encryption to the Future: A Paradigm for Sending Secret Messages to Future (Anonymous) Committees
+67. YOSO: You Only Speak Once Secure MPC with Stateless Ephemeral Roles
+68. OptRand: Optimistically Responsive Distributed Random Beacons
+69. Aggregatable Distributed Key Generation
+70. Proof-of-Stake Mining Games with Perfect Randomness
+71. Fair and Robust Multi-Party Computation using a Global Transaction Ledger
+72. A New Look at Blockchain Leader Election: Simple, Efficient, Sustainable and Post-Quantum
+73. Formal Barriers to Longest-Chain Proof-of-Stake Protocols
+74. Non-interactive distributed key generation and key resharing
+
+62. Limits on the Security of Coin Flips When Half the Processors are Faulty
+https://dl.acm.org/doi/epdf/10.1145/12130.12168
+```
+• It is claimed that (assuming a trapdoor function exists), if less than half of the processors are faulty then the correct processors will still agree on a bit whose bias is negligibly small (when the running time of the processors is poly(n) the bias is smaller than O(~r) for all k). If half the processors are faulty then these protocols are no longer effective: the bits output by the correct processors may be heavily biased
+• We prove that the above protocols are optimal in the sense that no protocol exists which tolerates faults in at least half of the processors
+• The result is very general because few restrictions are made on the types of com- munication allowed between correct processors (such as private channels and global channels) and the correct pro- cessors only need to agree on a bit in a weak probabilistic sense. Also, the faulty processors do not require very much power. They can privately communicate with each other but they cannot read messages which are exchanged privately between two correct processors
+• There are protocols for 2-processor coin tossing which (assuming that a trapdoor function exists) achieve a weaker level of security (these are discussed in section 4). The processors run in poly(n) time and the bias of the bit which a correct processor out- puts is less than O(~r) for some fixed k. More precisely, the bias will be less than O(~) where r is the number of rounds of communication in the protocol
+• In section 2 it is proven that no 2-processor protocol exists for which the bias of the output of a correct processor is less than O(1/r)
+• For a  2-processor bit  selection scheme to  qualify as  a coin tossing scheme, the bits that the two processors select should be in agreement  and they should be random. A  strong  definition of agreement would be the condi- tion  that,  when  the  bit  selection  scheme  is  run,  a  =  b. It may be sufficient for  some purposes  to adopt  a  weaker definition  of agreement  such  as  Pr[a  =  b]  _>  1 -  O(~r) for all k. Define a  2-processor  bit  selection scheme to be ɛ-consistent (where  ɛ >  0)  if Pr[a -~ b]  >  ~ +  ɛ.  Note that ɛ-consistency is a  considerably weaker property than  the two definitions of agreement  proposed  above
+• Randomness  could  be  defined  as  the  property  that  a and  b  have  a bias of zero,  where  the bias of  a  bit  x  is defined  as  [Pr[z  =  0]  -  }1  (and  the bias towards  0 of bit  x  is  defined  as  Pr[x  =  0]-  ½ (the bias towards  1 is defined similarly)).  Again, it may suffice to have a weaker definition of randomness  such  as  the  condition  that  the bias of both  a  and  b be bounded  by  O(~)  for all k
+• Define  a  2- processor bit selection scheme {(A n, Bn)}~°=, to be secure if, for  any  polynomial  p,  there  exists  a  function  f,  with f(n) <  O(~r)  for all k  such  that  the following holds.  For all  n,  if one  of A n,  B"  is  replaced  by  a  faulty  processor which runs in time p(n) then the bias of the output of the other  processor  is  less than f(n). Thus,  as  n  gets  large, no  faulty  processor  of leasable  running  time  can  inflict a  significant  bias  on  the  output  of the  other  processor. Note  that  security  is  defined  in  such  a  way  that  the  se- curity condition implies the second randomness condition proposed  in the previous paragraph
+• Impossibility Result Theorem: If {(A n, B")}~'= 1 is an e-consistent, 2-processor bit selection scheme then  {(A '~, Bn)}~°= 1 is not secure.  In fact,  for  each  n,  there  exists  a  faulty  processor  which causes  the  bias  of the  output  of the correct  processor  to be at  least  4~(~+t,  where r(n)  is the number  of rounds  of communication of the scheme
+• Let  s  be  a  polynomially bounded  function  (Some  in- teresting  cases  are  when s(n) is  constant  or s(n)  =  n). Define an s-processor  bit  selection  scheme as  a  sequence of tuples of processors of the form {(P~, P~, ..., P~,))}~=I with  the  following  properties
+• The  network  contains c(n) channels,  where  e is a poly(n) bounded function.  Each channel is shared by some  subset  of the  s(n)  processors
+• Without any loss of generality, the system operates in rounds  as follows.  P~ performs some computations  (in poly(n) time)  and  then  sends  a  message to each channel which it has access to.  Then P~, P~, ..., P~,)  each in turn do the same thing
+• Impossibility Result Theorem2:  If {(Pf, Pf ..... e~n))}~=1  is an  c-consistent, .s-processor bit selection scheme then it is not  [hi-secure. That  is, half the processors,  if faulty, can bias the output of one  of the  other  processors  significantly.  Specifically, for  each  n,  there  exists  a  set  of  [~11  or  [~_~1]  proces- sors  which,  if faulty,  can  bias  the  output  of one  of the correct processors  by  at  least 4,(nlr(n}c(n)+l' where  r(n)  is the  number  of rounds  of communication  and e(n) is the number  of communication channels  in the network
+• The  scheme  described in  section 4  only has  security O(~r)  (this is the bound of the bias that a faulty processor can cause)  while the the lower bound on security proven in  section  2  is  O(~).  It  would  be  interesting to  tighten this gap
+• It would  also be  interesting  to  see how  much  bias  a group  of isolated processors  (i.e.  which  have  no  special facility to privately communicate with each other)  could cause
+```
+• Section 2.1: interesting system model & "epoch" (each epoch has rounds in n?)
+• Agreement, randomness/bias, secure (bounding bias)
+• Section 3 (generalization to s processors): s(n), c(n), ɛ-consistent, t-secure
+• Idea (given half are faulty): 2 lower bound results (general?) & 1 upper bound result (for a specific protocol)
+
+63. A Lower Bound for Adaptively-Secure Collective Coin Flipping Protocols
+https:/link.springer.com/content/pdf/10.1007/s00493-020-4147-4.pdf
+```
+• 
+• 
+• 
+```
+• 
+• 
+• 
+• 
+
+64. Can a Public Blockchain Keep a Secret?
+https://eprint.iacr.org/2020/464.pdf
+• Algorand's player replaceability
+• Mobile adversary
+• PSS (proactive secret sharing) -> DPSS (dynamic, committee formation as external input) -> ECPSS (evolving-committee, committee formation explicit)
+• Can tolerate up to f = 1 - sqrt(0.5) ~= 0.29
+• Nominating committee (only nominates/dictates evolving-committee) & holding committee (share from previous epoch's node i is "transferred" to current epoch's node j)
+• "Target-anonymous channel" issue: doesn't seem target-anonymous b/c nominating committee as trusted setup?!
+• Use of ephemeral & long-term keys
+• Idea: VRF lottery -> nominating committee -> each nominates -> shares of each share are broadcast ("handover" protocol) -> new node calculates a new share
+• Idea2 (handover): individuals poly form group poly not by addition (a la DKG) but by Lagrange(!)
+• Applications: blockchain checkpointing (via one signature), cross-blockchain token bridge (from blockchain checkpointing), cryptography-aaS
+
+65. Random-Index PIR and Applications
+https://eprint.iacr.org/2020/1248.pdf
+```
+• The  other  line  of  work,  which  was  the  original  motivation  for  our  work,  uses  RPIR  toimprove on the recent work of Benhamoudaet  al.(TCC’20) for maintaining secret values onpublic blockchains.  Their solution depends on a method for selecting many random public keysfrom a PKI while hiding most of the selected keys from an adversary.  However,  the methodthey proposed is vulnerable to a double-dipping attack, limiting its resilience.  Here we observethat  a  RPIR  protocol,  where  the  client  is  implemented  via  secure  MPC,  can  eliminate  thatvulnerability.   We  thus  get  a  secrets-on-blockchain  protocol  (and  more  generally  large-scaleMPC), resilient to any fractionf <1/2 of corrupted parties, resolving the main open problemleft from the work of Benhamoudaet al
+• We achieve more gains by usingbatch  RPIRwhere multipleindexes  are  retrieved  at  once
+• PIR  was  introduced  by  Chor  et  al.   [5]  who  described  a  solutionwith multiple non-colluding servers; a single-server solution was first described by Kushilevitz andOstrovsky
+• In this work we consider a similar setting, but with a twist.  Rather than a specific index, in oursetting the client wishes to retrievea random indexfrom the database, without the server learningwhich index was retrieved. Namely, instead of the indexibeing an input to the protocol, we considerit an output, and require that it be random.  We call such a scheme random-index PIR (RPIR)
+• every RPIRprotocol can be converted into a PIR protocol with only slightly more communication and rounds
+• A drawback of the BGG+ scheme is that, in order to guarantee an honest majority within thecommittees, it can only tolerate up to about 1/4 corruptions overall.  The reason is that committee-selection is done by individual parties, who “nominate” members to the new committee by drawingtheir public keys from a list and then re-randomizing them.  This nomination style enables a double-dipping adversarial strategy:  corrupted parties can always nominate other corrupted parties, whilehonest  parties  nominate  randomly  selected  parties  (so  they  too  sometimes  nominate  corruptedparties by chance)
+• MPC: Nominate(n-public keys, randomness) =kre-randomized keys
+• This is where RPIR comes in.  The only role that the input plays in theNominatefunction is ofa database from which we chooseknrandom entries.  We therefore employ a variant of MPC-in-the-head,  letting  previous  committees  play  the  role  of  the  RPIR  client  while  each  committeemember individually plays the role of the RPIR server
+• Benhamoudaet al.(BGG+) proposed in [2] one approach using a “nomination” process. First, anominating committee is established using standard tools (such as VRFs, or by solving moderatelyhard  puzzles).   Then,  every  (honest)  nominatorpchooses  another  random  partyq,  looks  up  itspublic key, and broadcasts a re-randomized version of that key.  This lets everyone send messagestoq, without the adversary knowing who the recipient is.  As pointed out in the introduction, aside-effect of this nomination technique is that the adversary knows the identity of the nomineeifeitherthe  nominatororthe  nominee  is  corrupt.   So,  if  overall  only  some  fractionfof  theparties are corrupt, the adversary will know the identities of aroundf+ (1−f)fof the committeemembers.  This doubling is unfortunate; it implies that honest majority among the nominees (whichis crucial for secure computation with guaranteed output delivery), requires that the overall fractionis bounded by somef <0.29
+```
+• Idea: using (via RPIR = random-index PIR) previous committee as nominating committee
+• 0.29 (previously): b/c f + (1 - f) * f < 0.5 -- "double-dipping" strategy by an adversary
+
+66. Encryption to the Future: A Paradigm for Sending Secret Messages to Future (Anonymous) Committees
+https://eprint.iacr.org/2021/1423.pdf
+```
+• In  this  work,  we  lookat  this  challenge  as  an  important  problem  on  its  own  and  initiate  thestudy of Encryption to the Future (EtF) as a cryptographic primitive
+• First,  we  define  a  notion  of  anon-interactiveEtF  scheme  where  timeis  determined  with  respect  to  an  underlying  blockchain  and  a  lotteryselects parties to receive a secret message at some point in the future.While  this  notion  seems  overly  restrictive,  we  establish  two  importantfacts: 1. if used to encrypt towards parties selected in the “far future”,EtF implies witness encryption for NP over a blockchain; 2. if used toencrypt  only towards  parties  selected in  the  “near future”,  EtF  is  notonly  sufficient  for  transferring  state  among  committees  as  required  byprevious works, but also captures previous tailor-made solutions. To cor-roborate these results, we provide a novel construction of EtF based onwitness encryption over commitments (cWE), which we instantiate froma number of standard assumptions via a construction based on genericcryptographic primitives. Finally, we show how to use “near future” EtFto obtain “far future” EtF with a protocol based on an auxiliary com-mittee whose communication complexity isindependentof the length ofplaintext messages being sent to the future
+• The task of sending secret messages to a committee member that will be electedin  the  future  can  be  abstracted  asrole  assignment
+• Once  (R,pkR)  is  known,every party has a target-anonymous channel toPiand is able to encrypt underpkRand  post  the  ciphertext  on  the  blockchain.  Notice  that  using  time-lockpuzzles (or time-locked commitments/encryption) is not sufficient for achievingthis notion, since only the party(ies) elected for a role should receive a secret message  encrypted  for  that  role,  while  time-lock  puzzles  allow  any  party  torecover the message if they invest enough computing time
+• A shortcoming of the approaches of [BGG+20,GHK+21,GHM+21] is that, be-sides an underlying blockchain, they require an auxiliary committee to aid in gen-erating (skR,pkR) and selectingPi; More-over, these approaches have another caveat: they can only be used to selectPito act asRaccording to a probability distributionalready knownat the time theauxiliary committee outputs (R,pkR). Hence, they only allow sending messagesto future committees that have beenrecentlyelected. Later we explicitly con-sider this weaker setting—where we want to communicate with a “near-future”committee (i.e., whose distribution is known)—and dub it “Encryption to theCurrent Winner4” (ECW)
+• A novel construction of Encryption to the Current Winner (ECW),i.e.EtFwhere the receiver of a message is determined by thecurrentstate of theblockchain,  which  can  be  instantiatedwithout  auxiliary  committeesfromstandard assumptions via a construction based on generic primitives; A transformation from ECW to EtF through an auxiliary committee holdingasmallstate, i.e., with communication complexityindependentof plaintextsize|m|(in contrast to [BGG+20,GHK+21,GHM+21] where a committee’sstate grows with|m|)
+• We show that it is possible toconstruct a fully non-interactive ECW scheme from standard assumptions only.Our  construction  relies  on  a  milder  flavor  of  witness  encryption,  Witness  En-cryption over Commitments (cWE) in Section 4 . This primitive is significantlymore restricted than full-fledged WE (see also discussion in Remark 1), but stillpowerful  enough:  we  show  in  Section  5.1  that  ECW  can  be  constructed  in  ablack-box manner from cWE, which in turn can be constructed from oblivioustransfer and garbled circuits (Appendix C). This construction improves over theprevious results [BGG+20,GHK+21,GHM+21] since it does not rely on auxiliarycommittees
+• How our transformation from ECW to EtFworks: we associate each role in the future to a unique identity of an IdentityBased Encryption scheme (IBE); to encrypt a messages towards a role we applythe encryption of the IBE scheme. When, at any point in the future, a partyfor that role is selected, a committee generates and delivers the correspondingsecret key for that role/identity. To realize the latter step, we apply YOSO MPCinstantiated from ECW as shown in Section 6. In contrast to previous schemes,our  auxiliary  committee  only  needs  to  hold  shares  of  the  IBE’s  master  secretkey and so it performs communication/computation dependent on the securityparameter but not on the length/amount of messages encrypted to the future
+• WE over commitments.The work of [BL20] (MrNISC) defines a specific restric-tion  of  witness  encryption,  called  “Witness  Encryption  for  NIZK  of  Commit-ments”. In their setting, parties first commit to their private inputs once andfor all. Later, an encryptor can produce a ciphertext so that any party with acommitted input that satisfies the relation (specified at encryption time) can de-crypt. More accurately, who can decrypt is any partywith a NIZK showing thatthe  committed  input  satisfies  the  relation
+• Non-Interactive—Using  Witness  Encryption  [GGSW13]:  One  trivial  ap-proach  to  realize  EtF  is  to  use  full-fledged  general  Witness  Encryp-tion [GGSW13] (WE) for the arithmetic relationRbeing the lottery pred-icate  such  that  the  party  who  holds  a  winning  secret  keyskcan  de-crypt  the  ciphertext.  However,  constructing  a  general  witness  encryptionscheme [GGSW13] which we can instantiate reliably is still an open problem
+• Remark 1  (Comparing cWE and WE).We observe that cWE is morally weakerthan standard WE because of its deterministic flavor. In standard WE we en-crypt without having any “pointer” to an alleged witness, but in cWE it requiresthe witness to be implicitlyknownat encryption time through the commitment(to  which  it  is  bound).  That  is  why—as  for  the  weak  flavors  of  witness  en-cryption in [BL20]—we believe it would be misleading to just talk about WE.This is true in particular since we show cWE can be constructed from standardassumptions  such  as  oblivious  transfer  and  garbled  circuit
+• [BGG+20]  proposed  the  idea  of  using  a  “nomination”  process,  where  anominating  committee  chooses  a  number  of  random  partiesP,  look  up  theirpublic keys, and publish a re-randomization of their key. This allows everyoneto send messages toPwhile keeping their anonymity. The work of [BGG+20]answered this question differently by delegating the nomination task to the previ-ous committees without requiring a nominating committee. That is, the previouscommittee runs a secure-MPC protocol to choose a random subset of public keys,and broadcasts the rerandomization of the key
+```
+• EtF (Encryption to the Future) vs ECW (Encryption to the Current Winner, e.g. ECPSS & RPIR)
+• (ECW, EtF) = (non-interactive, interactive)
+• Figure 1: comparison chart
+• Non-interactive EtF <=> WE (witness encryption)
+• cWE (WE over commitments) => ECW => interactive EtF (this paper)
+• TIBE (threshold IBE): function to go from msk_i to sk_i
+• cWE (2 constructions): MS-NISC (multi-sender non-interactive secure computation) & OT + garbled circuits
+• Key: definition of cWE includes a predicate circuit function (e.g. lottery)
+• Idea (ECW from cWE): need commitments (initial setup phase) of private keys a la cWE
+• Section 5.1: ECW from cWE
+• Section 7.1: EtF from TIBE
+• In ECW (key generation already at encryption): decryption's sk = lottery's sk
+• In EtF (key generation after encryption): decryption's sk (from TIBE) != lottery's sk (long-term key)
+• Committee & plaintext length criticisms are weird?
+
+67. YOSO: You Only Speak Once Secure MPC with Stateless Ephemeral Roles
+https://eprint.iacr.org/2021/210.pdf
+• YOSO also has private channels (target-anonymous channels via encrypted!) unlike Algorand?
+• RA (role assignment) & RX (role execution)
+• Paper focuses on RX
+• One information-theoretic construction (based on BGW) & one computational construction (based on Beaver triples)
+• Random (as opposed to chosen) corruptions b/c roles (vs machines)?
+• UC discussions
+
+68. OptRand: Optimistically Responsive Distributed Random Beacons
+https://eprint.iacr.org/2022/193.pdf
+```
+• In this work, we design an efficient unpredictable synchronous random beacon protocol, OptRand, with quadratic(in the numbernof system nodes) communication complexity per beacon output.  First, we innovate by employinga novel combination of bilinear pairing based publicly verifiable secret sharing and non-interactive zero-knowledgeproofs to build a linear (inn) sized publicly verifiable random sharing. Second, we develop a state machine replicationprotocol  with  linear-sized  inputs  that  is  also  optimistically  responsive,  i.e.,  it  can  progress  responsively  at  actualnetwork speed during optimistic conditions, despite the synchrony assumption, and thus incur low latency
+• Finally, protocols such as RandPiper [8] offer optimal resilience to faults, reconfiguration-friendliness and quadraticcommunication complexity in the best case (when there areO(1)number of faults).  However, they output a beaconvalue every11∆time (where∆is the synchronous communication delay bound) and are communication-inefficientwhen the number of faultst=O(n)
+• OptRand is a bias-resistant and unpredictable random bea-con, with anO(κn2)communication complexity and tolerating one-half Byzantine faults in a synchronous network.In fact, under optimistic conditions when the number of faults are< n/4and a “leader” is honest, the protocol isresponsive, i.e., it advances at the speed of the network, thus achieving low latency
+• RandPiper [8] uses erasure coding and cryp-tographic accumulators along with waiting forΩ(∆)time to check for possible misbehavior from the current leader toefficiently propagate large messages. In OptRand, we design a new technique to efficiently propagate large messageswithout checking for misbehavior from the current leader; hence, do not requireΩ(∆)wait to ensure propagation
+• Instantiating bulletin boards using Byzantine Consensus primitivestrivially incursO(κn3). Moreover, both protocols use a variant of threshold setup and thus lack a reusable setup
+• Recently, Das et al. proposed SPURT [20] in the partial synchronous model with perfect unpredictability, reusablesetup and responsiveness and an alwaysO(κn2)communication.  They use aggregatable PVSS scheme to combinet+ 1PVSS vector in each round and provide perfect unpredictability withO(κn2)communication
+• With respect to the communication complexity, the state-of-the-art synchronous BFT SMR protocols [1, 3, 47, 5, 6]incur quadratic communication per consensus decision while using threshold signatures. Without threshold signatures,they incur cubic communication per consensus decision.  To the best of our knowledge, the only optimally resilientprotocol  to  achieveO(κn2)communication  without  threshold  signature  is  BFT  SMR  protocol  of  RandPiper  [8].However, their protocol is not responsive even under optimistic conditions and commits a decision every11∆time
+• Oursis the first work that achieves simultaneity under synchrony assumption withO(κn2)communication while avoidingthreshold signatures
+• Such a protocol is not yet a complete solution, as it misses two important factors. First, the honest nodes can output⊥whenLis Byzantine. Secondly, we also need to implement the broadcast channel using an SMR with the constraintthat the communication complexity cannot exceedO(n2)in an epoch.  We will address both of these factors in thenext section
+• In that direction, our decomposition proofs can be used to crowd-sourcing the input randomness.  A NIST clientcan submit a sharing to any node in the system, and the node will provide a decomposition proof proving that its shareis included in its beacons.  Now all applications that trust only NIST’s source of randomness can select blocks whichinclude sharings from NIST only.  This feature is made possible with the introduction of decomposition proofs.  Thiscan be recursively used to form large trees of sharing where in every level, the node proves to its children that its sharewas included
+• The underlying SMR protocol includes an optimistic path that can make progress at the network speed i.e., inO(δ)time during optimistic condition when the leader and>3n/4nodes behave honestly. Under standard conditions, i.e.,when only> n/2nodes behave honestly, the SMR protocol makes progress inΩ(∆)time.  We follow the optimisticresponsive paradigm of OptSync
+• In this paper, we propose a new technique that allows us to responsively make decision and change leaders withoutrelying on equivocation detection.   We modify RandPiper in the following manner:  First,  we use(n,⌊n/4⌋+ 1)RS codes to encode large messages (in the Deliver primitive in Fig. 3).  This allows decoding with⌊n/4⌋+ 1codewords at the expense of doubled code word size.  Second, a node sends a responsive vote to the leader as soon as itreceives a valid block proposal
+• If nodepkfails to join the system, it restarts reconfiguration process again after some time
+```
+• Sync assumption vs Spurt's partial sync assumption
+• Basically Spurt with a variant of RandPiper's Deliver()?
+• Even has Spurt's new beacon output multicast (but "aggregated secret" where beacon output = hash of agg secret)
+• Improvements over Spurt: BFT SMR a la RandPiper (using erasure coding & acc), buffering, discrete log PoK (to prevent the leader from canceling encrypted shares), reconfiguration protocol
+• Operates at network speed during optimistic (> 3n/4 honesty), Ω(Δ) otherwise
+• Figure 2: warm up beacon
+• Figure 4: actual beacon
+• Figure 6: reconfiguration protocol
+• Decomposition proof = list of individual NIZKs (DLPoKs)? -- can be used as proof of inclusion?
+• Equations 3 & 4 should be multiplication
+• RR leader selection
+
+69. Aggregatable Distributed Key Generation
+https://eprint.iacr.org/2021/005.pdf
+• Idea: using Scrape's PVSS for DKG -> tailored for gossip protocol (need to keep track of weights) b/c homomorphic
+• Per-node communication complexity: send O(n)-sized msg to O(log n) nodes & O(1)-sized msg to O(n) nodes; O(n^2) -> O(n log^2 n) (local) verifier complexity
+• Multi-round: gossip is expected to terminate after O(log n) rounds
+• Always O(n)-sized transcript via aggregation instead of O(n^2)
+• PVSS yields a group element (not a field element) -> their new VUF construction takes group element as input
+• New DKG security: robust & security-preserving
+• Key-expressable DKG => rekeyable xyz (e.g. encryption, signature, VUF) turns out to be secure => security-preserving DKG
+• Threshold Schnorr is not rekeyable though
+• SoK(?!): signature of knowledge
+• Issues: log n Byzantine assumption (strong assumption); still relies on broadcast to achieve consensus on the final transcript
+
+70. Proof-of-Stake Mining Games with Perfect Randomness
+https://arxiv.org/pdf/2107.04069.pdf
+• α^{PoW} ≒ 0.329 (optimal selfish mining)
+• α^{PoS_no_perfect_randomness} = 0?!
+• Idea: α^{PoS} < 0.325 < α^{PoW}
+• Idea2 (randomness beacon helps): α^{PoS} >= 0.308
+• PoS model: lottery is independent of last/current blocks (NaS = nothing at stake) <-> PoW
+• Assumes slashing (one published block per timestamp)
+• Block tree(!): including forks, etc.
+• Payoff: defined using strategy, lim inf, expectation
+• Figure 1: "NaS selfish mining" attack shown to be different from PoW selfish mining
+• MDP (Markov Decision Process) used to prove
+• Overall: basically selfish mining in their PoS model
+
+71. Fair and Robust Multi-Party Computation using a Global Transaction Ledger
+https://eprint.iacr.org/2015/574.pdf
+• Fairness and robustness (<-> DoS)
+• Constant # rounds instead of linear (from previous)
+• Clock and ledger as global functionality
+• G-hybrid world/protocol
+• Ethereum implementation rather than Bitcoin
+• Correlated randomness model
+• Various wrappers as ideal functionality to add some features
+• 3 predicates for Q-robust (which implies Q-fair)
+• Q-robust: Q-fairness wrapper + guaranteed termination (implying immediate message delivery?) via counter
+• IOZ compiler (previous work from 2014): \pi_{semihonest} -> \pi_{malicious} -- MPC with publicly identifiable abort
+• Idea: modified IOZ compiler (w judge) + fair compensation mechanism (post proof to claim txn by others) + "island" technique (robustness?)
+
+72. A New Look at Blockchain Leader Election: Simple, Efficient, Sustainable and Post-Quantum
+https://eprint.iacr.org/2022/993.pdf
+• Committing to Caucus-like private seed chain & ephemeral keys (as per forward secrecy) via Merkle tree
+• Main goal: post-quantum & efficient
+• iVRF: indexed VRF
+
+73. Formal Barriers to Longest-Chain Proof-of-Stake Protocols
+https://par.nsf.gov/servlets/purl/10140261
+• 2 properties for any PoS: predictability & recency
+• PoW selfish mining (SM) vs locally predictable SM vs globally predictable SM
+• In theory: could be lower t (block timestamp) but higher S (score of a block, e.g. length as per longest chain)
+• Undetectable NaS
+• D-recent (think of Algorand) roughly means "pseudorandomness depending on fork" so undetectable NaS works(?) vs globally predictable roughly means not dependent on fork (think of H(t, c) < T) so can't even do undetectable NaS(?)
+• Take note of c_B definition (such that a coin wins every block)
+
+74. Non-interactive distributed key generation and key resharing
+https://eprint.iacr.org/2021/339.pdf
+• New CCA-secure multi-recipient pk encryption with forward secrecy using pairings and chunking
+• Idea (chunking): better NIZK this way
+• BTE (binary tree encryption): encrypting to the leaves (overall similar to HIBE)
+• BTE (smaller id space) vs HIBE (arbitrary string)
+• Multi-receiver encryption is 5x faster than repeating single-receiver (b/c shared randomness)?
+• Idea: basically DKG using PVSS (hence non-interactive), but field element!
+• ∃proof of correct encryption & proof of correct chunking (better than expensive range proofs)
+• f = Σ λᵢfᵢ by default -- to account for resharing scheme as well
+• Threshold BLS: relaxed dynamic security
+• If adversary gets decryption keys, then proactive security no use (right?)
+
+https://eprint.iacr.org/2020/521.pdf
+http://ieee-focs.org/FOCS-2020-Papers/pdfs/FOCS2020-SFPLmbQgSLgOwZlanGgzq/962100b268/962100b268.pdf
+https://link.springer.com/content/pdf/10.1007/s00493-020-4147-4.pdf
+https://eprint.iacr.org/2009/214.pdf
+https://www.cs.yale.edu/homes/aspnes/papers/stoc97-proceedings.pdf
+https://www.cs.purdue.edu/homes/hmaji/papers/KMMW20.pdf
+https://arxiv.org/pdf/2105.00743.pdf
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Universal
+Blum-Micali & BBS
+Chameleon sig?
+Min-entropy
+OWF => PRG (BM) => PRF (GGM) => PRP (LR = Feistel) -- converse is also true?!
+OWF, OWP, TDP (trapdoor permutation)
+BG (Blum-Goldwasser): asymmetric encryption a la BBS
+Non-uniform PPT & advice string
+IND-CPA (game-based) vs semantic security (simulation-based)
+
+Semantic security => not deterministic
+Hardcore bit/predicate
+Goldreich-Levin construction
+Hybrid argument & poly-many distributions
+Left-or-right indistinguishability ~= IND-CPA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+https://eprint.iacr.org/2022/542.pdf
+https://people.cs.georgetown.edu/jthaler/ProofsArgsAndZK.pdf
+
+
+Joseph Bonneau
+  15:42
+Related to Narwhal-RX: https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html
+
+
+Joseph Bonneau
+  16:00
+MPC impossibility results: https://eprint.iacr.org/2015/574.pdf
+
+https://eprint.iacr.org/2022/823
+https://arxiv.org/pdf/2004.01939.pdf

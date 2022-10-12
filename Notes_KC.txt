@@ -119,7 +119,6 @@ https://eprint.iacr.org/2016/1067.pdf
 • 512 distributed servers -> 32 groups -> every 6 seconds
 • Schoenmakers PVSS
 • TSS (threshold Schnorr sig) & CoSi (collective signing = multisig aggregation + communication tree)
-• TSS: VSS (+ additional VSS for short-term secret / random number) -> sign with poly share of secret -> reconstruct via Lagrange?
 • RandShare: quasi-DKG but BA (Byzantine agreement) & computes all individual secrets (from individual poly) to compute group secret (sum of indiv secrets)
 • RandHound: PVSS groups (parallel PVSS within groups); final random = product of PVSS secrets (Schnorr only for intermediary steps)?!
 • RandHound - sharding but retain leadership = SPURT (a la SecRand more than Scrape)
