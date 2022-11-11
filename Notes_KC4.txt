@@ -222,6 +222,19 @@ https://www.iacr.org/archive/crypto2010/62230210/62230210.pdf
 • Commitment to commitments idea: field elements -> Pedersen commitments -> one commitment (via commitment to group elements)
 • Some other terms: blind signature, anonymous proxy signature, automorphic signature, randomization techniques
 
+76. Threshold Structure-Preserving Signatures
+https://eprint.iacr.org/2022/839.pdf
+• Indexed msg: (id, m) pair where id is injectively derived from m
+• Proof ideas (Figure 7): (2, 1)-DL, AGM, ROM, variant of generalized Pointcheval-Sanders assumption
+• Lineage: Pointcheval-Sanders (PS) signature (short/randomizable sig) -> Ghadafi (short SPS) -> TSPS (this paper, loses randomizability?)
+• PS sig: BLS alternative?!
+• H: still needs random oracle (id to group element) to sign, but the claim is that verifier doesn't need to invoke it -> structure-preserving!
+• Structure-preserving idea: message / verification procedures need to be group elements (not field); "what if message is already a group element?" -> SPS
+• IM-SPS (indexed msg)
+• IMM-SPS (indexed multi-message)
+• TSPS: need to turn SPS into a threshold scheme -> there's a random r factor that interferes with Lagrange interpolation -> indexed msg
+• Open: TSPS without indexing
+
 https://eprint.iacr.org/2020/521.pdf
 http://ieee-focs.org/FOCS-2020-Papers/pdfs/FOCS2020-SFPLmbQgSLgOwZlanGgzq/962100b268/962100b268.pdf
 https://link.springer.com/content/pdf/10.1007/s00493-020-4147-4.pdf
