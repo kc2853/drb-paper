@@ -215,6 +215,13 @@ https://eprint.iacr.org/2021/339.pdf
 • Threshold BLS: relaxed dynamic security
 • If adversary gets decryption keys, then proactive security no use (right?)
 
+75. Structure-Preserving Signatures and Commitments to Group Elements
+https://www.iacr.org/archive/crypto2010/62230210/62230210.pdf
+• 3 contributions: commitment to group elements (instead of field); SPS (structure-preserving signature); SPS on vector (but constant-size)
+• Bilinear pairing setting
+• Commitment to commitments idea: field elements -> Pedersen commitments -> one commitment (via commitment to group elements)
+• Some other terms: blind signature, anonymous proxy signature, automorphic signature, randomization techniques
+
 https://eprint.iacr.org/2020/521.pdf
 http://ieee-focs.org/FOCS-2020-Papers/pdfs/FOCS2020-SFPLmbQgSLgOwZlanGgzq/962100b268/962100b268.pdf
 https://link.springer.com/content/pdf/10.1007/s00493-020-4147-4.pdf

@@ -243,6 +243,8 @@ https://eprint.iacr.org/2015/1015.pdf
 
 18. Homomorphic Encryption Random Beacon
 https://eprint.iacr.org/2019/1320.pdf
+• CE NIZK: "I know m such that g^m"
+• Q. the beacon output M is a random point, so how to extract M's discrete log (for a random number)?
 
 19. SPURT: Scalable Distributed Randomness Beacon with Transparent Setup
 https://eprint.iacr.org/2021/100.pdf
