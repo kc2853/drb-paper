@@ -11,6 +11,9 @@
 72. A New Look at Blockchain Leader Election: Simple, Efficient, Sustainable and Post-Quantum
 73. Formal Barriers to Longest-Chain Proof-of-Stake Protocols
 74. Non-interactive distributed key generation and key resharing
+75. Structure-Preserving Signatures and Commitments to Group Elements
+76. Threshold Structure-Preserving Signatures
+77. Simple, Fast, Efficient, and Tightly-Secure Non-Malleable Non-Interactive Timed Commitments
 
 62. Limits on the Security of Coin Flips When Half the Processors are Faulty
 https://dl.acm.org/doi/epdf/10.1145/12130.12168
@@ -234,6 +237,15 @@ https://eprint.iacr.org/2022/839.pdf
 • IMM-SPS (indexed multi-message)
 • TSPS: need to turn SPS into a threshold scheme -> there's a random r factor that interferes with Lagrange interpolation -> indexed msg
 • Open: TSPS without indexing
+
+77. Simple, Fast, Efficient, and Tightly-Secure Non-Malleable Non-Interactive Timed Commitments
+https://eprint.iacr.org/2022/1498.pdf
+• Main idea: Paillier cryptosystem for timed commitment (more efficient than Thyagarajan's but trusted setup)
+• 4 versions: (std model vs ROM, additive homomorphism vs multiplicative) = (0/1, 0/1)
+• So it's just the NIZKs that change from std model (∃NIZK without Fiat-Shamir!) -> ROM?
+• Lemma 2: SEI but lemma?
+• Triple Naor-Yung (needed for linear/additive homomorphism, but not multiplicative)
+• [MT19]: uses Paillier already
 
 https://eprint.iacr.org/2020/521.pdf
 http://ieee-focs.org/FOCS-2020-Papers/pdfs/FOCS2020-SFPLmbQgSLgOwZlanGgzq/962100b268/962100b268.pdf
