@@ -185,7 +185,7 @@ https://eprint.iacr.org/2020/096.pdf
 • 1. DDH-DVRF: DistKG (secret key is share on group poly) -> PartialEval (hash^secret, proof is DLEQ NIZK) -> Combine (check NIZK) -> Verify
 • 2. GLOW-DVRF: DistKG (intro of g_2 and pairing a la Neji for Verify public key later) -> PartialEval (hash^secret, NIZK) -> Combine (NIZK) -> Verify (pairing)
 • Difference in Dfinity-VRF: Combine also uses pairing to prove => less efficient
-• Side result: modified BLS (more efficient) = GLOW-DVRF - last step's hash
+• Side result: modified threshold BLS (more efficient) = GLOW-DVRF - last step's hash
 • Algorand DRB is not strongly pseudorandom?
 • Harmony: uses VDF?!
 • Verification key (vk) = g^f(i)
