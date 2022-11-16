@@ -81,7 +81,7 @@ https://allquantor.at/blockchainbib/pdf/gennaro2003revisiting.pdf
 • Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
 • Schnorr threshold sig: still secure (paper's main idea!) with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
 • "Additive" share pooling (paper uses this) vs "polynomial" share pooling
-• sk = Σ sk_i (additive): means that sk_i is reconstructed from individual poly (hence worse reusability); need all(!) sk_i to sign
+• sk = Σ sk_i (additive): means that sk_i is reconstructed from individual poly (hence worse reusability); need all(!) sk_i to sign -- not practical, but just for proof?
 • Setup: computational, communication, adversary, DL assumption, security of threshold sig, simulation proof technique, ROM
 • Generalized presentation of the 1/2 -> 3/4 attack for biasing Joint-Feldman
 • Main idea: Joint-Feldman should be good enough (even if biasing possible) for threshold sig -> ex: Schnorr threshold sig with additive pooling
