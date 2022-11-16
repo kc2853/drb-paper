@@ -77,7 +77,7 @@ https://dfinity.org/pdf-viewer/library/dfinity-consensus.pdf
 • Final signature: depends on current round number + previous number
 
 5. Gennaro's DKG Revisited paper
-http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.12.5426&rep=rep1&type=pdf
+https://allquantor.at/blockchainbib/pdf/gennaro2003revisiting.pdf
 • Gennaro's DKG (with Pedersen-VSS): secure but twice more expensive
 • Schnorr threshold sig: still secure (paper's main idea!) with Ped-DKG (which uses Feldman-VSS); using 2 DKGs (b/c temp secret key) -> signature
 • "Additive" share pooling (paper uses this) vs "polynomial" share pooling
