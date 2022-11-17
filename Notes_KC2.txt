@@ -253,7 +253,7 @@ https://eprint.iacr.org/2020/644.pdf
 • Some broaching of UC framework
 • LDEI (low degree exponent interpolation) with {constant polynomial, constant generator (i.e. Local_LDEI)} = {DLEQ, Scrape's share verification a la dual code of RS}
 • Idea (share distribution verification != reconstruction verification): Scrape's O(n) exponentiations from O(nt) to verify n shares a la batching (need separate generator g, g^share, Local_LDEI, DLEQ) -> LDEI (no need for g, g^share, Local_LDEI, DLEQ) at the cost of "loose" polynomial p potentially?
-• Reconstruction verification of PPVSS (packed PVSS): uses Local_LDEI
+• Reconstruction verification of PPVSS (packed PVSS): uses DLEQ & Local_LDEI
 • Figure 8 & 9: Albatross protocol
 • Subset selection (i.e. distributed computation protocol) if PVSS recovery: for reducing computational complexity
 
