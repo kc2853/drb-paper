@@ -199,7 +199,7 @@ https://eprint.iacr.org/2021/1096.pdf
 • The  third  tier  of  Mt.  Random  outputs  pseudorandom  val-ues  that  may  be  biased  by  the  adversary  up  to  a  certainupper  bound.  While  this  sort  of  biased  randomness  findsless applications than unbiased pseudorandomness or uniformrandomness, it is still sufficient for important applications suchas selecting block creators in Proof-of-Stake based blockchains(e.g.Ouroboros Praos [18]). In fact, we instantiate Tier 3 withthe  VRF  and  VRF-based  beacon  protocols  from  OuroborosPraos, which are secure under the CDH assumption (impliedby  DDH).  However,  differently  from  the  original  Ouroboros Praos  beacon,  which  seeds  each  of  its  execution  with  theoutput  of  its  last  execution,  we  seed  this  protocol  with  anoutput from Tier 2. This crucial difference has the advantageof reducing the potential adversarial bias in Tier 3 outputs
 ```
 • 3 tiers: PVSS -> TVRF (= DVRF) -> VRF
-• Idea1: DKG using PVSS (instead of VSS) for public verifiability
+• Idea1: DKG using PVSS (instead of VSS) for public verifiability -- used for GULL (Tier 1) & Tier 2
 • Idea2 (GULL): Albatross but gradual release (one row of t-resilient matrix M at a time); uses threshold encryption (but using Lagrange to aggregate!) & decryption
 • Figure 3: Albatross in a nutshell
 • Quality: Tier 1 > 2 (not biasable) > 3 (bounded biasable)
