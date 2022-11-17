@@ -121,7 +121,6 @@ https://eprint.iacr.org/2016/1067.pdf
 • TSS (threshold Schnorr sig) & CoSi (collective signing = multisig aggregation + communication tree)
 • RandShare: quasi-DKG but BA (Byzantine agreement) & computes all individual secrets (from individual poly) to compute group secret (sum of indiv secrets)
 • RandHound: PVSS groups (parallel PVSS within groups); final random = product of PVSS secrets (Schnorr only for intermediary steps)?!
-• RandHound - sharding but retain leadership = SPURT (a la SecRand more than Scrape)
 • RandHerd: RandHound for random permutation?; TSS-CoSi; group leader vs cothority; final random = Schnorr sig on timestamp
 
 9. Scrape paper (Cardano?)
@@ -248,6 +247,7 @@ https://eprint.iacr.org/2019/1320.pdf
 
 19. SPURT: Scalable Distributed Randomness Beacon with Transparent Setup
 https://eprint.iacr.org/2021/100.pdf
+• SecRand with a leader
 
 20. Random Oracles in Constantinople: Practical Asynchronous Byzantine Agreement using Cryptography
 https://allquantor.at/blockchainbib/pdf/cachin2000random.pdf
