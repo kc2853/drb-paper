@@ -93,10 +93,9 @@
 \maketitle
 \thispagestyle{plain}
 \pagestyle{plain}
-% \tableofcontents
+\tableofcontents
 \begin{abstract}
     Motivated and inspired by the emergence of Proof of Stake blockchains, many new protocols have recently been proposed for generating publicly verifiable randomness in a distributed yet secure fashion. These protocols work under different setups and assumptions, use various cryptographic tools, and entail unique tradeoffs and characteristics. In this paper, we systematize the design of distributed randomness beacons (DRBs).
-    %We separate two components: selection of entropy providers and randomness generation.
     We evaluate protocols on four key security properties---unbiasability, unpredictability, liveness, and public verifiability---and discuss common attack vectors for predicting or biasing the beacon output and the countermeasures employed by protocols. We also evaluate protocols by communication and computational efficiency.
     %We start by delving into protocols where every node plays an active role contributing to the final randomness. Next, we provide an overview of techniques used to select and generate the randomness with only a subset of active nodes to improve scalability. However, this may come at the cost of diminished quality of randomness or vulnerability to biasing by an adversary.
     %We then discuss some attack vectors for predicting or biasing the beacon and the countermeasures employed by protocols.
@@ -107,10 +106,10 @@
 Public, trustworthy randomness has been a useful tool for millennia, dating at least to the earliest known use of dice around 3000 BCE. Today, periodic public randomness is crucial to applications including gambling and lotteries~\cite{bonneau2015bitcoin}, electronic voting~\cite{adida2008helios}, selecting parameters for cryptographic protocols~\cite{baigneres2015trap, lenstra2015random}, leader election in Proof of Stake protocols~\cite{gilad2017algorand, kiayias2017ouroboros}, and blockchain sharding~\cite{al2017chainspace, kokoris2018omniledger}. The concept of a \emph{randomness beacon} was first formalized by Rabin~\cite{rabin1983Rabin} to describe an ideal service that emits fresh random numbers at regular intervals in a way that no party can manipulate. Because no such ideal beacon exists, various protocols are used to approximate this beacon functionality for practical use.
 %solutions ranging from centralized approaches (relying on a single source or organization) to distributed approaches (decentralizing the randomness generation among a set of nodes) are used to approximate it.
 
-\textbf{Centralized Beacons.} Relying on a trusted third party like NIST~\cite{fischer2011public} or random.org~\cite{haahr2010random} might be the simplest way to realize a beacon. It carries drawbacks typically associated with centralized services, such as the risk of compromise or misbehavior and the inability of the end user to verify the correctness of the beacon.
+\textbf{Centralized Beacons.} Relying on a trusted third party like NIST~\cite{fischer2011public,kelsey2019reference} or random.org~\cite{haahr2010random} might be the simplest way to realize a beacon. It carries drawbacks typically associated with centralized services, such as the risk of compromise or misbehavior and the inability of the end user to verify the correctness of the beacon.
 %For this reason, it is strongly desirable to construct a beacon with no trusted party or central point of failure.
 
-\textbf{Public Implicit Beacons.} Another approach is to construct a beacon using publicly available implicit sources of entropy such as stock market data~\cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin~\cite{nakamoto2008bitcoin, bentov2016bitcoin,bonneau2015bitcoin, han2020randchain}. However, these entropy sources are potentially vulnerable to malicious insiders (e.g. high-frequency traders making unnatural trades to fix stock prices, financial exchanges blocking trades or reporting incorrect data, miners that can withhold blocks or choose between colliding blocks, etc.). The entropy of these sources can also be difficult to precisely measure. While potentially secure and low-cost in practice, we will not discuss these approaches in detail in this survey.
+\textbf{Public Implicit Beacons.} Another approach is to construct a beacon using publicly available implicit sources of entropy such as stock market data~\cite{clark2010use} or Proof of Work (PoW) blockchains like Bitcoin~\cite{nakamoto2008bitcoin, bentov2016bitcoin, bonneau2015bitcoin, han2020randchain}. However, these entropy sources are potentially vulnerable to malicious insiders (e.g. high-frequency traders making unnatural trades to fix stock prices, financial exchanges blocking trades or reporting incorrect data, miners that can withhold blocks or choose between colliding blocks, etc.). The entropy of these sources can also be difficult to precisely measure. While potentially secure and low-cost in practice, we will not discuss these approaches in detail in this survey.
 
 \textbf{Distributed Randomness Beacons.}
 A natural approach to reduce complete trust in a centralized beacon is to use a distributed beacon protocol capable of gracefully handling a minority of Byzantine participants and a potentially untrusted network. We call a beacon realized in this manner a \textit{distributed randomness beacon} (DRB). DRB protocols are typically round-based, producing a fresh random output in each round.
@@ -204,16 +203,7 @@ Thyagrajan et al.~\cite{thyagarajan2021opensquare} recently proposed a protocol 
 We quickly note a variation of above: as proposed in~\cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices~\cite{clark2010use} or PoW blockchains~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_r$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
 Unfortunately, they do not easily compare to other DRBs, as the security model depends on the cost of manipulating the external beacon, which has not yet been formally analyzed.
 
-% \iffalse
-% \subsection{Extending Public Randomness}
-% As proposed in~\cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices~\cite{clark2010use} or PoW blockchains~\cite{bonneau2015bitcoin} which are otherwise susceptible to manipulation can also be used to supply $seed_r$ via
-% $$y_r, \pi_r = \mathsf{VDF.Eval}(pp, seed_r)$$
-% where $seed_r = H(e_r)$ with $e_r$ denoting the output of a public implicit beacon.
-
-% Adding a VDF prevents miners (or any other party) from determining the beacon output (and deciding whether to withhold/manipulate) before $T$, at which point it is already too late to attack as the beacon would have moved on to the next round with another $seed_r$. For PoW blockchains, this results in the miner to lose the block reward as well as any influence on the beacon. A sufficiently long $T$ also increases the attack cost significantly as changing the block at that point would require a deeper fork of the network.
-% \fi
-
-%TODO: need to add Thyagarajan protocol\cite{Thyagarajan21timedcommitments}
+% TODO: need to add Thyagarajan protocol\cite{Thyagarajan21timedcommitments}
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
@@ -310,7 +300,8 @@ Despite the benefits of the threshold nature and constant deposits enabling a fl
 
 \section{Commit-Reveal-Recover}
 \label{section:commit-reveal-recover}
-Without an escrow to enforce desired behaviors, commit-reveal-recover variants extend commit-reveal and defend against the last-revealer attack by providing a mechanism to \textit{recover} or \textit{reconstruct} a participant's entropy contribution if withheld. This can be achieved by either threshold secret sharing or threshold encryption. Protocols based on commit-reveal-recover assume a $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while any subset of $t$ Byzantine nodes cannot collude to preemptively reconstruct. Note that there is an inherent tradeoff here: while a smaller value of $t$ provides greater tolerance to withholding, it also means that a smaller subset can collude to predict the beacon output in advance.
+Without an escrow to enforce desired behaviors, commit-reveal-recover variants extend commit-reveal and defend against the last-revealer attack by providing a mechanism to \textit{recover} or \textit{reconstruct} a participant's entropy contribution if withheld. This can be achieved by either threshold secret sharing or threshold encryption. Protocols based on commit-reveal-recover assume a $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while any subset of $t$ Byzantine nodes cannot collude to preemptively reconstruct. Note that there is an inherent tradeoff here: while a smaller value of $t$ provides greater fault tolerance, it also means that a smaller subset can collude to predict the beacon output in advance.
+% "greater honest fault tolerance"
 
 \subsection{From Threshold Secret Sharing}
 Building on $(t, n)$-secret sharing, commit-reveal-recover variants based on threshold secret sharing often use PVSS (publicly verifiable secret sharing)~\cite{schoenmakers1999simple, cascudo2017scrape} as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of sharing and reconstruction.
@@ -465,7 +456,7 @@ such that it naturally follows its committee selection mechanism $H(h_r \oplus \
 While DRBs can have all nodes or some subset of nodes contribute entropy to the beacon output every round, it is possible to devise a protocol where no node contributes any marginal entropy as the beacon runs. The advantage of this approach is that no node needs to generate and communicate any fresh entropy (which alleviates communication cost) while the disadvantage is that the entire beacon is permanently predictable once compromised (perhaps undetectably).
 
 \subsection{From Distributed Verifiable Random Function}
-Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudomt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-round VRF output (as well as its proof), as if the computation involves one hypothetical node with access to $sk$.
+Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudomt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-round VRF output (as well as its proof), as if the computation involves one master node with access to $sk$.
 
 \begin{definition}[Distributed verifiable random function]
 A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
@@ -486,7 +477,7 @@ A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ node
 \]\endgroup
 where $sk_i$ denotes each node's secret key after a DKG and $f$ denotes some deterministic function of $\mathcal{O}_{r - 1}$.
 
-The output is equivalent to one trustworthy hypothetical node with complete knowledge of $sk$ computing the output as:
+The output is equivalent to one trustworthy master node with complete knowledge of $sk$ computing the output as:
 \[
 \mathcal{O}_r = VRF_{sk}(f(\mathcal{O}_{r - 1}))
 \]
@@ -543,11 +534,12 @@ In a withholding attack, an adversary can influence the outcome by not publishin
 \cmidrule{11-12}
  & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & \xmark & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
+Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
-Unicorn++ & \multirow{3}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Unicorn++ & \multirow{4}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
 RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$\tnote{§} & \cmark & \xmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
+Narwhal & & Timed commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 \midrule
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
@@ -558,21 +550,23 @@ RandShare & & (P)VSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $
 SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
 HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
 \midrule
-HydRand & \multirow{10}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
+HydRand & \multirow{11}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
 GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
-Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias\tnote{r} & $O(n^2)$\tnote{†} \\
+BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
+Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
 SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+OptRand & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
 Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
 NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 \midrule
-drand & \multirow{4}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 \log n)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
-DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
+DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
 GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+STROBE & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
@@ -604,7 +598,7 @@ Table~\ref{table:comparison} provides an overall comparison of DRBs. \textit{Fau
 
 \textit{Verifier Complexity} refers to the computational cost for a passive node (third party) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) as a reliable information exchange medium in protocols where it is intrinsic (e.g. in blockchains). In a PBB model, we assume both the bitwise writing cost (amount of data posted to PBB) and the reading cost (by all nodes where each node only reads data relevant to it) contribute to the total cost. In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs a cost of $O(n^2)$ per decision by default.
 
-\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary can delay sending messages until \textit{after} reading messages sent by the honest nodes in any round of communication) adversarial nodes cooperate to predict or bias. In escrow-based protocols, we assume the adversaries are rational. \textit{Recovery Cost} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary can delay sending messages until \textit{after} reading messages sent by the honest nodes in a given round of communication) adversarial nodes cooperate to predict or bias. In escrow-based protocols, we assume the adversaries are rational. \textit{Recovery Cost} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
 % \iffalse
 % \subsection{Quality vs Efficiency}
 % % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective

@@ -287,3 +287,13 @@ MPC impossibility results: https://eprint.iacr.org/2015/574.pdf
 
 https://eprint.iacr.org/2022/823
 https://arxiv.org/pdf/2004.01939.pdf
+
+Notes (discussed more with one of Spurt's coauthors)
+* Algorand: n/3 (pbft)? n/2?
+* Cachin put n/3 bc async?
+* Algorand<>independent participation: technically nodes do need to know pk for msg sending and checking?
+* Bias Resistance as part of Table 1?
+* maybe rows for PoW and Cachin
+* "provable" adaptive security (apparently it's not proved that drand is adaptively secure)
+* what if NV++ committee is all Byzantine?
+* consistent w PBB in Table 1 (perhaps all PBB or none?)
