@@ -1,0 +1,78 @@
+%!TEX root = main.tex
+
+\documentclass[conference]{IEEEtran}
+% \documentclass[letterpaper,twocolumn,10pt]{article}
+% \usepackage{usenix-2020-09}
+% \usepackage[backend=bibtex,sortcites]{biblatex}
+% \addbibresource{bib.bib}
+\bibliographystyle{IEEEtranS}
+\usepackage[noadjust]{cite}
+% Language and font encodings
+% \usepackage[english]{babel}
+% \usepackage[utf8]{inputenc}
+
+% Sets page size and margins
+% \usepackage[letterpaper,margin=1.5in]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{seqsplit}
+\usepackage{indentfirst}
+\usepackage{tabu}
+\usepackage{lipsum}
+\usepackage{array}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{etoolbox}
+\usepackage{setspace}
+\usepackage{braket}
+\usepackage{enumitem}
+% start table
+\usepackage{tabularx,booktabs,multirow}
+\usepackage{diagbox}
+\newcolumntype{C}{>{\centering\arraybackslash}X} % centered version of "X" type
+\setlength{\extrarowheight}{1pt}
+\newcommand{\spheading}[2][7em]{ % \spheading[<width>]{<stuff>}
+    \rotatebox{90}{\parbox{#1}{\raggedright #2}}}
+\usepackage{pifont} % http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\usepackage{threeparttable}
+\usepackage{xspace}
+\DeclareMathOperator*{\argmin}{argmin}
+% end table
+\AtBeginEnvironment{quote}{\singlespace\vspace{1em}\small}
+\AtEndEnvironment{quote}{\vspace{1em}\endsinglespace}
+\renewcommand{\arraystretch}{1.5}
+\tabulinesep = 2mm
+% \setlist[itemize]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
+% \setlist[enumerate]{wide=0.5\parindent,itemsep=0pt,parsep=0pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{notes}{Notes}
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage[pdftex]{hyperref}
+\makeatletter
+\AtBeginDocument{
+  \hypersetup{
+    hidelinks,
+    pdftitle = {\@title},
+    pdfauthor = {\@author} }
+}
+\makeatother
+
+\usepackage{color}
