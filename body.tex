@@ -401,7 +401,7 @@ where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at le
 We summarize key properties of all protocols discussed in Table~\ref{table:comparison} and explore several practical issues with DRBs.
 
 \subsection{Relation to Collective Coin Flipping Protocols}
-Distributed randomness is not a new line of research.
+Conceptually, distributed randomness is not a new line of research.
 With its roots in Blum's classic work on coin flipping over telephone~\cite{blum1983coin}, distributed randomness has in fact been much researched albeit in a different context elaborated below.
 Namely, Ben-Or and Linial in their seminal work~\cite{ben1985collective,ben1989collective} introduced the \textit{full information} model for the \textit{collective coin flipping} problem, in which $n$ participants with unbounded computational power communicate only via a single broadcast channel to generate a common random bit (such that honest majority is required~\cite{saks1989robust,boppana2000perfect} and thus assumed).
 Numerous works exist in this setting, largely classifiable into different types of adversaries dealt with: static~\cite{ben1989collective,ajtai1993influence,kahn1989influence,saks1989robust,alon1993coin,boppana2000perfect,feige1999noncryptographic,russell1999lower}, adaptive~\cite{ben1989collective,lichtenstein1989some,goldwasser2015adaptively,dodis2000impossibility,kalai2021lower,haitner2020tight}, and variants of adaptive~\cite{mahloujifar2019can,etesami2020computational,cleve1993martingales,aspnes1998lower,goldwasser2015adaptively}.
@@ -409,14 +409,15 @@ See~\cite{kalai2021lower,haitner2020tight} for this line of research.
 
 Overall, these works concern upper and lower bounds on corruption threshold, bias (deviation from coin flipping probability 1/2), and round complexity, all of which provide interesting theoretical insights.
 Nonetheless, these bounds are often asymptotic (hence not practical) and are grounded in a more lax definition of security where it is sufficient that bias is bounded (but can still be nontrivial).
-This is in contrast to the literature on DRBs considered in this paper, where we require each protocol to be as pseudorandom as possible, outputting multi-bit, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
-The goal is to achieve functional and practical DRBs.
+This is in contrast to the literature on DRBs considered in this paper, where we require each protocol to be as pseudorandom\todo{check with definition} as possible, outputting multi-bit, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
+The goal is to achieve fully functional and practical DRBs.
 
-
+Outside the full information model (such that cryptography is allowed) and thus the honest majority assumption, the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary that can bias the output of the honest node by $\Omega(1 / r)$.
+In other words, it is impossible to have a pseudorandom\todo{check with definition} coin flipping protocol with a dishonest majority.
+While this may seem to contradict the fault tolerance of delay-based DRBs from Section~\ref{section:vdf}, we note that delay functions help circumvent Cleve's impossibility result in two ways as follows.
 
 
 \begin{enumerate}
-\item Full information model
 \item Dishonest majority (using cryptography + computationally bounded)
     \begin{itemize}
     \item Cleve lower bound~\cite{cleve1986limits}
