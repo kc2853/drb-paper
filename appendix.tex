@@ -23,8 +23,8 @@ where the protocol runs among honest participants and $\adv$ (which has access t
 % A VDF must satisfy the following three properties:
 % \begin{itemize}
 % \item $\epsilon$-evaluation time. $\mathsf{Eval}(pp, x)$ runs in time at most $(1 + \epsilon) T$, for all $x$ and all $pp$ output by $\mathsf{Setup}(\lambda, T)$.
-% \item Sequentiality. A parallel algorithm $\adv$, using at most $poly(\lambda)$ processors, that runs in time less than $T$ cannot compute the function. Specifically, for a random $x$ and $pp$ output by $\mathsf{Setup}(\lambda, T)$, if $(y, \pi) = \mathsf{Eval}(pp, x)$ then $Pr[\adv(pp, x) = y]$ is $\mathsf{negl(\lambda)}$.
-% \item Uniqueness. For an input $x$ and $T$, exactly one $y$ will be accepted by $\mathsf{Verify}$ with negligible error probability. Specifically, let $\adv$ be an efficient algorithm that given $pp$ as input, outputs $(x, y, \pi)$ such that $\mathsf{Verify}(pp, x, y, \pi) = 1$. Then $Pr[\mathsf{Eval}(pp, x) \neq y]$ is $\mathsf{negl(\lambda)}$.
+% \item Sequentiality. A parallel algorithm $\adv$, using at most $poly(\lambda)$ processors, that runs in time less than $T$ cannot compute the function. Specifically, for a random $x$ and $pp$ output by $\mathsf{Setup}(\lambda, T)$, if $(y, \pi) = \mathsf{Eval}(pp, x)$ then $Pr[\adv(pp, x) = y]$ is $\negl(\lambda)$.
+% \item Uniqueness. For an input $x$ and $T$, exactly one $y$ will be accepted by $\mathsf{Verify}$ with negligible error probability. Specifically, let $\adv$ be an efficient algorithm that given $pp$ as input, outputs $(x, y, \pi)$ such that $\mathsf{Verify}(pp, x, y, \pi) = 1$. Then $Pr[\mathsf{Eval}(pp, x) \neq y]$ is $\negl(\lambda)$.
 % \end{itemize}
 % For sequentiality, computing $y$ using $\mathsf{Eval}(pp,x)$ requires $T$ sequential squarings even on a parallel computer with $poly(\lambda)$ processors. Computing proof $\pi$ increases the running time to $(1+\epsilon)T$ as needed for $\epsilon$-evaluation time.
 
@@ -58,9 +58,9 @@ where the protocol runs among honest participants and $\adv$ (which has access t
 VSS schemes have two security requirements.
 \begin{itemize}
     \item Secrecy. If the dealer is honest, then the probability of an adversary learning
-    any information about the dealer's secret in the sharing phase is $\mathsf{negl}(\lambda)$.
+    any information about the dealer's secret in the sharing phase is $\negl(\lambda)$.
     \item Correctness. If the dealer is honest, then the honest nodes output the secret
-    $s$ at the end of the reconstruction phase with a high probability of $1 - \mathsf{negl}(\lambda)$.
+    $s$ at the end of the reconstruction phase with a high probability of $1 - \negl(\lambda)$.
 \end{itemize}
 Feldman-VSS~\cite{feldman1987practical} and Pedersen-VSS~\cite{pedersen1991non} are the most commonly used VSS schemes.\\\\
 \noindent\textbf{Feldman-VSS.}
@@ -68,11 +68,11 @@ Feldman-VSS~\cite{feldman1987practical} and Pedersen-VSS~\cite{pedersen1991non} 
 The following summarizes a simple VSS scheme proposed by Paul Feldman for sharing a secret $s$ among $n$ participants where any subset of $t + 1$ among them can reconstruct the group secret.
 
 \begin{itemize}
-\item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \mathbb{Z}_q$ involves the dealer sampling $t$ random coefficients $a_1, \ldots, a_t \in \mathbb{Z}_q$ and constructing $p(x) = s + a_1x+ a_2x^2 +\ldots+a_tx^t$. The shares are computed as $s_i = p(i)$ in mod $q$ for $1\le i \le n$ and shared privately with each participant. The commitments to the secret $C_0 = g^s$ as well as coefficients $C_j = g^{a_j}$ for $j = 1,\ldots,t$ are also broadcast by the dealer.
+\item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \groupZ_q$ involves the dealer sampling $t$ random coefficients $a_1, \ldots, a_t \in \groupZ_q$ and constructing $p(x) = s + a_1x+ a_2x^2 +\ldots+a_tx^t$. The shares are computed as $s_i = p(i)$ in mod $q$ for $1\le i \le n$ and shared privately with each participant. The commitments to the secret $C_0 = g^s$ as well as coefficients $C_j = g^{a_j}$ for $j = 1,\ldots,t$ are also broadcast by the dealer.
 \item $\mathsf{ShareVerify}(s_i, C) \rightarrow \{0, 1\}$ involves each participant $P_i$ checking if:
 $$g^{s_i} = \prod_{j = 0}^{t} C_j^{i^j} = C_0 C_1^i C_2^{i^2} \cdots C_{t}^{i^{t}}$$
 If it does not hold for some $i$, then $P_i$ broadcasts an accusation against the dealer, who has to respond by broadcasting the correct $s_i$. Correct reconstruction is achieved by filtering out shares that do not satisfy $\mathsf{ShareVerify}$.
-\item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ outputs the secret $s$ by performing Lagrange interpolation (see Appendix \ref{appendix:lagrange}) with $t + 1$ valid shares from the reconstruction set $A$ of nodes:
+\item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ outputs the secret $s$ by performing Lagrange interpolation (see Appendix~\ref{appendix:lagrange}) with $t + 1$ valid shares from the reconstruction set $A$ of nodes:
 $$s = p(0) = \sum_{j \in A} p(j) \lambda_{0, j, A}$$
 \end{itemize}
 
@@ -84,10 +84,10 @@ The verifiability in Feldman-VSS comes from inclusion of commitments to the coef
 % \label{appendix:pedersenVSS}
 % A la Pedersen commitment, Pedersen-VSS is a variation that couples the commitment to $p(x)$ with another randomly chosen polynomial. By removing the assumption that $g^s$ is known beforehand as part of the commitment to the coefficients, it results in a secret sharing scheme which is unconditionally secure for the dealer. It can be summarized as follows:
 
-% \textbf{Setup.} In addition to parameters $p,q,g$ inherent to Feldman-VSS, it uses an element $h$ in the subgroup of $\mathbb{Z}^*_p$ generated by $g$. It is assumed that the adversary cannot find the discrete logarithm of $h$ relative to the base $g$.
+% \textbf{Setup.} In addition to parameters $p,q,g$ inherent to Feldman-VSS, it uses an element $h$ in the subgroup of $\groupZ^*_p$ generated by $g$. It is assumed that the adversary cannot find the discrete logarithm of $h$ relative to the base $g$.
 
 % \begin{itemize}
-% \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \mathbb{Z}_q$ involves the dealer sampling two random polynomials $p(x) = a_0 + a_1x+ \ldots+a_tx^t$ and $p'(x) = b_0 + b_1x +\ldots+b_tx^t$ where $a_i, b_i \in \mathbb{Z}_q$ and the secret $s = a_0 = p(0)$ while $s' = b_0 = p'(0)$. The shares are computed as $(s_i = p(i), s'_i = p'(i))$ in mod $q$ for $1 \le i \le n$ and are shared with each participant privately. Also distributed from the dealer are coupled commitments to coefficients of $p$ and $p'$, i.e. $C_j = g^{a_j} h^{b_j}$ for $j = 0, ..., t$.
+% \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \groupZ_q$ involves the dealer sampling two random polynomials $p(x) = a_0 + a_1x+ \ldots+a_tx^t$ and $p'(x) = b_0 + b_1x +\ldots+b_tx^t$ where $a_i, b_i \in \groupZ_q$ and the secret $s = a_0 = p(0)$ while $s' = b_0 = p'(0)$. The shares are computed as $(s_i = p(i), s'_i = p'(i))$ in mod $q$ for $1 \le i \le n$ and are shared with each participant privately. Also distributed from the dealer are coupled commitments to coefficients of $p$ and $p'$, i.e. $C_j = g^{a_j} h^{b_j}$ for $j = 0, ..., t$.
 % \item $\mathsf{ShareVerify}(s_i, C) \rightarrow \{0, 1\}$ involves each participant $P_i$ with shares $(s_i, s'_i)$ and the public polynomial coefficient commitments checking if:
 % $$g^{s_i} h^{s'_i} = \prod_{j = 0}^{t} C_j^{i^j}$$
 % Similar to Feldman-VSS, any accusation of incorrect sharing against dealer by a participant $P_i$ would require the dealer to broadcast $(s_i, s'_i)$.
@@ -122,7 +122,7 @@ The verifiability in Feldman-VSS comes from inclusion of commitments to the coef
 %         \begin{enumerate}
 %         \item All subsets of $t + 1$ shares provided by honest participants define the same unique secret key $x$.
 %         \item All honest participants have the same value of public key $y=g^x$, where $x$ is the unique secret guaranteed above.
-%         \item $x$ is uniformly distributed in $\mathbb{Z}_q$, and thus $y$ is uniformly distributed in $\groupG_q$ (subgroup of $\mathbb{Z}^*_p$ generated by $g$).
+%         \item $x$ is uniformly distributed in $\groupZ_q$, and thus $y$ is uniformly distributed in $\groupG_q$ (subgroup of $\groupZ^*_p$ generated by $g$).
 %         \end{enumerate}
 
 %     \item Secrecy. No information on $x$ can be learned by the adversary except for what is implied by the value $y = g^x$.
@@ -139,7 +139,7 @@ One of the best known DKG schemes is Joint-Feldman~\cite{pedersen1991threshold},
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ proceeds in two phases---Sharing and Reconstruction.
     \begin{enumerate}
-        \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and sending a subshare $s_{ij} = p_i(j)$ mod $q$ to each participant $P_j$ privately. \\
+        \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\groupZ_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and sending a subshare $s_{ij} = p_i(j)$ mod $q$ to each participant $P_j$ privately. \\
         To satisfy the verifiability portion of VSS, $P_i$ also broadcasts $C_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$. Let the commitment corresponding to the secret be denoted by $y_i = C_{i0}$.
 
         Each participant $P_j$ also verifies the shares he receives from other participants by performing verification steps of Feldman-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$. If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified. Otherwise, $P_i$ reveals the subshare $s_{ij}$ for every $P_j$ that has broadcast a complaint. We call $\committee$ the set of non-disqualified participants.
@@ -157,7 +157,7 @@ One of the best known DKG schemes is Joint-Feldman~\cite{pedersen1991threshold},
 % \begin{itemize}
 %     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ involves two phases---Sharing and Reconstruction. However, the Reconstruction phase requires an additional run of Feldman-VSS to recover the public keys.
 %     \begin{enumerate}
-%     \item Sharing phase involves each participant $P_i$ running Pedersen-VSS by choosing two random polynomials over $\mathbb{Z}_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and $p'_i(z) = \sum_{j = 0}^{t} b_{ij} z^j$ and sending subshares ($s_{ij} = p_i(j)$, $s'_{ij} = p'_i(j)$) in mod $q$ to each participant $P_j$ privately and broadcasting the commitments $C_{ik} = g^{a_{ik}} h^{b_{ik}}$ for $k = 0, \ldots, t$ to prove correctness. Note that unlike Joint-Feldman, publishing $C_{ik}$ does not reveal any information about $y_i = g^{a_{i0}}$.\\
+%     \item Sharing phase involves each participant $P_i$ running Pedersen-VSS by choosing two random polynomials over $\groupZ_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and $p'_i(z) = \sum_{j = 0}^{t} b_{ij} z^j$ and sending subshares ($s_{ij} = p_i(j)$, $s'_{ij} = p'_i(j)$) in mod $q$ to each participant $P_j$ privately and broadcasting the commitments $C_{ik} = g^{a_{ik}} h^{b_{ik}}$ for $k = 0, \ldots, t$ to prove correctness. Note that unlike Joint-Feldman, publishing $C_{ik}$ does not reveal any information about $y_i = g^{a_{i0}}$.\\
 %     Each participant $P_j$ verifies the shares he receives from other participants by performing share verification step of Pedersen-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$.
 %     If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified. Otherwise, $P_i$ reveals the subshare $(s_{ij}, s'_{ij})$ for every $P_j$ that has broadcast a complaint. We call $\committee$ the set of non-disqualified participants.
 
@@ -205,20 +205,20 @@ PVSS can be described by the following algorithms.
 
 PVSS is a secure VSS scheme providing the following additional guarantee:
 \begin{itemize}
-    \item Public Verifiability. If the $\mathsf{ShareVerify}$ algorithm returns 1, then the scheme is valid in a publicly verifiable manner with high probability $1 - \mathsf{negl}(\lambda)$.\\
+    \item Public Verifiability. If the $\mathsf{ShareVerify}$ algorithm returns 1, then the scheme is valid in a publicly verifiable manner with high probability $1 - \negl(\lambda)$.\\
 \end{itemize}
 
 % \iffalse
 \noindent\textbf{Schoenmakers PVSS.}
 \label{appendix:schoenmakersPVSS}
-One of the most common PVSS schemes used in practice is one by Schoenmakers~\cite{schoenmakers1999simple}. As typical, the setup involves $g, h \in \groupG_q$. Additionally, each participant $P_i$ generates a secret key $x_i \in \mathbb{Z}^*_q$ and registers $y_i = h^{x_i}$ as its public key.
+One of the most common PVSS schemes used in practice is one by Schoenmakers~\cite{schoenmakers1999simple}. As typical, the setup involves $g, h \in \groupG_q$. Additionally, each participant $P_i$ generates a secret key $x_i \in \groupZ^*_q$ and registers $y_i = h^{x_i}$ as its public key.
 
 \begin{itemize}
-\item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(y_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i$ equal to $\mathsf{Dec}(x_i, \mathsf{Enc}(y_i, s_i))$ first involves production of $\{\mathsf{Enc}(y_i, s_i)\}$ by the dealer with secret $s$. Namely, the dealer picks a random polynomial $p$ of degree $t$ with coefficients in $\mathbb{Z}_q$
+\item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(y_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i$ equal to $\mathsf{Dec}(x_i, \mathsf{Enc}(y_i, s_i))$ first involves production of $\{\mathsf{Enc}(y_i, s_i)\}$ by the dealer with secret $s$. Namely, the dealer picks a random polynomial $p$ of degree $t$ with coefficients in $\groupZ_q$
 \[
 p(x) = \sum_{i = 0}^{t} a_i x^i
 \]
-where $s = p(0) = a_0$ and computes $Y_i = \mathsf{Enc}(y_i, s_i) = y_i^{p(i)}$, which is sent to each node $i$ along with information needed to prove its correctness: $C_j = g^{a_j}$ for $0 \leq j \leq t$ such that $X_i = \prod_{j = 0}^{t} C_j^{i^j} = g^{p(i)}$ and $\mathsf{DLEQ}(g, X_i, y_i, Y_i)$ (see Appendix \ref{appendix:dleq}). Upon receiving $Y_i$, node $i$ computes $s'_i = \mathsf{Dec}(x_i, Y_i) = Y_i^{1 / x_i} = h^{p(i)}$ and generates information needed to prove its correctness: $\mathsf{DLEQ}(h, y_i, s'_i, Y_i)$.
+where $s = p(0) = a_0$ and computes $Y_i = \mathsf{Enc}(y_i, s_i) = y_i^{p(i)}$, which is sent to each node $i$ along with information needed to prove its correctness: $C_j = g^{a_j}$ for $0 \leq j \leq t$ such that $X_i = \prod_{j = 0}^{t} C_j^{i^j} = g^{p(i)}$ and $\mathsf{DLEQ}(g, X_i, y_i, Y_i)$ (see Appendix~\ref{appendix:dleq}). Upon receiving $Y_i$, node $i$ computes $s'_i = \mathsf{Dec}(x_i, Y_i) = Y_i^{1 / x_i} = h^{p(i)}$ and generates information needed to prove its correctness: $\mathsf{DLEQ}(h, y_i, s'_i, Y_i)$.
 \item $\mathsf{ShareVerify}(\{Y_i\}, \{s'_i\}, \pi) \rightarrow \{0, 1\}$ verifies the encryption proof of correctness $\mathsf{DLEQ}(g, X_i, y_i, Y_i)$ where $X_i$'s are computed from $C_j$'s as well as the decryption proof of correctness $\mathsf{DLEQ}(h, y_i, s'_i, Y_i)$.
 \item $\mathsf{Recon}(A, \{s'_i\}_{i \in A}) \rightarrow h^s$ performs the following Lagrange interpolation in the exponent
 \[
@@ -229,18 +229,18 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 
 % \subsection{Scrape PVSS}
 % \label{appendix:scrapePVSS}
-% Following the work of~\cite{cascudo2017scrape}, we define a $[n, k, d]$ code $C$ to be a linear error correcting code over $\mathbb{Z}_q$ of length $n$, dimension $k$, and minimum distance $d$. Its dual code $C^\perp$ is the vector space consisting of vectors $c^\perp \in \mathbb{Z}_q^n$ such that $\langle c, c^\perp \rangle = 0$ for all $c \in C$. Scrape's PVSS verification relies on the following lemma.
+% Following the work of~\cite{cascudo2017scrape}, we define a $[n, k, d]$ code $C$ to be a linear error correcting code over $\groupZ_q$ of length $n$, dimension $k$, and minimum distance $d$. Its dual code $C^\perp$ is the vector space consisting of vectors $c^\perp \in \groupZ_q^n$ such that $\langle c, c^\perp \rangle = 0$ for all $c \in C$. Scrape's PVSS verification relies on the following lemma.
 % \begin{lemma}
-% If $v \in \mathbb{Z}_q^n \setminus C$ and $c^\perp$ is chosen uniformly at random in $C^\perp$, then $Pr\left[\langle v, c^\perp \rangle = 0\right]$ is exactly $\frac{1}{q}$.
+% If $v \in \groupZ_q^n \setminus C$ and $c^\perp$ is chosen uniformly at random in $C^\perp$, then $Pr\left[\langle v, c^\perp \rangle = 0\right]$ is exactly $\frac{1}{q}$.
 % \end{lemma}
 
 % Assuming that $n < q$, we harness Reed-Solomon codes $C$ of the form
 % \[
-% C = \{(p(1), p(2), ..., p(n)) : p(x) \in \mathbb{Z}_q[x], \deg p(x) \leq k - 1\}
+% C = \{(p(1), p(2), ..., p(n)) : p(x) \in \groupZ_q[x], \deg p(x) \leq k - 1\}
 % \]
-% where $p(x)$ ranges over all polynomials in $\mathbb{Z}_q[x]$ of degree at most $k - 1$. Then $C$ represents a $[n, k, n - k + 1]$ code while $C^\perp$ is a $[n, n - k, k + 1]$ code given by
+% where $p(x)$ ranges over all polynomials in $\groupZ_q[x]$ of degree at most $k - 1$. Then $C$ represents a $[n, k, n - k + 1]$ code while $C^\perp$ is a $[n, n - k, k + 1]$ code given by
 % \[
-% C^\perp = \{(\mu_1 f(1), ..., \mu_n f(n)) : f(x) \in \mathbb{Z}_q[x], \deg f(x) \leq n - k - 1\}
+% C^\perp = \{(\mu_1 f(1), ..., \mu_n f(n)) : f(x) \in \groupZ_q[x], \deg f(x) \leq n - k - 1\}
 % \]
 % where $\mu_i = \prod_{j = 1, j \neq i}^n \frac{1}{i - j}$.
 
@@ -281,7 +281,7 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 
 % \noindent\textbf{Linear Perfect $t$-resilient functions.} Instead of computing the final randomness from PVSS reconstructions as $\prod_{j \in \committee} h^{s^{(j)}}$ like in Scrape, Albatross uses a $t$-resilient function for randomness extraction.
 
-% A $\mathbb{Z}_q$-linear $t$-resilient function is a linear function $\mathbb{Z}_q^r \rightarrow \mathbb{Z}_q^u$ given by a matrix $M \in \mathbb{Z}_q^{u \times r}$ such that the output is uniformly distributed in $\mathbb{Z}_q^u$ as long as $r-t$ coordinates of the input are uniformly distributed in $\mathbb{Z}_q^{r-t}$, even if the other $t$ coordinates are completely controlled by the adversary. Such a function can only exist if $u \le r-t$.
+% A $\groupZ_q$-linear $t$-resilient function is a linear function $\groupZ_q^r \rightarrow \groupZ_q^u$ given by a matrix $M \in \groupZ_q^{u \times r}$ such that the output is uniformly distributed in $\groupZ_q^u$ as long as $r-t$ coordinates of the input are uniformly distributed in $\groupZ_q^{r-t}$, even if the other $t$ coordinates are completely controlled by the adversary. Such a function can only exist if $u \le r-t$.
 
 % In the presence of some participant withholding its secret $s$, PVSS only allows us to recover $h^s$ (for some public generator of $h$ of the group) instead of the secret $s$. This would require us to apply $t$-resilient function in the exponent. So, given $h_1, \ldots, h_r$ where $h_i = h^{x_i}$ and $x_i$ is private, goal is to extract $(\hat{h_1},\ldots, \hat{h_u}) \in \groupG_q^u$ which is uniformly random. It is achieved by applying the $t$-resilient function given by matrix $M$ to the exponents, i.e., $\hat{h_i} = h^{y_i}$ where $\vec{x} \mapsto \vec{y} = M \cdot \vec{x}$. This can be evaluated efficiently with $O(n^2 \log n)$ exponentiations by choosing $M$ to be a certain type of Vandermonde matrix and adapting the Cooley-Tukey Fast Fourier transform algorithm to work in the exponent (FFTE)~\cite{cascudo2020albatross} of the group.
 
@@ -293,7 +293,7 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 %     \item \textbf{Recover.} For each participant $P_a$ that do not open their secret during the Reveal phase, other participants publish the decrypted shares of the secret. Once $t+\ell$ valid shares are published, Lagrange interpolation is used to reconstruct the polynomial and recover the secrets $h^{s^{(a)}_{0}}, \ldots, h^{s^{(a)}_{\ell-1}}$. Then it proceeds to Case 2 of Output phase.
 %     \item \textbf{Output.}
 %         \begin{itemize}
-%             \item \textit{Case 1.} When all the participants in $\committee$ have opened their secrets correctly, we have a $(n-t) \times \ell$ matrix $S$ with rows indexed by the participants $P_a \in \committee$ and each row corresponding to its $\ell$ opened secrets $(s^{(a)}_{0}, \ldots, s^{(a)}_{\ell-1})$. The final randomness $\drboutput$ with $\ell^2$ elements is computed by each participant as $\drboutput = h^U$, where $U = M \cdot S \in \mathbb{Z}_q^{\ell \times \ell}$.
+%             \item \textit{Case 1.} When all the participants in $\committee$ have opened their secrets correctly, we have a $(n-t) \times \ell$ matrix $S$ with rows indexed by the participants $P_a \in \committee$ and each row corresponding to its $\ell$ opened secrets $(s^{(a)}_{0}, \ldots, s^{(a)}_{\ell-1})$. The final randomness $\drboutput$ with $\ell^2$ elements is computed by each participant as $\drboutput = h^U$, where $U = M \cdot S \in \groupZ_q^{\ell \times \ell}$.
 
 %             \item \textit{Case 2.} Otherwise, we have a $(n-t) \times \ell$ matrix $T$ with rows indexed by the participants $P_a \in \committee$ where the row corresponding to $P_a$ is $(h^{s^{(a)}_{0}}, \ldots, h^{s^{(a)}_{\ell-1}})$. The final $\ell \times \ell$ randomness matrix $\drboutput$ is computed as $\drboutput = M \diamond T$ by applying FFTE to each column $T^{(j)}$ of $T$ producing column $\drboutput^{(j)}$ of $\drboutput$.
 %         \end{itemize}
@@ -301,11 +301,11 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 
 % \subsection{SecRand}
 % \label{appendix:secRand}
-% SecRand~\cite{guo2020secRand} uses Scrape PVSS (see Appendix \ref{appendix:scrapePVSS} for details) as a subprotocol. After initial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
+% SecRand~\cite{guo2020secRand} uses Scrape PVSS (see Appendix~\ref{appendix:scrapePVSS} for details) as a subprotocol. After initial setup using $\mathsf{PVSS.KeyGen}$, SecRand proceeds in four phases---Share Distribution, Share Verification, Aggregation, and Reconstruction. The Share Distribution and Share Verification phases proceed in a similar way as Commit and Verify phases of Scrape. However, since SecRand does not have a Reveal phase like Scrape, the participants are not required to publish commitments to their secret $\mathsf{Com}(s, r_0)$ during Share Distribution phase. The other two phases proceed as follows.
 
 % \begin{enumerate}
 %     \setcounter{enumi}{2}
-%     \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix \ref{appendix:pvss}) and calculates its group secret share as follows:
+%     \item \textbf{Aggregation.} After the Share Distribution and Share Verification phases, every participant $P_i$ would have a valid encrypted share of each of the $n$ secrets, $\mathsf{Enc}(pk_i, s_i^{(j)})$ for $1 \le j \le n$. $P_i$ decrypts these shares to recover $\tilde{s}_i^{(j)}$ (need not be $s_i^{(j)}$ as per Appendix~\ref{appendix:pvss}) and calculates its group secret share as follows:
 %     $$\tilde{s}_i = \prod_{j=1}^{n}\tilde{s}_i^{(j)}$$
 %     $P_i$ then broadcasts $\tilde{s}_i$ along with a proof of correct decryption $\pi_i$.
 %     \item \textbf{Reconstruction.} Every participant verifies the correctness of decryption using $\mathsf{PVSS.ShareVerify}$. Once $t + 1$ valid group secret shares are distributed, the complete group secret $\tilde{s} = h^s$ is reconstructed through $\mathsf{PVSS.Recon}$. The final beacon output is $\drboutput_r = H(\tilde{s})$.
@@ -320,7 +320,7 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 %         \item Completeness. For any $1 \le t \le n$ and for every admissible plaintext $m$, if the keys have been honestly generated with $\mathsf{DKG}(1^\lambda, t, n)$, the plaintext encrypted with $\mathsf{Enc}(pk, m)$ and a set of at least $t + 1$ honest participants have computed the correct decryption shares with $\mathsf{DecShare}(sk_i, c)$, then we require $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) = m$.
 %         \item Robustness. For any ciphertext $c$ and any two sets $A \neq A'$ of $t + 1$ nodes with valid decryption shares such that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) \neq 0$ and $\mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'}) \neq 0$, it holds that $\mathsf{Rec}(A, c, pk, \{pk_i\}_{i \in A}, \{d_i\}_{i \in A}) = \mathsf{Rec}(A', c, pk, \{pk_i\}_{i \in A'}, \{d_i\}_{i \in A'})$.
 %         \item IND-CPA against static corruptions. A $(t, n)$ threshold cryptosystem is said to be IND-CPA secure if for any polynomial time adversary $\adv$ corrupting at most $t$ participants at the beginning of the protocol, $\adv$, who acts on behalf of corrupted nodes, has negligible advantage in a game $\mathsf{Exp}^{\mathsf{cpa}}_{\adv}$ played against challenger, who acts on behalf of the remaining participants. In other words,
-%         $$|Pr[\mathsf{Exp}_{\adv}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \mathsf{negl}(\lambda)$$
+%         $$|Pr[\mathsf{Exp}_{\adv}^{\mathsf{cpa}}(\lambda) = 1] - 1/2| < \negl(\lambda)$$
 
 %         The game $\mathsf{Exp}^{\mathsf{cpa}}_{\adv}$ proceeds as follows:
 %         \begin{enumerate}
@@ -338,7 +338,7 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic}, with an elliptic curve $E$ over $\mathbb{F}_p$ and its cyclic subgroup $\groupG_q$ with generator $G$, is implemented as follows.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
-    \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ outputs ciphertext $c = (A, B) = (r G, m G + r \cdot pk)$ given $m, r \in \mathbb{Z}_q$ and $pk = sk \cdot G$.
+    \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ outputs ciphertext $c = (A, B) = (r G, m G + r \cdot pk)$ given $m, r \in \groupZ_q$ and $pk = sk \cdot G$.
     \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ outputs decryption share $D_i = sk_i \cdot A$ for $c = (A, B)$ using individual secret key $sk_i$.
     \item $\mathsf{Rec}(\tilde{A}, c, pk, \{pk_i\}_{i \in \tilde{A}}, \{D_i\}_{i \in \tilde{A}}) \rightarrow m$ reconstructs the point $D = sk \cdot A$ from $\{D_i\}_{i \in \tilde{A}}$ (given a set $\tilde{A}$ of $t + 1$ honest nodes) via Lagrange interpolation and outputs $m = B - D$.
 \end{itemize}
@@ -364,7 +364,7 @@ A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001
 % y_1 \gets \{0, 1\}^{\ell_{VRF}};\\
 % b \gets \{0, 1\};\\
 % b' \gets \adv^{\mathsf{Prove}(\cdot)}_{2}(y_b, st)
-% \end{array}\right] \leq \frac{1}{2} + \mathsf{negl}(\lambda)
+% \end{array}\right] \leq \frac{1}{2} + \negl(\lambda)
 % \]
 % for any probabilistic polynomial-time algorithm $\adv = (\adv_1, \adv_2)$, which does not query the oracle on $x$.
 % \end{enumerate}
@@ -375,7 +375,7 @@ A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001
 % \begin{itemize}
 % \item Unpredictability. The output is unpredictable except with negligible probability. In other words:
 % \[
-% Pr\left[y = F_{sk}(x) \middle\vert (x, y) \gets \adv^{\mathsf{Prove}(\cdot)}(pk)\right] \leq \mathsf{negl}(\lambda)
+% Pr\left[y = F_{sk}(x) \middle\vert (x, y) \gets \adv^{\mathsf{Prove}(\cdot)}(pk)\right] \leq \negl(\lambda)
 % \]
 % for any probabilistic polynomial-time algorithm $\adv$, which does not query the oracle on $x$.
 % \end{itemize}
@@ -420,7 +420,7 @@ A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001
 \end{tabularx}
 \begin{tablenotes}[flushleft]
 \footnotesize
-\item Note that public committee selection mechanisms (Section \ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section \ref{subsubsection:private-committee-selection}. For details on the two columns under beacon output generation, see Sections \ref{subsubsection:fresh} and \ref{subsubsection:precommitted}.
+\item Note that public committee selection mechanisms (Section~\ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section~\ref{subsubsection:private-committee-selection}. For details on the two columns under beacon output generation, see Sections~\ref{subsubsection:fresh} and~\ref{subsubsection:precommitted}.
 \item[1] The protocol is an epoch-based variant of Algorand. While $|\committee_r|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per round), that in Ouroboros Praos is expected to be $K$ where each epoch consists of $K$ slots and thus $K$ per-slot lotteries. (Each epoch is a round.) Parameters $slot$ and $epoch$ denote the slot and epoch numbers, respectively, and $\rho_i = VRF_{sk_i}(\drboutput_{r - 1} \mathbin\Vert slot_i \mathbin\Vert \mathsf{NONCE})$ is returned by the slot leader of $slot_i$. $\mathsf{TEST}$ and $\mathsf{NONCE}$ are strings.
 \item[2] In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_r = H(h_{r + 1})$ for all $r = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one publicizes one $h_r$ at a time (i.e. $h_r$ in round $r$). While each participant independently generates a private hash chain, one downside is that the hash chain needs to be periodically regenerated, as $m$ is finite.
 \end{tablenotes}
@@ -433,15 +433,15 @@ A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001
 DDH-DVRF (from the decisional Diffie-Hellman assumption) is described by the following DVRF algorithms.
 \begin{itemize}
 \item $\mathsf{DKG}(1^\lambda, t, n)$ runs a typical DKG.
-\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the non-interactive Chaum-Pedersen protocol (see Appendix \ref{appendix:dleq}).
-\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g, pk_i, H(x), y_i, \pi_i)$ (Appendix \ref{appendix:dleq}) and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
-\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix \ref{appendix:lagrange}.
+\item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g, g^{sk_i}, H(x), H(x)^{sk_i})$ denoting the non-interactive Chaum-Pedersen protocol (see Appendix~\ref{appendix:dleq}).
+\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i)$ is equivalent to $\mathsf{DLEQ}\text{-}\mathsf{Verify}(g, pk_i, H(x), y_i, \pi_i)$ (Appendix~\ref{appendix:dleq}) and verifies the correctness of the $\mathsf{PartialEval}$ algorithm using $\pi_i$.
+\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A})$ outputs $(y, \pi)$ where $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$ and $\pi = \{(y_i, \pi_i)\}_{i \in A}$. Details related to Lagrange coefficients $\lambda_{0, i, A}$ are included in Appendix~\ref{appendix:lagrange}.
 \item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi)$ verifies all partial proofs via $\mathsf{PartialVerify}$ for all $i \in A$ from $\pi$ and checks $y = \prod_{i \in A} y_i^{\lambda_{0, i, A}}$.
 \end{itemize}
 
 \subsection{GLOW-DVRF}
 \label{appendix:glow-dvrf}
-Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \groupG_1 \times \groupG_2 \rightarrow \groupG_T$ similar to BLS (Appendix \ref{appendix:bls}) such that the setup includes hash functions $H_1: \{0, 1\}^* \rightarrow \groupG_1$ and $H_2: \groupG_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While resembling DDH-DVRF, the following algebraic modifications are made due to pairings.
+Providing a compact proof $\pi$, GLOW-DVRF uses a bilinear pairing $e: \groupG_1 \times \groupG_2 \rightarrow \groupG_T$ similar to BLS (Appendix~\ref{appendix:bls}) such that the setup includes hash functions $H_1: \{0, 1\}^* \rightarrow \groupG_1$ and $H_2: \groupG_1 \rightarrow \{0, 1\}^{y(\lambda)}$. While resembling DDH-DVRF, the following algebraic modifications are made due to pairings.
 \begin{itemize}
 \item $\mathsf{DKG}(1^\lambda, t, n)$ is adapted so that $pk_i$ resides in $\groupG_1$ while $pk$ resides in $\groupG_2$. This is achieved by letting $(pk_i, pk) = (g_1^{sk_i}, g_2^{sk})$ for $g_1 \in \groupG_1$ and $g_2 \in \groupG_2$. The purpose of this is to facilitate a compact proof in the final $\mathsf{Verify}$ step.
 \item $\mathsf{PartialEval}(sk_i, x)$ outputs $(y_i, \pi_i)$ where $y_i = H_1(x)^{sk_i}$ and $\pi_i = \mathsf{DLEQ}(g_1, g_1^{sk_i}, H_1(x), H_1(x)^{sk_i})$.
@@ -481,7 +481,7 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 
 \subsubsection{Lagrange Interpolation}
 \label{appendix:lagrange}
-Given a non-empty reconstruction set $A \subset \mathbb{Z}_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \mathbb{Z}_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \mathbb{Z}_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \mathbb{Z}_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
+Given a non-empty reconstruction set $A \subset \groupZ_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \groupZ_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \groupZ_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \groupZ_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.
 
 \subsubsection{BLS Signature}
 \label{appendix:bls}
@@ -492,7 +492,7 @@ Introduced by Boneh, Lynn, and Shacham in 2003, the BLS signature scheme~\cite{b
 \end{itemize}
 Note that BLS uses a bilinear pairing $e: \groupG_1 \times \groupG_2 \rightarrow \groupG_T$ with $\groupG_1 = \langle g_1 \rangle$, $\groupG_2 = \langle g_2 \rangle$, $\groupG_T$ denoting a cyclic group of prime order $q$, and the following requirements.
 \begin{itemize}
-\item Bilinearity. $e(g_1^x, g_2^y) = e(g_1, g_2)^{x y}$ for all $x, y \in \mathbb{Z}^*_q$.
+\item Bilinearity. $e(g_1^x, g_2^y) = e(g_1, g_2)^{x y}$ for all $x, y \in \groupZ^*_q$.
 \item Non-degeneracy. $e(g_1, g_2) \neq 1$.
 \item Computability. $e(g_1, g_2)$ can be efficiently computed.
 \end{itemize}
@@ -508,11 +508,11 @@ via Lagrange interpolation in the exponent.
 Also known as the Chaum-Pedersen protocol~\cite{chaum1992wallet}, the $\Sigma$ protocol~\cite{damgaard2002sigma} for proving that the two discrete logarithms are equal without revealing the discrete logarithm value itself can be turned into a NIZK by applying the Fiat-Shamir heuristic~\cite{fiat1986prove}. Namely, the prover can non-interactively prove the knowledge of $\alpha$ such that $(h_1, h_2) = (g_1^\alpha, g_2^\alpha)$ via $\pi_{DLEQ} = \mathsf{DLEQ}(g_1, h_1, g_2, h_2)$ with group elements in $\groupG_q$.\\
 
 \noindent\underline{$\mathsf{DLEQ}(g_1, h_1, g_2, h_2)$}\\
-\textit{Input:} $g_1, h_1, g_2, h_2 \in \groupG_q$, $\alpha \in \mathbb{Z}_q$\\
+\textit{Input:} $g_1, h_1, g_2, h_2 \in \groupG_q$, $\alpha \in \groupZ_q$\\
 \textit{Output:} $\pi = (e, s)$
 \vspace{-\topsep}
 \begin{enumerate}
-\item $A_1 = g_1^w, A_2 = g_2^w$ for $w \sample \mathbb{Z}_q$
+\item $A_1 = g_1^w, A_2 = g_2^w$ for $w \sample \groupZ_q$
 \item $e = H(h_1, h_2, A_1, A_2)$
 \item $s = w - \alpha \cdot e \pmod q$
 \item $\pi = (e, s)$
@@ -536,11 +536,11 @@ Also known as the Chaum-Pedersen protocol~\cite{chaum1992wallet}, the $\Sigma$ p
 Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$~\cite{cherniaeva2019homomorphic} where $G \in \groupG_q$ and $(Q, A, B) = (x G, r G, m G + r Q)$, the prover can non-interactively prove the knowledge of $(m, r)$ and thus prove the legitimacy of an ElGamal encryption (e.g. as opposed to exploiting its malleability). Note that the additive notation is used to handle points on an elliptic curve.\\
 
 \noindent\underline{$\mathsf{CE}(G, Q, A, B)$}\\
-\textit{Input:} $G, Q, A, B \in \groupG_q$, $m, r \in \mathbb{Z}_q$\\
+\textit{Input:} $G, Q, A, B \in \groupG_q$, $m, r \in \groupZ_q$\\
 \textit{Output:} $\pi = (e, z_1, z_2)$
 \vspace{-\topsep}
 \begin{enumerate}
-\item $T = s_1 G + s_2 Q, E = s_2 G$ for $s_1, s_2 \sample \mathbb{Z}_q$
+\item $T = s_1 G + s_2 Q, E = s_2 G$ for $s_1, s_2 \sample \groupZ_q$
 \item $e = H(A, B, T, E)$
 \item $z_1 = s_1 + m \cdot e \pmod q, z_2 = s_2 + r \cdot e \pmod q$
 \item $\pi = (e, z_1, z_2)$
