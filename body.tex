@@ -14,7 +14,7 @@ A natural approach to reduce complete trust in a centralized beacon is to use a 
 
 \textbf{Contribution.} The goal of the paper is to systematize the current progress on DRBs specifically. We propose a generalized framework encompassing all distributed randomness protocols in the landscape. To aid comparison and discussion of properties, we provide an overview of these protocols along with the various cryptographic building blocks used to construct them. We identify two key components of DRB design: selection of entropy providers and beacon output generation, which can be decoupled from each other. Enabling a more holistic analysis of a DRB as a result, we also provide new insights and discussion on potential attack vectors, countermeasures, and techniques that lead to better scalability.
 
-\textbf{Paper organization.} We begin with preliminaries including our system model, a strawman DRB under perfect synchrony (an ideal assumption), commit-reveal~\cite{blum1983coin}, and the definition of an ideal DRB in Section~\ref{section:preliminaries}. Section~\ref{section:vdf} introduces protocols using verifiable delay functions~\cite{boneh2018verifiable}, which (assuming secure VDFs can be realized) offer the best security and simplicity. Then from Section~\ref{section:commit-reveal-punish} to~\ref{section:dvrf}, we introduce non-VDF-based DRB protocols based on the number of nodes contributing \textit{marginal entropy} (i.e. per-round randomness that is independently generated at a node level) in each round. Sections~\ref{section:commit-reveal-punish} and~\ref{section:commit-reveal-recover} review protocols in which all nodes contribute marginal entropy. These protocols vary in mechanisms used to recover from faulty nodes, including financial punishment~\cite{youcai2017randao, david2020economically}, threshold secret sharing~\cite{schoenmakers1999simple, cascudo2017scrape}, and threshold encryption~\cite{desmedt1990Threshold}. Section~\ref{section:committee-based} covers committee-based protocols in which each round includes an extra committee selection step, after which only a committee (non-empty proper subset) of nodes contributes marginal entropy. These protocols are more complex but can offer greater communication efficiency with large numbers of nodes. Section~\ref{section:dvrf} covers pseudorandom protocols that do not require any marginal entropy; these protocols can be highly efficient but have no mechanism to recover from compromise. We conclude with discussion and comparisons in Sections~\ref{section:discussions}--\ref{section:conclusion}, including a comparison of all studied protocols in Table~\ref{table:comparison}.
+\textbf{Paper organization.} We begin with preliminaries including our system model, a strawman DRB under perfect synchrony (an ideal assumption), commit-reveal~\cite{blum1983coin}, and the definition of an ideal DRB in Section~\ref{section:preliminaries}. Section~\ref{section:delay} introduces protocols using delay functions~\cite{boneh2018verifiable,boneh2000timed}, which (assuming secure delay functions can be realized) offer the best security and simplicity. Then from Section~\ref{section:commit-reveal-punish} to~\ref{section:dvrf}, we introduce non-delay-based DRB protocols based on the number of nodes contributing \textit{marginal entropy} (i.e. per-round randomness that is independently generated at a node level) in each round. Sections~\ref{section:commit-reveal-punish} and~\ref{section:commit-reveal-recover} review protocols in which all nodes contribute marginal entropy. These protocols vary in mechanisms used to recover from faulty nodes, including financial punishment~\cite{youcai2017randao, david2020economically}, threshold secret sharing~\cite{schoenmakers1999simple, cascudo2017scrape}, and threshold encryption~\cite{desmedt1990Threshold}. Section~\ref{section:committee-based} covers committee-based protocols in which each round includes an extra committee selection step, after which only a committee (non-empty proper subset) of nodes contributes marginal entropy. These protocols are more complex but can offer greater communication efficiency with large numbers of nodes. Section~\ref{section:dvrf} covers pseudorandom protocols that do not require any marginal entropy; these protocols can be highly efficient but have no mechanism to recover from compromise. We conclude with discussion and comparisons in Sections~\ref{section:discussions}--\ref{section:conclusion}, including a comparison of all studied protocols in Table~\ref{table:comparison}.
 
 \section{Preliminaries}
 \label{section:preliminaries}
@@ -52,7 +52,7 @@ A classic fix for the above issue is to introduce a cryptographic commitment ste
 all of which can be repeated to produce a DRB. If any of the checks do not pass, however, the protocol aborts.
 \end{enumerate}
 
-With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide not to reveal $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from a faulty node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
+With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from a faulty node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
 
 \subsection{Ideal Distributed Randomness Beacon}
 Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) each round's output. The beacon output should also be verifiable by any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
@@ -68,10 +68,10 @@ A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satis
 \end{enumerate}
 \end{definition}
 
-We next begin our discussion of various approaches to realizing an ideal DRB, starting with protocols based on verifiable delay functions.
+We next begin our discussion of various approaches to an ideal DRB, starting with protocols based on delay functions.
 
-\section{VDF-Based Protocols}
-\label{section:vdf}
+\section{Delay-Based Protocols}
+\label{section:delay}
 One way to prevent the last-revealer attack is to add a delay function after collecting each node's entropy contribution, delaying the derivation of $\drboutput_r$. As long as the delay is suitably long, no participant can predict what effect its contribution will have on the output before its share must be published. A verifiable delay function (VDF)~\cite{boneh2018verifiable,boneh2018survey} can be used to accomplish this.
 
 \begin{definition}[Verifiable delay function]
@@ -96,13 +96,28 @@ The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF pre
     such that $\drboutput_r = H(y_r)$, which is posted and can be efficiently verified by any observer using $\pi_r$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
 
-As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design (it does not matter for security who evaluates, since VDFs are deterministic and verifiable).
-Thyagrajan et al.~\cite{thyagarajan2021opensquare} recently proposed a protocol for outsourcing VDF evaluation.
+As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design (it does not matter for security who evaluates, since VDFs are deterministic and verifiable) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
 
 We quickly note a variation of above: as proposed in~\cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices~\cite{clark2010use} or PoW blockchains~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_r$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
 Unfortunately, they do not easily compare to other DRBs, as the security model depends on the cost of manipulating the external beacon, which has not yet been formally analyzed.
 
-% TODO: need to add Thyagarajan protocol\cite{Thyagarajan21timedcommitments}
+\subsection{Adding Recovery to Commit-Reveal}
+Another way to modify commit-reveal is to leverage a different class of delay functions called timed commitments~\cite{boneh2000timed} in place of regular commitments used in commit-reveal.
+The idea is simple: timed commitments are commitments with an additional recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
+
+\begin{definition}[Timed commitment]
+A \textit{timed commitment} is\todo{def}
+\begin{itemize}
+\item $\mathsf{Commit}$
+\item $\mathsf{Open}$
+\item $\mathsf{ForceOpen}$
+\end{itemize}
+\end{definition}
+
+Naturally, such recovery process prevents the last-revealer attack, and thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
+Bicorn\todo{how to cite} is a recent work that realizes the above logic into an efficient DRB with an emphasis on simplicity and efficiency (e.g. leveraging homomorphism of timed commitments~\cite{thyagarajan2021efficient} to force-open at most one timed commitment).
+An improvement of Bicorn over Unicorn++ is that there exists an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
+At the same time, context may be important to consider if the optimistic case is unlikely to ever occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ may be more economical.
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
@@ -415,7 +430,7 @@ The goal is to achieve fully functional and practical DRBs.
 Outside the full information model (such that cryptography is allowed) and thus the honest majority assumption, the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary that can bias the output of an honest node by $\Omega(1 / r)$.
 In other words, it is impossible to have a \drbsecure coin flipping protocol with a dishonest majority.
 
-While this may seem to contradict the fault tolerance of delay-based DRBs from Section~\ref{section:vdf}, we note that delay functions help circumvent Cleve's impossibility result in the following two ways.
+While this may seem to contradict the fault tolerance of delay-based DRBs from Section~\ref{section:delay}, we note that delay functions help circumvent Cleve's impossibility result in the following two ways.
 First, timed commitments allow recovery of a value that is withheld (either due to honest or Byzantine fault) and lost from an honest node's perspective.
 In Cleve's proof, the notion of a ``default bit'' is used in such withholding situation whereas timed commitments effectively deprecate this default bit mechanism, sidestepping the proof logic.
 
@@ -459,10 +474,10 @@ In a withholding attack, an adversary can influence the outcome by not publishin
 \toprule
 Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
-Unicorn++ & \multirow{4}{*}{\ref{section:vdf}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Unicorn++ & \multirow{4}{*}{\ref{section:delay}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
 RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$\tnote{§} & \cmark & \xmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
-Narwhal & & Timed commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Bicorn & & Timed commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 \midrule
 RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
 EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
@@ -540,7 +555,7 @@ In this paper, we systematize distributed randomness beacons.
 %and describe a modular framework comprising two components: selection of entropy providers and beacon output generation, which can be used to analyze a DRB's design.
 Our systematization highlights important insights both for practitioners and researchers. Based on practical considerations such as scalability (in $n$), flexibility (reconfiguration and independent participation), robustness (fault tolerance and max damage), and randomness quality (true randomness versus pseudorandomness), we would advise practitioners planning to deploy a DRB as follows:
 \begin{itemize}
-    \item VDF-based protocols stand above the competition in terms of scalability, flexibility, and robustness, enabling an efficient DRB with unlimited, open participation and security given any honest participant. In theory, VDFs appear to be a silver bullet for DRBs, though they have yet to be widely used in practice and assumptions about VDF security and hardware speeds remain relatively new. They also invoke a unique practical cost in that \emph{somebody} must compute a VDF (preferably by running specialized hardware), which also induces latency into the DRB.
+    \item \todo{change to delay-based throughout the section?}VDF-based protocols stand above the competition in terms of scalability, flexibility, and robustness, enabling an efficient DRB with unlimited, open participation and security given any honest participant. In theory, VDFs appear to be a silver bullet for DRBs, though they have yet to be widely used in practice and assumptions about VDF security and hardware speeds remain relatively new. They also invoke a unique practical cost in that \emph{somebody} must compute a VDF (preferably by running specialized hardware), which also induces latency into the DRB.
     \item If not using VDFs, practitioners need to think critically about two design dimensions: how large is the set of participants, and how frequently will it change? Given a small, static set of participants, DKG-based protocols, e.g. HERB (from threshold encryption) and drand (from DVRF), scale better than PVSS-based protocols. HERB and drand are both competitive in this setting, differing in randomness quality and max damage.
     \item For a small but dynamic set of participants, PVSS-based protocols offer better flexibility (by avoiding a costly DKG setup per reconfiguration) and randomness quality. Committees may be needed to scale to more participants.
     \item Given a large, dynamic set of participants, protocols with private lotteries like Algorand offer better scalability and flexibility simultaneously although the randomness quality is potentially affected by withholding.
