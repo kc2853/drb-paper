@@ -30,9 +30,10 @@ We denote our computational model's security parameter by $\lambda$. We call a f
 
 \subsection{Strawman Protocol: Rock-Paper-Scissors}
 Distributed randomness assuming perfect synchrony is straightforward. Consider the following one-round ``rock-paper-scissors'' protocol where each participant $i$ broadcasts its \textit{entropy contribution} (i.e. independently generated randomness) $e_i \in \groupZ_p$ to every other participant at the same time as per simultaneity observed (say) in rock-paper-scissors. Naturally, its protocol output $\drboutput$ (via addition in a finite group) can be given by
-\[
+\begin{equation}
+\label{equation:addall}
 \drboutput = \sum_{i = 1}^n e_i
-\]
+\end{equation}
 such that repeating this mechanism periodically would yield a DRB.
 
 This protocol is simple and, under a perfect synchrony assumption, is secure as long as any single participant chooses its $e_i$ randomly. However, security falls apart completely once messages can be delayed.
@@ -44,24 +45,44 @@ Consider a simple scenario with three participants $\{P_1, P_2, P_3\}$ participa
 A classic fix for the above issue is to introduce a cryptographic commitment step before each party reveals its entropy contribution.
 \begin{enumerate}
 \item \underline{Commit}. Each participant $P_i$ broadcasts a cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy contribution $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties~\cite{blum1983coin,damgaard1998commitment}.
-\item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens its commitment by revealing the pair $(e_i, r_i)$. In turn, $P_i$ verifies each received pair $(e_j, r_j)$ for $j \neq i$ by recomputing $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\drboutput$ can canonically be given by
-\[
-\drboutput = \sum_{i = 1}^n e_i
-\]
-all of which can be repeated to produce a DRB. If any of the checks do not pass, however, the protocol aborts.
+\item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens its commitment by revealing the pair $(e_i, r_i)$. In turn, $P_i$ verifies each received pair $(e_j, r_j)$ for $j \neq i$ by recomputing $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\drboutput$ can canonically be computed via the aforementioned Equation~\ref{equation:addall}. If any of the checks do not pass, however, the protocol aborts and outputs $\perp$.
 \end{enumerate}
 
-With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from a faulty node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
+With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
 
 \subsection{Ideal Distributed Randomness Beacon}
 Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) each round's output. The beacon output should also be verifiable by any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
 
 \begin{definition}[Ideal distributed randomness beacon]
-\todo{rewrite definitions based on $\adv = (\adv_0, \adv_1, \adv_2)$ and $\drboutput_b$ where $\drboutput_1 \gets \Pi_{\adv_1, \chal_1}$ vs $\drboutput_0 \gets \Pi_{\chal_0}$}
 A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following four properties.
+
+\begin{figure}[h]
+\begin{center}
+\framebox{
+\begingroup
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l}
+\underline{$\gamedrbsecurity(\lambda)$}\\
+$pp \gets \drb.\mathsf{Setup}(\lambda)$\\
+$\sigma \gets \adv_0(pp)$\\
+$\drboutput_{r, 1} \gets \drb^r_{\adv_1, \nodes\setminus\adv_1}$\\
+$\drboutput_{r, 0} \gets \drb^r_{\nodes}$\\
+$b' \gets \adv_2(\sigma, \drboutput_{r, b})$\\
+Return $b = b'$
+\end{tabular}
+\endgroup}
+\end{center}
+\caption{Security game for the unbiasability security property.}
+\end{figure}
+
 \begin{enumerate}
-\item Bias Resistance (or Unbiasability). No PPT adversary $\adv$ can bias any $c$ bits of $\drboutput_r$. In other words, $\adv$ cannot force $c$ bits of $\drboutput_r$ to be some arbitrarily chosen bits with probability greater than $\frac{1}{2^c} + \negl(\lambda)$.
-\item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_r$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $r$ denotes the current round).
+\item Unbiasability. No PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$...
+\todo{elaborate}
+\begingroup\makeatletter\def\f@size{8}\check@mathfonts
+\begin{equation*}
+\advdrbsecurity(\lambda) = \left|\Pr\left[\gamedrbsecurityone(\lambda) = 1\right] - \Pr\left[\gamedrbsecurityzero(\lambda) = 1\right]\right|
+\end{equation*}\endgroup
+% \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_r$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $r$ denotes the current round).
 \item Liveness. A la game-based security, we can define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_r = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of round $r$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
 % \item Public Verifiability. Any third party should be able to verify the beacon output based on public information. See Appendix~\ref{appendix:pv} for a game-based formulation.
 \end{enumerate}
