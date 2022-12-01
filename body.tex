@@ -547,7 +547,7 @@ STROBE & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(
 
 \subsection{Adaptive Security}
 \label{subsection:adaptive}
-A DRB is \textit{adaptively secure} if its security properties remain unaffected against an adaptive adversary instead of a static one. Otherwise, it is \textit{adaptively insecure}. In this section, we discuss three ways in which adaptive security is achieved.
+A DRB is \textit{adaptively secure}\todo{mention square root result from collective coin flipping, also threshold BLS paper this year} if its security properties remain unaffected against an adaptive adversary instead of a static one. Otherwise, it is \textit{adaptively insecure}. In this section, we discuss three ways in which adaptive security is achieved.
 
 \begin{enumerate}
 \item \textbf{$|\committee_\epochv|$ is greater than $t$ or equal to 0.} Due to the $t$-limited adversary assumption, a large enough $\committee_\epochv$ (or an empty one as per Section~\ref{section:dvrf}) guarantees adaptive security. Otherwise, a protocol may be vulnerable. In HydRand and GRandPiper (where $|\committee_\epochv| = 1$), an adaptive adversary can corrupt the next $t$ \epoch leaders to predict $t + 1$ future \epochs. In Ouroboros, it can adaptively corrupt the entire $\committee_\epochv$ (which could probabilistically be less than or equal to $t$ in size) publicly known in advance.
