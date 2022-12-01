@@ -51,12 +51,10 @@ A classic fix for the above issue is to introduce a cryptographic commitment ste
 With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
 
 \subsection{Ideal Distributed Randomness Beacon}
-Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) each round's output. The beacon output should also be verifiable by any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
-
-\begin{definition}[Ideal distributed randomness beacon]
-A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following four properties.
+Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) each round's output. The beacon output should also be verifiable by \todo{remove}any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
 
 \begin{figure}[h]
+\label{figure:unbias}
 \begin{center}
 \framebox{
 \begingroup
@@ -65,15 +63,18 @@ A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satis
 \underline{$\gamedrbsecurity(\lambda)$}\\
 $pp \gets \drb.\mathsf{Setup}(\lambda)$\\
 $\sigma \gets \adv_0(pp)$\\
-$\drboutput_{r, 1} \gets \drb^r_{\adv_1, \nodes\setminus\adv_1}$\\
+$\drboutput_{r, 1} \gets \drb^r_{\adv_1(\sigma) \cup \left(\nodes\setminus\adv_1(\sigma)\right)}$\\
 $\drboutput_{r, 0} \gets \drb^r_{\nodes}$\\
 $b' \gets \adv_2(\sigma, \drboutput_{r, b})$\\
 Return $b = b'$
 \end{tabular}
 \endgroup}
 \end{center}
-\caption{Security game for the unbiasability security property.}
+\caption{Security game for DRB's unbiasability security property.}
 \end{figure}
+
+\begin{definition}[Ideal distributed randomness beacon]
+A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following four properties.
 
 \begin{enumerate}
 \item Unbiasability. No PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$...
