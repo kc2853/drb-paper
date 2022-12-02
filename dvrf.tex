@@ -1,0 +1,47 @@
+%!TEX root = main.tex
+
+\section{Protocols With No Marginal Entropy}
+\label{section:dvrf}
+While DRBs can have all nodes ($|\committee_\epochv| = n$) or some subset of nodes ($1 \leq |\committee_\epochv| < n$) contribute marginal entropy to the beacon output every \epoch, it is possible to devise a protocol where no node contributes any marginal entropy ($|\committee_\epochv| = 0$) as the beacon runs. The advantage of this approach is that no node needs to generate and communicate any fresh entropy (alleviating communication cost) while the disadvantage is that the entire beacon is permanently predictable once compromised (perhaps undetectably).
+
+\subsection{From Distributed Verifiable Random Function}
+Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{groth2021non,camenisch2022internet,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudomt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with access to $sk$.
+
+\begin{definition}[Distributed verifiable random function]
+A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
+\begin{itemize}
+\item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
+\item $\mathsf{PartialEval}(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
+\item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i) \rightarrow \{0, 1\}$ verifies the correctness of the partial evaluation $y_i$ given its proof $\pi_i$, an input $x$, and a node's public key $pk_i$.
+\item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A}) \rightarrow (y, \pi)$ outputs the DVRF evaluation $y$ as well as its proof of correctness $\pi$ given a set $A$ of $t + 1$ nodes and their outputs of $\mathsf{PartialEval}(sk_i, x)$, all of which pass $\mathsf{PartialVerify}$.
+\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi) \rightarrow \{0, 1\}$ verifies the correctness of the DVRF evaluation $y$ given $\pi$, input $x$, and public keys.
+\end{itemize}
+% Naturally, it should satisfy VRF's properties of provability, uniqueness, and pseudorandomness. See Appendix~\ref{appendix:dvrf}.
+\end{definition}
+
+\noindent\textbf{DVRF-based DRB.} Each beacon output of a DVRF-based DRB is then given by
+\begingroup\makeatletter\def\f@size{8}\check@mathfonts
+\[
+\drboutput_\epochv = \mathsf{DVRF.Combine}(A, \{\mathsf{DVRF.PartialEval}(sk_i, f(\drboutput_{\epochv - 1}))\}_{i \in A})[0]
+\]\endgroup
+where $sk_i$ denotes each node's secret key after a DKG and $f$ denotes some deterministic function of $\drboutput_{\epochv - 1}$.
+
+The output is equivalent to one trustworthy master node with complete knowledge of $sk$ computing the output as:
+\[
+\drboutput_\epochv = VRF_{sk}(f(\drboutput_{\epochv - 1}))
+\]
+As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. Unpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
+
+\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output (assuming a hash function as a random oracle~\cite{bellare1993random}). Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
+\[
+\drboutput_\epochv = H(\mathsf{Sign}_{sk}(\epochv \mathbin\Vert \drboutput_{\epochv - 1}))
+\]
+where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at least $t + 1$ nodes with $sk$ as the implied group secret key generated via DKG. The actual computation of $\drboutput_\epochv$ involves combining of partial signatures computed using $sk_i$ (see Appendix~\ref{appendix:bls}).\\
+
+\noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist several other variations.
+\begin{itemize}
+\item RandHerd~\cite{syta2017scalable}. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This allows a tree structure of nodes and thus helps reduce the overall communication complexity. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_\epochv$ where $t_\epochv$ denotes the timestamp at the beginning of \epoch $\epochv$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = \epochv \mathbin\Vert \drboutput_{\epochv - 1}$ a la Dfinity or drand.
+\item DDH-DRB~\cite{galindo2020fully}. Each \epoch of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each \epoch of Dfinity) rely on verifying pairing equations (see Appendix~\ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if each pairing equation is replaced with a DLEQ NIZK (Appendix~\ref{appendix:dleq}). The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix~\ref{appendix:ddh-dvrf} for details.
+\item GLOW-DRB~\cite{galindo2020fully}. Each \epoch involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix~\ref{appendix:glow-dvrf} for details.
+\item Strobe~\cite{beaver2021strobe}. In Strobe, threshold RSA decryption conceptually replaces the threshold BLS process. Note that RSA decryption and BLS signature are similar in that one needs a secret value (decryption key $d$ and signer's $sk$, respectively) to perform the respective operations. Then the analogy is that threshold BLS distributes $sk$ in a threshold manner (via DKG) while threshold RSA distributes $d$ (not via DKG). The difference is that the latter requires a trusted setup (knowledge of factors of $N$, the RSA modulus), and this is Strobe's main downside. Its benefit of using threshold RSA decryption is equally clear: the simple relationship $\drboutput_\epochv^d = \drboutput_{\epochv - 1} \pmod N$ allows efficient generation of all past beacon outputs and thus extremely efficient verification of the entire beacon.
+\end{itemize}

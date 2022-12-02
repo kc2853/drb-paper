@@ -1,0 +1,82 @@
+%!TEX root = main.tex
+
+\section{Delay-Based Protocols}
+\label{section:delay}
+One way to prevent the last-revealer attack is to add a delay function after collecting each node's entropy contribution, delaying the derivation of $\drboutput_\epochv$. As long as the delay is suitably long, no participant can predict what effect its contribution will have on the output before its share must be published. A verifiable delay function (VDF)~\cite{boneh2018verifiable,boneh2018survey} can be used to accomplish this.
+
+\begin{definition}[Verifiable delay function]
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify once computed. It can be described by the following algorithms.
+\begin{itemize}
+\item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and time bound $T$.
+\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ outputs $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
+\item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the correct evaluation of the VDF on input $x$ and 0 otherwise.
+\end{itemize}
+\end{definition}
+
+The two well-known VDF proposals, one due to Pietrzak~\cite{pietrzak2018simple} and the other due to Wesolowski~\cite{wesolowski2019efficient}, make use of the (believed) inherently sequential nature of repeated squaring in a group of unknown order.
+VDFs can be used to derive unbiasable randomness either from existing, biasable protocols (e.g. commit-reveal or public implicit beacons) or as the building block for an entirely new protocol (like RandRunner~\cite{schindler2021randrunner}).
+
+\subsection{Modifying Commit-Reveal}
+\label{subsection:modifying-commit-reveal}
+The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF precursor based on computing square roots modulo a prime) in a manner similar to commit-reveal. In fact, commitments are no longer needed; participants simply publish their entropy contributions directly. Unicorn can be improved using a VDF in place of Sloth to achieve an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as \textit{Unicorn++}. It runs as follows.
+\begin{enumerate}
+    \item \textbf{Collect.} Every participant $P_i$ broadcasts its entropy contribution $e_i$ between time $t_1$ and $t_2$ (assuming synchronized clocks). At $t_2$, they are combined into $seed_\epochv = H(e_1,\ldots, e_n)$.
+    \item \textbf{Evaluate.} Some party evaluates the VDF with $seed_\epochv$ and a chosen delay parameter $T$ (part of $pp$) via
+    $$y_\epochv, \pi_\epochv = \mathsf{VDF.Eval}(pp, seed_\epochv)$$
+    such that $\drboutput_\epochv = H(y_\epochv)$, which is posted and can be efficiently verified by any observer using $\pi_\epochv$ via $\mathsf{VDF.Verify}$.
+\end{enumerate}
+
+As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design (it does not matter for security who evaluates, since VDFs are deterministic and verifiable) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
+
+We quickly note a variation of above: as proposed in~\cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices~\cite{clark2010use} or PoW blockchains~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
+Unfortunately, they do not easily compare to other DRBs, as the security model depends on the cost of manipulating the external beacon, which has not yet been formally analyzed.
+
+\subsection{Adding Recovery to Commit-Reveal}
+Another way to modify commit-reveal is to leverage a different class of delay functions called timed commitments~\cite{boneh2000timed} in place of regular commitments used in commit-reveal.
+The idea is simple: timed commitments are commitments with an additional recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
+
+\begin{definition}[Timed commitment]
+A \textit{timed commitment} is a commitment with the following additional recovery process (also known as forced opening) where the committed value can be recovered in $T$ sequential steps but not before.
+\begin{itemize}
+\item $\mathsf{ForceOpen}(C) \rightarrow (x, r_0)$ outputs the committed value $(x, r_0)$ in $T$ sequential steps given a commitment $C = \mathsf{Com}(x, r_0)$.
+\end{itemize}
+\end{definition}
+
+Naturally, such recovery process prevents the last-revealer attack, and thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
+Bicorn~\cite{choi2022bicorn} is a recent work that realizes the above logic in an efficient DRB with an emphasis on simplicity and efficiency (e.g. leveraging homomorphism of timed commitments~\cite{thyagarajan2021efficient} to force-open at most one timed commitment).
+An improvement of Bicorn over Unicorn++ is that there exists an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
+At the same time, context may be important to consider if the optimistic case is unlikely to ever occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ may be more economical.
+
+\subsection{Chain of VDFs}
+\label{subsection:randrunner}
+The disadvantage of above is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
+Also, the rate at which beacon outputs are generated is limited by $T$ (by default in Unicorn++ and in Bicorn's $\mathsf{ForceOpen}$ case).
+RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-\epoch consensus while allowing each \epoch's duration to be independent of $T$ in the optimistic case.
+As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame.
+Trapdoor VDFs~\cite{wesolowski2019efficient} with the strong uniqueness property~\cite{schindler2021randrunner} serve as its key building block.
+
+\begin{definition}[Strongly unique trapdoor VDF]
+A \textit{strongly unique trapdoor VDF} extends VDF by allowing any participant who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides \textit{strong uniqueness}, i.e. uniqueness even when VDF's public parameters are adversarially generated. It can be described by the algorithms $\mathsf{TVDF} = (\mathsf{Setup}, \mathsf{VerifySetup}, \mathsf{TrapdoorEval}, \mathsf{Eval}, \mathsf{Verify})$, extending those of a traditional VDF with the following.
+\begin{itemize}
+    \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ verifies the validity of $pp$.
+    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in time less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
+\end{itemize}
+\end{definition}
+
+Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}. After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
+\begin{enumerate}
+    \item \textbf{Setup.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$, which is verified by others via $\mathsf{TVDF.VerifySetup}$. This ensures that the uniqueness of Pietrzak's VDF is guaranteed. At the end, all participants should have the same set of public parameters $\{pp_i\}_{i = 1, ..., n}$. The initial value $\drboutput_0$ used to bootstrap the protocol is also agreed upon.
+    \item \textbf{Execution.} A unique leader for \epoch $\epochv$, $l_\epochv$ is selected via either round-robin (i.e. taking turns in some permuted order) or random selection (i.e. using $\drboutput_{\epochv - 1}$ as seed, originally called randomized sampling). The implications of each are discussed in Section~\ref{subsubsection:public-committee-selection}. Each \epoch can proceed in two ways depending on $l_\epochv$'s status.
+    \begin{itemize}
+        \item \textbf{Honest Leader (Common Case).} The leader advances the protocol into the next \epoch by broadcasting
+        $$y_\epochv, \pi_\epochv = \mathsf{TVDF.TrapdoorEval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}), sk_{l_\epochv})$$
+        in which case other nodes check the correctness of the received values via $\mathsf{TVDF.Verify}$. Then the beacon output is
+        $$\drboutput_\epochv = H_2(y_\epochv)$$
+        where $H_1$ and $H_2$ map values from the beacon output space to the VDF space and vice versa.
+        \item \textbf{Dishonest Leader.} Given a dishonest leader that withholds or broadcasts an invalid message, every non-leader computes and broadcasts the \epoch's VDF output via
+        $$y_\epochv, \pi_\epochv = \mathsf{TVDF.Eval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}))$$
+        in $T$ sequential steps. Then $\drboutput_\epochv = H_2(y_\epochv)$ similarly.
+    \end{itemize}
+\end{enumerate}
+
+Consequently, RandRunner generates each beacon output rapidly with only $O(n)$ communication complexity in the common case. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its \textit{pseudorandomness} (as opposed to \textit{true randomness}~\cite{cascudomt, das2021spurt}) sprouting from the deterministic nature of VDFs, RandRunner exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. These benefits have a counterpart, however. Namely, RandRunner can never achieve the ideal 1-unpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $d$ as in RandRunner's $d$-unpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.

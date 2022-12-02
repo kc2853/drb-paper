@@ -1,0 +1,64 @@
+%!TEX root = main.tex
+
+\section{Commit-Reveal-Punish}
+\label{section:commit-reveal-punish}
+Another approach to preventing last-revealer attacks are \textit{commit-reveal-punish} schemes, which assume that all participants are rational entities and use financial penalties to discourage withholding shares. This requires some form of \textit{escrow} (e.g. smart contracts on Ethereum~\cite{wood2014ethereum}) to collect initial deposits from the participants as part of their commitment, which can be \emph{slashed} (destroyed) or redistributed if misbehavior is detected. Commit-reveal-punish schemes defend against the last-revealer attack either by forcing every participant to reveal~\cite{youcai2017randao, andrychowicz2014secure, bentov2014use} or by tolerating some number of withholding participants via a threshold variant of commit-reveal~\cite{david2020economically}. These two approaches are summarized in the following.
+
+\subsection{Enforcing Every Reveal}
+Extending a basic commit-reveal, RANDAO~\cite{youcai2017randao} implements commit-reveal-punish in the most literal sense via punishing participants that withhold during the reveal phase by confiscating (and redistributing) each deposit of coins required during the initial commit phase. If no one withholds, all participants receive their deposits back, and all entropy contributions are aggregated and broadcast as $\drboutput_\epochv$ as usual.
+
+The drawback of protocols like RANDAO is two-fold. First, honest failures are also punished without much flexibility. Second, a high deposit of $O(n^2)$ coins is required to provide fairness~\cite{andrychowicz2014secure, bentov2014use}. These imply that the protocol is suitable in cases where each participant is expected to be highly available and possess an ample supply of coins, but not otherwise.
+Deploying these protocols in practice also requires an understanding of the value to participants of manipulating the beacon (to ensure the opportunity cost of lost deposits is higher). This assumption is reasonable for applications such as a lottery but may not apply for a public beacon whose use may not be known in advance.
+
+% Note that it is possible to optimize in a lottery setting (i.e. where we choose a random winner not a number) such that constant or no deposits are required~\cite{bartoletti2017constant, miller2017zero} by constructing a binary-tree tournament consisting of $n - 1$ two-player lottery instances (which can be realized as per~\cite{andrychowicz2014fair,andrychowicz2014secure}) in $O(\log n)$ rounds where a participant automatically loses by not revealing. While this mechanism allows the protocol to tolerate withholding, it is unclear as to how to extend a random winner into a random number for the purpose of a DRB.
+
+\subsection{Rational Threshold Commit-Reveal}
+Economically Viable Randomness (EVR)~\cite{david2020economically} provides an alternative requiring \textit{constant} deposits while tolerating (honest) faults to an extent. This is achieved by devising a threshold variant of commit-reveal (i.e. in which $t + 1$, as opposed to all $n$, nodes reveal to compute $\drboutput_\epochv$) and having an incentive mechanism around it. The threshold nature also invites collusion, which is counteracted by EVR's \textit{informing} mechanism: if the escrow is notified of collusion (via informing), it rewards the informer and slashes the deposits of all others (\textit{collective punishment}). Realizing this, nodes are discouraged to collude, fearing another node within the collusion would inform.
+
+EVR requires multiple cryptographic building blocks (many are used by other DRBs as well), which we introduce here. EVR uses Escrow-DKG~\cite{david2019rational}, an extension of DKG (distributed key generation)~\cite{pedersen1991threshold,gennaro1999secure}, to realize a threshold commit-reveal. DKG allows a set of $n$ nodes to collectively generate a pair $(sk, pk)$ of group secret and public keys such that $sk$ is shared and ``implied'' (i.e. never computed explicitly) by $n$ nodes via the following building blocks.
+
+\begin{definition}[$(t, n)$-secret sharing]
+A \textit{$(t, n)$-secret sharing} scheme (also known as Shamir's secret sharing~\cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some \textit{secret sharing polynomial} $p \in \groupZ_q[X]$ of degree $t$ among $n$ participants each holding a \textit{share} $s_i = p(i)$ for $i = 1, ..., n$. Any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix~\ref{appendix:lagrange}), but smaller subsets cannot.
+\end{definition}
+
+\begin{definition}[Verifiable secret sharing]
+\textit{Verifiable secret sharing} (VSS)~\cite{feldman1987practical, pedersen1991non} protects a $(t, n)$-secret sharing scheme against a malicious dealer sending incorrect shares by providing an additional verification step per share. VSS can be described by the following algorithms.
+\begin{itemize}
+    \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
+    \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ is executed by the dealer with secret $s$ to generate secret shares $\{s_i\}$ (each of which is sent to node $i$ correspondingly) as well as commitment $C$ to the secret sharing polynomial of degree $t$.
+    \item $\mathsf{ShareVerify}(s_i, C) \rightarrow \{0, 1\}$ verifies the correctness of the share $s_i$ using $C$.
+    \item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ reconstructs $s$ via Lagrange interpolation from a set $A$ of $t + 1$ nodes that pass $\mathsf{ShareVerify}$.
+\end{itemize}
+See Appendix~\ref{appendix:vss} for details.
+% Feldman-VSS and Pedersen-VSS are two of the most popular VSS protocols. See Appendix~\ref{appendix:vss} for details.
+\end{definition}
+
+\begin{definition}[Distributed key generation]
+A \textit{distributed key generation} (DKG)~\cite{pedersen1991threshold,gennaro1999secure} allows $n$ participants to collectively generate a \textit{group public key} (for an implied \textit{group secret key}), \textit{individual secret keys}, and \textit{individual public keys} without a trusted third party. It does so by running $n$ instances of VSS (with each participant acting as a dealer for its independent secret). Unlike secret sharing schemes, DKG can be used repeatedly for an unlimited number of times, as the group secret key does not need to be computed explicitly.
+\begin{itemize}
+    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) for an implied group secret key $sk$ given security parameter $1^\lambda$, $n$, and threshold parameter $t$.
+\end{itemize}
+See Appendix~\ref{appendix:dkg} for details.
+% Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix~\ref{appendix:dkg} for details.
+\end{definition}
+
+\begin{definition}[Escrow-DKG]
+Escrow-DKG~\cite{david2019rational} is a rational variant of DKG with the following variations.
+\begin{itemize}
+    \item Unlike traditional DKG, Escrow-DKG does not a priori assume a $t$-limited adversary. However, it assumes the participants are rational in a setting where collusion of more than $t$ participants would be financially punished such that, effectively, we have a $t$-limited adversary.
+    \item It assumes an escrow denoted by $\escrow$.
+    \item Escrow-DKG has a deposit requirement, considers how a DKG may fail, and associates a financial penalty to each failure case to disincentivize misbehavior.
+\end{itemize}
+\end{definition}
+
+The crux is that EVR adapts Escrow-DKG to realize a DRB by using the group secret (i.e. the implied group secret key $sk$ after a DKG) as $\drboutput_\epochv$, retrievable from $t + 1$ $sk_i$'s. EVR proceeds in four phases---Setup, Commit, Inform, and Reveal.
+\begin{enumerate}
+    \item \textbf{Setup.} Every participant registers by depositing 1 coin per secret (i.e. entropy contribution), and $\escrow$ accordingly sets the threshold parameter $t = 2n / 3$ required for Escrow-DKG. It also sets the \textit{illicit profit bound} (i.e. bound on extra profit an adversary can gain as a result of using EVR's beacon output as opposed to an ideal beacon's output) to $n - t = n / 3$ and the \textit{informing reward} to $n$.
+    \item \textbf{Commit.} Escrow-DKG is run, and each participant ends up with an individual key pair $(sk_i, pk_i)$ as well as $pk$.
+    \item \textbf{Inform.} Any colluding participant that preemptively knows $\drboutput_\epochv$ can inform $\escrow$ to earn a high informing reward obtained via collective punishment. Due to this phase, the incentive is that no one should collude.
+    \item \textbf{Reveal.} $\drboutput_\epochv = sk$ is reconstructed once $t + 1$ (or more) honest participants reveal their $sk_i$'s. Initial deposits are returned after verification by $\escrow$. If $\drboutput_\epochv$ is not reconstructed by the end, $\escrow$ also initiates collective punishment.
+\end{enumerate}
+
+While a node's malicious behaviors in EVR are limited to withholding to abort the protocol during Reveal or colluding to learn $\drboutput_\epochv$ before Reveal, its security comes from the fact that both are disincentivized. First, setting the illicit profit bound to $n - t$ makes withholding unprofitable, as $n - t$ or more participants that withhold to successfully abort EVR would earn an amount bounded by the illicit profit bound at the cost of losing their deposits. This prevents biasability. Second, setting the informing reward to $n$ makes informing more profitable than any illicit profit such that any coalition of nodes colluding to preemptively learn $\drboutput_\epochv$ is disincentivized due to the inevitability of an informer. This prevents predictability.
+
+Despite the benefits of the threshold nature and constant deposits enabling a flexible incentive mechanism, EVR requires further economic assumptions beyond those needed for commit-reveal-punish. Specifically, EVR assumes a limit on illicit profit and a bound on the total number of coins $n / 3$ (a participant with more coins than this is not allowed to join EVR as per decentralization assumption~\cite{david2020economically}).
