@@ -10,7 +10,7 @@ Of the $n$, up to $t$ nodes may be \emph{faulty} (also called \textit{malicious}
 
 We assume a standard public key infrastructure (PKI) such that all nodes know each others' public keys, and that all nodes are connected via point-to-point secure (providing authenticity) communication channels. All messages exchanged by honest nodes are digitally signed by the sender, and recipients always validate each message before proceeding. By default, we assume a \textit{synchronous} network, in which there exists some known finite message delay bound $\Delta$. This means that an adversary can delay a message by at most $\Delta$.
 
-Moreover, we assume a computationally bounded adversary $\adv$ which runs in probabilistic polynomial time (PPT). In particular, this means $\adv$ cannot break standard cryptographic constructions such as hash functions, digital signatures, etc. 
+Moreover, we assume a computationally bounded adversary $\adv$ which runs in probabilistic polynomial time (PPT). In particular, this means $\adv$ cannot break standard cryptographic constructions such as hash functions, digital signatures, etc.
 For delay-based protocols, we also assume the adversary cannot compute delay functions in fewer than $T$ time steps.
 The three ways in which $\adv$ can deviate from a protocol are omitting a message (i.e. \textit{withholding attack}), sending invalid messages, and colluding to coordinate an attack based on private information shared among malicious nodes. Additionally, $\adv$ has the power to perform a \textit{grinding attack}, in which $\adv$ privately precomputes and iterates through polynomially many combinations of inputs to an algorithm in order to derive a desirable output. By default, we assume a \textit{static} adversary that chooses nodes to be corrupted before a protocol run whereas an \textit{adaptive} adversary can choose nodes to be corrupted at any time during a protocol run (we assume a model where nodes remain corrupted once corrupted).
 
@@ -77,15 +77,23 @@ A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, 
 is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 
 % \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_\epochv$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $\epochv$ denotes the current round).
-\item Liveness. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
+\item Liveness\todo{is this part of unbias game?}. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
 
-\item \todo{separate unpred/pseudorandom?}
+\item Unpredictability.
+We define three types of unpredictability.
+Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\drboutput_\epochv$ becomes publicly available) at $\drbtimeone$ in the optimistic case (if every node is honest and online) and at $\drbtimetwo$ in the worst case.
+\begin{itemize}
+\item A DRB is \textit{\intraunpredictable} if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict $\drboutput_\epochv$ before $\drbtimeone$ with negligible probability.
+\item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
+\item A DRB is \textit{$d$-\interunpredictable} if $\adv$ can predict $\drboutput_{\epochv + d}$ before $\drbtimetwo$ with negligible probability.
+\end{itemize}
 \end{enumerate}
 \end{definition}
 
 In the unbiasability game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first precomputes an advice string ($\sigma$) given the DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ (which may include the previous beacon output, list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
 Our definition is quite general in that the advice string may encode any biasing ``strategy.'' This string is taken by $\adv_1$, which then corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.\footnote{Say something about adaptive vs. static corruption models here. Where are they used?}
 In contrast, $\drboutput_{\epochv, 0}$ denotes the honest beacon output generated by $\nodes$ (and not involving $\adv_1$).
+For both, the notation $\drb^\epochv_{\tilde{\nodes}}$ denotes a DRB in \epoch $\epochv$ with a participant set $\tilde{\nodes}$.
 Then $\adv_2$ distinguishes the two cases given the same advice string.
 A DRB is unbiasable if the adversary can do so with negligible probability.
 Note that our definition includes the possibility of \emph{private} biasing, e.g. the adversary biases the result in a way that requires a secret key to detect.
