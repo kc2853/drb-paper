@@ -429,7 +429,7 @@ The output is equivalent to one trustworthy master node with complete knowledge 
 \]
 As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. Unpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
 
-\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output. Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
+\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output (assuming a hash function as a random oracle\todo{ROM appendix?}). Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
 \[
 \drboutput_\epochv = H(\mathsf{Sign}_{sk}(\epochv \mathbin\Vert \drboutput_{\epochv - 1}))
 \]
@@ -440,6 +440,7 @@ where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at le
 \item RandHerd~\cite{syta2017scalable}. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This allows a tree structure of nodes and thus helps reduce the overall communication complexity. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_\epochv$ where $t_\epochv$ denotes the timestamp at the beginning of \epoch $\epochv$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = \epochv \mathbin\Vert \drboutput_{\epochv - 1}$ a la Dfinity or drand.
 \item DDH-DRB~\cite{galindo2020fully}. Each \epoch of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each \epoch of Dfinity) rely on verifying pairing equations (see Appendix~\ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if each pairing equation is replaced with a DLEQ NIZK (Appendix~\ref{appendix:dleq}). The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix~\ref{appendix:ddh-dvrf} for details.
 \item GLOW-DRB~\cite{galindo2020fully}. Each \epoch involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix~\ref{appendix:glow-dvrf} for details.
+\item Strobe~\cite{beaver2021strobe}. In Strobe, threshold RSA decryption conceptually replaces the threshold BLS process. Note that RSA decryption and BLS signature are similar in that one needs a secret value (decryption key $d$ and signer's $sk$, respectively) to perform the respective operations. Then the analogy is that threshold BLS distributes $sk$ in a threshold manner (via DKG) while threshold RSA distributes $d$ (not via DKG). The difference is that the latter requires a trusted setup (knowledge of factors of $N$, the RSA modulus), and this is Strobe's main downside. Its benefit of using threshold RSA decryption is equally clear: the simple relationship $\drboutput_\epochv^d = \drboutput_{\epochv - 1} \pmod N$ allows efficient generation of all past beacon outputs and thus extremely efficient verification of the entire beacon.
 \end{itemize}
 
 \section{Discussions}
@@ -536,7 +537,7 @@ drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None &
 RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
 DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
 GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-STROBE & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
+Strobe & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
@@ -547,7 +548,7 @@ STROBE & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(
 \item[*] Each committee consists of a leader by default or by expectation.
 \item[†] PBB (public bulletin board) is assumed.
 \item[‡] Verification of Pietrzak's VDF is logarithmic in $T$ (VDF's delay parameter).
-\item[§] $d = t$ for RandRunner's $d$-unpredictability assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
+\item[§] $d = t$ for RandRunner's $d$-unpredictability\todo{match w def} assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
 \item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \end{tablenotes}
 \end{threeparttable}
