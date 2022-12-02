@@ -56,17 +56,17 @@ As a result, the protocol achieves lower communication complexity as well as mor
 Trapdoor VDFs~\cite{wesolowski2019efficient} with the strong uniqueness property~\cite{schindler2021randrunner} serve as its key building block.
 
 \begin{definition}[Strongly unique trapdoor VDF]
-A \textit{strongly unique trapdoor VDF} extends VDF by allowing any participant who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps. Moreover, it provides \textit{strong uniqueness}, i.e. uniqueness even when VDF's public parameters are adversarially generated. It can be described by the algorithms $\mathsf{TVDF} = (\mathsf{Setup}, \mathsf{VerifySetup}, \mathsf{TrapdoorEval}, \mathsf{Eval}, \mathsf{Verify})$, extending those of a traditional VDF with the following.
+A \textit{strongly unique trapdoor VDF} ($\mathsf{TVDF}$) is a VDF with an additional functionality as follows.
+It allows one who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps, while providing \textit{strong uniqueness} (uniqueness even with the knowledge of such trapdoor).
 \begin{itemize}
-    \item $\mathsf{VerifySetup}(\lambda, pp) \rightarrow \{0, 1\}$ verifies the validity of $pp$.
-    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in time less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
+    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in steps less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
 \end{itemize}
 \end{definition}
 
 Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}. After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
 \begin{enumerate}
-    \item \textbf{Setup.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$, which is verified by others via $\mathsf{TVDF.VerifySetup}$. This ensures that the uniqueness of Pietrzak's VDF is guaranteed. At the end, all participants should have the same set of public parameters $\{pp_i\}_{i = 1, ..., n}$. The initial value $\drboutput_0$ used to bootstrap the protocol is also agreed upon.
-    \item \textbf{Execution.} A unique leader for \epoch $\epochv$, $l_\epochv$ is selected via either round-robin (i.e. taking turns in some permuted order) or random selection (i.e. using $\drboutput_{\epochv - 1}$ as seed, originally called randomized sampling). The implications of each are discussed in Section~\ref{subsubsection:public-committee-selection}. Each \epoch can proceed in two ways depending on $l_\epochv$'s status.
+    \item \textbf{Setup.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$. At the end, all participants should have the same set of public parameters $\{pp_i\}_{i = 1, ..., n}$. The initial value $\drboutput_0$ used to bootstrap the protocol is also agreed upon.
+    \item \textbf{Execution.} A unique leader for \epoch $\epochv$, $l_\epochv$ is selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed, originally called randomized sampling). The implications of each are discussed in Section~\ref{subsubsection:public-committee-selection}. Each \epoch can proceed in two ways depending on $l_\epochv$'s status.
     \begin{itemize}
         \item \textbf{Honest Leader (Common Case).} The leader advances the protocol into the next \epoch by broadcasting
         $$y_\epochv, \pi_\epochv = \mathsf{TVDF.TrapdoorEval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}), sk_{l_\epochv})$$
