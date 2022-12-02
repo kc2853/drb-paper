@@ -142,7 +142,7 @@ A \textit{timed commitment} is a commitment with the following additional recove
 \end{definition}
 
 Naturally, such recovery process prevents the last-revealer attack, and thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
-Bicorn\todo{how to cite} is a recent work that realizes the above logic into an efficient DRB with an emphasis on simplicity and efficiency (e.g. leveraging homomorphism of timed commitments~\cite{thyagarajan2021efficient} to force-open at most one timed commitment).
+Bicorn~\cite{choi2022bicorn} is a recent work that realizes the above logic in an efficient DRB with an emphasis on simplicity and efficiency (e.g. leveraging homomorphism of timed commitments~\cite{thyagarajan2021efficient} to force-open at most one timed commitment).
 An improvement of Bicorn over Unicorn++ is that there exists an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
 At the same time, context may be important to consider if the optimistic case is unlikely to ever occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ may be more economical.
 
