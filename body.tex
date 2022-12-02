@@ -74,7 +74,7 @@ Return $b = b'$
 \end{figure}
 
 \begin{definition}[Ideal distributed randomness beacon]
-A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following four properties.
+A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following security properties.
 \begin{enumerate}
 \item Unbiasability.
 A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the following advantage (see Figure~\ref{figure:unbias}) given by
@@ -86,7 +86,7 @@ is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 
 % \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_\epochv$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $\epochv$ denotes the current round).
 \item Liveness. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
-% \item Public Verifiability. Any third party should be able to verify the beacon output based on public information. See Appendix~\ref{appendix:pv} for a game-based formulation.
+
 \item \todo{separate unpred/pseudorandom?}
 \end{enumerate}
 \end{definition}
@@ -292,7 +292,7 @@ A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a su
 \end{itemize}
 \end{definition}
 
-HERB uses threshold ElGamal encryption~\cite{desmedt1990Threshold, fouque2001threshold} (see Appendix~\ref{appendix:thrElGamal} for details) though it can be replaced with any other threshold homomorphic encryption scheme. After an initial DKG ($\mathsf{ThrEnc.DKG}$), the protocol proceeds in two phases. In the first phase, nodes play the role of \textit{entropy providers} each offering some entropy contribution to generate a group ciphertext. In the second phase, nodes play the role of \textit{key holders} performing threshold decryption. While entropy providers and key holders could technically be different nodes, we assume they are the same below.
+HERB uses threshold ElGamal encryption~\cite{desmedt1990Threshold, fouque2001threshold} (see Appendix~\ref{appendix:thrElGamal} for details) though it can be replaced with any other threshold homomorphic encryption scheme. After an initial DKG ($\mathsf{ThrEnc.DKG}$), the protocol proceeds in two phases. In the first phase, nodes play the role of \textit{entropy providers} each offering some entropy contribution to generate a group ciphertext. In the second phase, nodes play the role of \textit{key holders} performing \todo{only time using this term}threshold decryption. While entropy providers and key holders could technically be different nodes, we assume they are the same below.
 
 \begin{enumerate}
     \item \textbf{Publication.} Each entropy provider $P_j$ encrypts its entropy contribution $m_j$ using $\mathsf{ThrEnc.Enc}$ to generate a ciphertext share $c_j$, published along with a proof of correct encryption $\pi_{CE}^{(j)}$ (Appendix~\ref{appendix:ce}) to account for malleability~\cite{dolev2003nonmalleable}. When $\committee_\epochv$ (the agreed set of nodes with verified published $c_j$'s) reaches a certain size (based on system parameters), the included $c_j$'s are summed into group ciphertext $c$ corresponding to group plaintext $m$ (which is in turn a sum of $m_j$'s).
@@ -402,7 +402,7 @@ such that it naturally follows its committee selection mechanism $H(h_\epochv \o
 While DRBs can have all nodes ($|\committee_\epochv| = n$) or some subset of nodes ($1 \leq |\committee_\epochv| < n$) contribute marginal entropy to the beacon output every \epoch, it is possible to devise a protocol where no node contributes any marginal entropy ($|\committee_\epochv| = 0$) as the beacon runs. The advantage of this approach is that no node needs to generate and communicate any fresh entropy (alleviating communication cost) while the disadvantage is that the entire beacon is permanently predictable once compromised (perhaps undetectably).
 
 \subsection{From Distributed Verifiable Random Function}
-Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{hanke2018dfinity,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudomt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with access to $sk$.
+Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{groth2021non,camenisch2022internet,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudomt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with access to $sk$.
 
 \begin{definition}[Distributed verifiable random function]
 A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
@@ -429,7 +429,7 @@ The output is equivalent to one trustworthy master node with complete knowledge 
 \]
 As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. Unpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
 
-\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output. Dfinity~\cite{hanke2018dfinity} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
+\noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output. Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
 \[
 \drboutput_\epochv = H(\mathsf{Sign}_{sk}(\epochv \mathbin\Vert \drboutput_{\epochv - 1}))
 \]
@@ -438,7 +438,7 @@ where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at le
 \noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist several other variations.
 \begin{itemize}
 \item RandHerd~\cite{syta2017scalable}. Two modifications are made in RandHerd. First, a form of ``sharding'' is performed where nodes are randomly configured into groups (each of size $c$) via some initial seed (e.g. derived from RandHound) such that each group emits a group leader while that of the first group is deemed a cothority (collective authority) leader. This allows a tree structure of nodes and thus helps reduce the overall communication complexity. Second, the underlying signature scheme used is Schnorr instead of BLS. Each beacon output in RandHerd is essentially a threshold Schnorr signature on message (as per the original protocol) $m = t_\epochv$ where $t_\epochv$ denotes the timestamp at the beginning of \epoch $\epochv$. As $m$ can technically be chosen (and thus biased) by the leader, one simple improvement can be setting $m = \epochv \mathbin\Vert \drboutput_{\epochv - 1}$ a la Dfinity or drand.
-\item DDH-DRB~\cite{galindo2020fully}. Each \epoch of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each \epoch of Dfinity) rely on verifying pairing equations (see Appendix~\ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if we replace each pairing equation with a DLEQ NIZK (Appendix~\ref{appendix:dleq}) achieving the same effect. The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix~\ref{appendix:ddh-dvrf} for details.
+\item DDH-DRB~\cite{galindo2020fully}. Each \epoch of DDH-DRB involves DDH-DVRF. As $\mathsf{PartialVerify}$ and $\mathsf{Verify}$ from Dfinity-DVRF (i.e. each \epoch of Dfinity) rely on verifying pairing equations (see Appendix~\ref{appendix:dfinity-dvrf}), the speed at which each beacon output is generated can be made faster if each pairing equation is replaced with a DLEQ NIZK (Appendix~\ref{appendix:dleq}). The tradeoff is space, as $\pi$ grows linearly in $n$. See Appendix~\ref{appendix:ddh-dvrf} for details.
 \item GLOW-DRB~\cite{galindo2020fully}. Each \epoch involves GLOW-DVRF, which strikes a balance between Dfinity-DVRF and DDH-DVRF by involving a pairing equation in $\mathsf{Verify}$ (a la Dfinity-DVRF) but a DLEQ NIZK in $\mathsf{PartialVerify}$ (a la DDH-DVRF). This has the effect of generating a compact proof $\pi$ from $\mathsf{Verify}$ while enjoying less computational cost from $\mathsf{PartialVerify}$. See Appendix~\ref{appendix:glow-dvrf} for details.
 \end{itemize}
 
