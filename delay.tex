@@ -2,14 +2,14 @@
 
 \section{Delay-Based Protocols}
 \label{section:delay}
-One way to prevent the last-revealer attack is to add a delay function after collecting each node's entropy contribution, delaying the derivation of $\drboutput_\epochv$. As long as the delay is suitably long, no participant can predict what effect its contribution will have on the output before its share must be published. A verifiable delay function (VDF)~\cite{boneh2018verifiable,boneh2018survey} can be used to accomplish this.
+One way to prevent the last-revealer attack is to compute $\drboutput_\epochv$ using a \emph{delay function} after combining each node's entropy contribution. If the delay is suitably long, no participant can predict what effect a potential contribution will have on the output before its share must be published. Typically, a \emph{verifiable delay function} (VDF)~\cite{boneh2018verifiable,boneh2018survey} is used to accomplish this while maintaining efficient verifiability of the result.
 
 \begin{definition}[Verifiable delay function]
-A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify once computed. It can be described by the following algorithms.
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify once computed. It can be described by the following algorithms:
 \begin{itemize}
-\item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and time bound $T$.
-\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ outputs $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
-\item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the correct evaluation of the VDF on input $x$ and 0 otherwise.
+\item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and delay parameter $T$.
+\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ computes $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
+\item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the unique correct evaluation of the VDF on input $x$ and 0 otherwise.
 \end{itemize}
 \end{definition}
 
