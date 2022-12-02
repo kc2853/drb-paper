@@ -157,23 +157,6 @@ One of the best known DKG schemes is Joint-Feldman~\cite{pedersen1991threshold},
 % \end{itemize}
 % \fi
 
-% \iffalse
-% \subsection{Escrow-DKG}
-% \label{appendix:edkg}
-% It does so by introducing a transparent escrow service that takes participants' deposits and can burn or redistribute them. It proceeds in similar phases as Joint-Feldman. However, any complaint of undesired behavior by a participant against another participant is arbitrated by the escrow and can result in deposits being slashed. The protocol fails once a complaint has been filed.
-
-% Escrow-DKG~\cite{david2019rational} extends DKG to a model where the participants are not expected to follow some predetermined set of instructions and instead are driven to maximize their profit. The modification of Escrow-DKG used in EVR, with $n$ participants and threshold $t$, can be described by the following algorithms:
-% \begin{itemize}
-%     \item $\mathsf{EscrowEnroll}(d, pk, H(C_{0})) \rightarrow \{0,1\}$ is used by a participant with public encryption key $pk$ to register with the escrow with deposit $d$ and hash of commitment to her partial secret $C_{0}$. In case of Feldman-VSS, $C_{0} = g^{s}$. It returns the success of enrollment.
-
-%     \item $\mathsf{Commit}(s) \rightarrow (\{\mathsf{Enc}(pk_i, s_{i})\}, C)$ is used by a participant with secret $s$ to generate encrypted subshares and commitments by executing $\mathsf{VSS.ShareGen}(s)$. For Feldman-VSS, it outputs commitments $C_j = g^{a_j}$ for $0 \le j \le t$ to the coefficients of the secret sharing polynomial and subshares for every other participant $P_i$ encrypted via $\mathsf{Enc}(pk_i, s_{i})$. Each participant verifies the correctness of the sharing. The escrow also checks if the published $C_{0}$ matches with $H(C_{0})$ for participant $P_i$. Any complaint is arbitrated by the escrow and can result in deposits being slashed.
-
-%     \item $\mathsf{Reveal}(A, \{x_i\}_{i \in A}) \rightarrow (x, X)$ takes a subset of $t + 1$ individual key shares and reconstructs the shared group secret $x$ using $\mathsf{VSS.Recon}$. In Feldman-VSS, each participant $P_i$ calculates their secret key share as $x_i = \sum_{j=1}^{n} s_j$ in mod $q$ and the group secret $x$ is reconstructed via Lagrange interpolation. Additionally, it also outputs its corresponding public key $X = \prod_{i=1}^{n} C_{i0}$ for verification.
-
-%     \item $\mathsf{EscrowVerify}(x, X)\rightarrow\{0,1\}$ is used by the escrow to verify that the published secret $x$ is indeed the one that corresponds to $X$.
-% \end{itemize}
-% \fi
-
 \subsection{Publicly Verifiable Secret Sharing (PVSS)}
 \label{appendix:pvss}
 PVSS can be described by the following algorithms.
@@ -445,23 +428,6 @@ Dfinity-DVRF is given by the following DVRF algorithms.
 \end{itemize}
 
 \subsection{Other Cryptographic Primitives}
-% \iffalse
-% \subsection{Commitment Scheme}
-% \label{appendix:commitment}
-% A cryptographic commitment~\cite{blum1983coin} to message $m$ can be abstractly seen as a secure box (locked with a padlock) whose content is $m$. Initially, the sender $P$ commits to $m$ by putting it inside the box, locking it, and sending it to the receiver $V$ such that $P$ can later open the commitment (i.e. reveal $m$ to $V$) by sending $V$ the key that unlocks the padlock. These two messages can be represented by the following.
-% \begin{enumerate}
-% \item $C = \mathsf{Com}(m, r_0)$ is a commitment to message $m$ with fresh randomness $r_0$.
-% \item $\mathsf{Open}(m, r_0)$ reveals the opening information necessary to verify the validity of $C$ with respect to $m$ and $r_0$.
-% \end{enumerate}
-
-% Obviously, such secure box needs to be secure, satisfying the following two properties.
-% \begin{itemize}
-% \item \textit{Binding property} requires that it is not possible for $P$ to change $m$ after $\mathsf{Com}(m, r_0)$ is given to $V$.
-% \item \textit{Hiding property} requires that it is not possible for $V$ to learn $m$ before $\mathsf{Open}(m, r_0)$ is given to $V$ by $P$.
-% \end{itemize}
-% For further details (e.g. perfectly vs computationally binding and hiding), refer to~\cite{damgaard1998commitment}.
-% \fi
-
 \subsubsection{Lagrange Interpolation}
 \label{appendix:lagrange}
 Given a non-empty reconstruction set $A \subset \groupZ_q$, the \textit{Lagrange basis polynomials} are given by $\lambda_{j, A}(x) = \prod_{k \in A \setminus \{j\}} \frac{x - k}{j - k} \in \groupZ_q[X]$ such that the \textit{Lagrange coefficients} $\lambda_{i, j, A} = \lambda_{j, A}(i) \in \groupZ_q$ enable the equality $p(i) = \sum_{j \in A} p(j) \lambda_{i, j, A}$ for any polynomial $p \in \groupZ_q[X]$ of degree at most $|A| - 1$. The process of computing this equality is called \textit{Lagrange interpolation}.

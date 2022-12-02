@@ -38,7 +38,7 @@ The idea is simple: timed commitments are commitments with an additional recover
 \begin{definition}[Timed commitment]
 A \textit{timed commitment} is a commitment with the following additional recovery process (also known as forced opening) where the committed value can be recovered in $T$ sequential steps but not before.
 \begin{itemize}
-\item $\mathsf{ForceOpen}(C) \rightarrow (x, r_0)$ outputs the committed value $(x, r_0)$ in $T$ sequential steps given a commitment $C = \mathsf{Com}(x, r_0)$.
+\item $\mathsf{ForceOpen}(\com) \rightarrow (x, r_0)$ outputs the committed value $(x, r_0)$ in $T$ sequential steps given a commitment $\com = \mathsf{Com}(x, r_0)$.
 \end{itemize}
 \end{definition}
 
