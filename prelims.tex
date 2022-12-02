@@ -33,18 +33,19 @@ Indeed, humans may attempt to cheat in rock-paper-scissors by quickly adjusting 
 
 \subsection{Commit-Reveal}
 \label{subsection:commit-reveal}
-A classic fix for the above issue is to introduce a cryptographic commitment step before each party reveals its entropy contribution.
+A classic fix for the above synchrony problem is to introduce a cryptographic commitment step before each party reveals its entropy contribution.
 \begin{enumerate}
-\item \underline{Commit}. Each participant $P_i$ broadcasts a cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy contribution $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties~\cite{blum1983coin,damgaard1998commitment}.
+\item \underline{Commit}. Each participant $P_i$ broadcasts a cryptographic commitment $C_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy contribution $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties~\cite{blum1983coin,damgaard1998commitment}. Assuming participants generate $e_i$ from a large space it is also secure to simply publish $C_i = H(e_i)$.
 \item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens its commitment by revealing the pair $(e_i, r_i)$. In turn, $P_i$ verifies each received pair $(e_j, r_j)$ for $j \neq i$ by recomputing $C_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\drboutput$ can canonically be computed via the aforementioned Equation~\ref{equation:addall}. If any of the checks do not pass, however, the protocol aborts and outputs $\perp$.
 \end{enumerate}
 
-With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last participant $P_k$ to reveal can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol also has no robustness against non-Byzantine faults in this basic form.
+With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last-revealing participant $P_k$ can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol in this basic form also has no robustness against non-Byzantine faults.
 
-\subsection{Ideal Distributed Randomness Beacon}
-Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) each \epoch's output. The beacon output should also be verifiable by \todo{remove}any third party. Based on these requirements, the overall security properties of an ideal DRB are given by the following.
+\subsection{Ideal Distributed Randomness Beacons}
+Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) any \epoch's output. %The beacon output should also be verifiable by \todo{remove}any third party.
+We formalize the security properties of an ideal DRB as follows:\footnote{We present a game-based security definition here. Other formulations, such as ideal functionalities as used in UC-security\todo{cite}, are possible. We present game-based security here as it is simple and most commonly used~\todo{Check this? does anybody do UC-security?}.}
 
-\begin{figure}[h]
+\begin{figure}[t!]
 \begin{center}
 \framebox{
 \begingroup
@@ -60,15 +61,15 @@ Return $b = b'$
 \end{tabular}
 \endgroup}
 \end{center}
-\caption{Security game for DRB's unbiasability security property.}
+\caption{Security game for DRB unbiasability.}
 \label{figure:unbias}
 \end{figure}
 
 \begin{definition}[Ideal distributed randomness beacon]
-A distributed randomness beacon is \textit{ideal} or \textit{secure} if it satisfies the following security properties.
+An ideal distributed randomness beacon satisfies the following security properties:
 \begin{enumerate}
 \item Unbiasability.
-A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the following advantage (see Figure~\ref{figure:unbias}) given by
+A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the adversary's advantage in the game given in Figure~\ref{figure:unbias}, given by
 \begingroup\makeatletter\def\f@size{8}\check@mathfonts
 \begin{equation*}
 \advdrbsecurity(\lambda) = \left|\Pr\left[\gamedrbsecurityone(\lambda) = 1\right] - \Pr\left[\gamedrbsecurityzero(\lambda) = 1\right]\right|
@@ -82,11 +83,12 @@ is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 \end{enumerate}
 \end{definition}
 
-In the security game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first outputs an advice string ($\sigma$) given DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ as input (which may or may not include the previous beacon output, list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
-The advice string acts as a biasing ``strategy'' and is taken by $\adv_1$, which then corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.
+In the unbiasability game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first precomputes an advice string ($\sigma$) given the DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ (which may include the previous beacon output, list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
+Our definition is quite general in that the advice string may encode any biasing ``strategy.'' This string is taken by $\adv_1$, which then corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.\footnote{Say something about adaptive vs. static corruption models here. Where are they used?}
 In contrast, $\drboutput_{\epochv, 0}$ denotes the honest beacon output generated by $\nodes$ (and not involving $\adv_1$).
 Then $\adv_2$ distinguishes the two cases given the same advice string.
-A DRB is secure in terms of unbiasability if the adversary can do so with negligible probability.
+A DRB is unbiasable if the adversary can do so with negligible probability.
+Note that our definition includes the possibility of \emph{private} biasing, e.g. the adversary biases the result in a way that requires a secret key to detect.
 
-We next begin our discussion of various approaches to an ideal DRB, starting with protocols based on delay functions.
+%We next begin our discussion of various approaches to an ideal DRB, starting with protocols based on delay functions.
 
