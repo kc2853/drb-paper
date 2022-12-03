@@ -28,7 +28,7 @@ where $sk_i$ denotes each node's secret key after a DKG and $f$ denotes some det
 
 The output is equivalent to one trustworthy master node with complete knowledge of $sk$ computing the output as:
 \[
-\drboutput_\epochv = VRF_{sk}(f(\drboutput_{\epochv - 1}))
+\drboutput_\epochv = \textsf{VRF}_{sk}(f(\drboutput_{\epochv - 1}))
 \]
 As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. The ideal 1-\interunpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.
 

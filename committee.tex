@@ -21,7 +21,7 @@ In a \textit{public committee selection}, only public information is needed to d
 
 \noindent\textbf{Random Selection (RS).} A second example is \textit{random selection} (RS), which uses some public randomness (most commonly the last beacon output $\drboutput_{\epochv - 1}$) to derive $\committee_\epochv$.
 %While RR is simple and deterministic, RS is randomized.
-In HydRand~\cite{schindler2020hydrand} and GRandPiper~\cite{bhat2020randpiper}, for instance, $\committee_\epochv$ consists of a node $i \equiv \drboutput_{\epochv - 1} \pmod{\tilde{n}}$ where $\tilde{n}$ is the number of eligible nodes. Similar is the process in Ouroboros~\cite{kiayias2017ouroboros} called follow-the-satoshi~\cite{bentov2014proof,kiayias2017ouroboros}, which can output more than one node in $\committee_\epochv$.
+In HydRand~\cite{schindler2020hydrand} and GRandPiper~\cite{bhat2020randpiper}, $\committee_\epochv$ consists of a node $i \equiv \drboutput_{\epochv - 1} \pmod{\tilde{n}}$ where $\tilde{n}$ is the number of eligible nodes. Ouroboros~\cite{kiayias2017ouroboros} uses a similar process called follow-the-satoshi~\cite{bentov2014proof,kiayias2017ouroboros} which selects nodes weighted by stake.
 
 Randomized selection means that some nodes may, in theory, never be selected and therefore may never be able to provide entropy contribution. A more serious concern is that an adversary can attempt to bias, via grinding attack, $\drboutput_\epochv$ in order to bias $\committee_{\epochv + 1}$ (which can bias $\drboutput_{\epochv + 1}$). In the worst case, this can lead to a vicious cycle in which an adversary controlling enough nodes on the current committee to manipulate the beacon output can ensure it will also control enough nodes on the next committee, and so on ad infinitum.
 
@@ -47,9 +47,9 @@ where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that 
 
 Each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it ``wins'' the lottery and becomes an entropy provider. As an adversary can perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$.
 
-A prime example of a private lottery is a VRF-based lottery. Most notably, Algorand~\cite{gilad2017algorand} uses VRFs (verifiable random functions)~\cite{micali1999verifiable,dodis2005verifiable} to realize a lottery every \epoch. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as they do not differ fundamentally.) Quite naturally, one's private input to $VRF_{sk}(\cdot)$ is its secret key. The lottery is given by
+A prime example of a private lottery is a VRF-based lottery. Most notably, Algorand~\cite{gilad2017algorand} uses VRFs (verifiable random functions)~\cite{micali1999verifiable,dodis2005verifiable} to realize a lottery every \epoch. (While there exist more than one version of Algorand's private lottery algorithm, we consider its first version, as they do not differ fundamentally.) Quite naturally, one's private input to $\textsf{VRF}_{sk}(\cdot)$ is its secret key. The lottery is given by
 \[
-VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert role) < target
+\textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert role) < target
 \]
 where $role$ is some parameter specific to Algorand. As both $\drboutput_{\epochv - 1}$ and $role$ are already public and ungrindable at the time of computation, Algorand makes sure $sk$ is likewise ungrindable by requiring that $sk$ is committed in advance. Similar are private lotteries for protocols like Ouroboros Praos~\cite{david2018ouroboros}, Caucus~\cite{azouvi2018winning} (where a hash chain replaces VRFs), and NV (from Nguyen-Van et al.~\cite{nguyen2019scalable}). See Table~\ref{table:committee-based} for details.
 
@@ -63,7 +63,7 @@ Private lotteries provide two notable benefits: resilience to DoS attack (due to
 
 \subsection{Step 2. Beacon Output Generation}
 \label{subsection:beacon-output-generation}
-Given a concrete committee $\committee_\epochv$, the next step is to output $\drboutput_\epochv$. While a typical commit-reveal-recover run among nodes in $\committee_\epochv$ may be sufficient to realize a DRB, other approaches provide different tradeoffs. Largely, we classify these variations into two: one that requires \textit{fresh} (independently generated on the spot) per-node entropy (contribution) and one that combines previous beacon output with \textit{precommitted} (independently generated but precommitted, hence ungrindable) per-node entropy.
+Given a concrete committee $\committee_\epochv$, the next step is to output $\drboutput_\epochv$. While a typical commit-reveal-recover run among nodes in $\committee_\epochv$ may be sufficient to realize a DRB, other approaches provide different trade-offs. Largely, we classify these variations into two: one that requires \textit{fresh} (independently generated on the spot) per-node entropy (contribution) and one that combines previous beacon output with \textit{precommitted} (independently generated but precommitted, hence ungrindable) per-node entropy.
 
 \subsubsection{Fresh Per-Node Entropy}
 \label{subsubsection:fresh}
@@ -86,7 +86,7 @@ To optimize and lower communication cost, we can require generally less input fr
 while PVSS recovery is used in case the leader fails to open $e_{\tilde{\epochv}}$ in \epoch $\epochv$. Notable in HydRand is the fact (achieving ungrindability of $h^{e_{\tilde{\epochv}}}$) that one honest node must be present in any $t + 1$ consecutive \epochs due to the requirement that a leader cannot gain another leadership in the next $t$ \epochs. Similar overall is GRandPiper's beacon output generation (see Table~\ref{table:committee-based}).
 \item Algorand and Ouroboros Praos. These schemes use a VRF for beacon output generation (rather than only for committee selection as in NV++). The secret key $sk$ of the \epoch leader often corresponds to precommitted per-node entropy as long as the assumption that nodes cannot switch their $sk$ at the time of VRF's computation holds. Algorand's beacon output is therefore given by
 \[
-\drboutput_\epochv = VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert \epochv)
+\drboutput_\epochv = \textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert \epochv)
 \]
 combining the previous output $\drboutput_{\epochv - 1}$ with the precommitted entropy $sk$. Note that the input to the VRF in beacon output generation is different from that in committee selection, as the VRF output in committee selection is always going to be less than $target$ by design. Ouroboros Praos' beacon output is generated similarly (see Table~\ref{table:committee-based}).
 \item Caucus. Each new reveal ($h_\epochv$ in \epoch $\epochv$) from an entropy provider's private hash chain in Caucus corresponds to that node's precommitted entropy. The beacon output is given by
