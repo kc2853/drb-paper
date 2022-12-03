@@ -77,7 +77,7 @@ A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, 
 is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 
 % \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_\epochv$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $\epochv$ denotes the current round).
-\item Liveness\todo{is this part of unbias game?}. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
+\item Liveness. We define liveness~\cite{cherniaeva2019homomorphic} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
 
 \item Unpredictability.
 We define two types of unpredictability.
@@ -100,6 +100,7 @@ For both, the notation $\drb^\epochv_{\tilde{\nodes}}$ denotes a DRB in \epoch $
 Then $\adv_2$ distinguishes the two cases given the same advice string.
 A DRB is unbiasable if the adversary can do so with negligible probability.
 Note that our definition includes the possibility of \emph{private} biasing, e.g. the adversary biases the result in a way that requires a secret key to detect.
+This means that the biased beacon outputs can even appear pseudorandom (indistinguishable from uniform distribution) from the perspective of an outsider, a notion not considered in previous works~\cite{bonneau2015bitcoin,das2021spurt,bhat2020randpiper}.
 
 \noindent\textbf{Unpredictability.}
 We note that $\beta$-\interunpredictability has been considered in previous works~\cite{bhat2020randpiper,bhat2022optrand} for $\beta \geq 1$, but we extend the notion to ``$\beta = 0$'' and explicitly consider $\alpha$-\intraunpredictability in conjunction with $\beta$-\interunpredictability, in order to exhibit variations across all possible DRBs.
