@@ -36,7 +36,7 @@ In a grinding attack\todo{merge with withholding}, an adversary can search over 
 Two countermeasures are possible. First, inclusion of fresh marginal entropy from at least one honest node can be required, in which case grinding fails due to the adversary's inability to control such entropy. Second, precommitted entropy must indeed be precommitted, in which case grinding vacuously fails due to the lack of any grindable entropy.
 \begin{enumerate}
 \item \textbf{Requirement of fresh marginal entropy from at least one honest node.} Due to the $t$-limited adversary assumption, it is possible to force the inclusion of fresh marginal entropy from at least one honest node if we require more than $t$ entropy providers each \epoch. Such a requirement is used in protocols like RandHound (where committee selection via LS has an explicit size requirement), Ouroboros (where the size of each epoch can be made large), and NV++ (where the VRF's target used for committee selection can be adjusted).
-\item \textbf{Requirement of precommitted entropy.} No grindable entropy naturally means no possible grinding attack. In HydRand (and similarly GRandPiper), it is required that the precommitted entropy ($e_{\tilde{\epochv}}$ from $\drboutput_\epochv = H(\drboutput_{\epochv - 1} \mathbin\Vert h^{e_{\tilde{\epochv}}})$ as per Section~\ref{subsubsection:precommitted}) used in \epoch $\epochv$ is precommitted in \epoch $\tilde{\epochv}$ where $\epochv - \tilde{\epochv} > t$ such that it is ungrindable due to the protocol's $t$-unpredictability property. In the protocols based on private lottery (i.e. Algorand, Ouroboros Praos, and Caucus), the private inputs to the lottery (VRF's $sk$ or each $h_\epochv$ of a hash chain) are fixed in advance to make them ungrindable.
+\item \textbf{Requirement of precommitted entropy.} No grindable entropy naturally means no possible grinding attack. In HydRand (and similarly GRandPiper), it is required that the precommitted entropy ($e_{\tilde{\epochv}}$ from $\drboutput_\epochv = H(\drboutput_{\epochv - 1} \mathbin\Vert h^{e_{\tilde{\epochv}}})$ as per Section~\ref{subsubsection:precommitted}) used in \epoch $\epochv$ is precommitted in \epoch $\tilde{\epochv}$ where $\epochv - \tilde{\epochv} > t$ such that it is ungrindable due to the protocol's $t$-\interunpredictability property. In the protocols based on private lottery (i.e. Algorand, Ouroboros Praos, and Caucus), the private inputs to the lottery (VRF's $sk$ or each $h_\epochv$ of a hash chain) are fixed in advance to make them ungrindable.
 \end{enumerate}
 
 \subsection{Withholding Attack}
@@ -100,12 +100,12 @@ Strobe & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(
 \begin{tablenotes}[flushleft,para]
 \item $c$ is the size of a shard in RandHerd and RandHound. We assume a leader can be Byzantine for both.
 \item Albatross' verifier and communication complexities are per beacon output.
-\item \todo{resolve notation}In Ouroboros and Ouroboros Praos, we assume the number of slot leaders in an epoch is denoted by $n$.
+\item In Ouroboros and Ouroboros Praos, we assume the number of slot leaders in an \epoch is denoted by $n$.
 \item We assume Scrape's PVSS~\cite{cascudo2017scrape} is used as the default PVSS scheme.
 \item[*] Each committee consists of a leader by default or by expectation.
 \item[†] PBB (public bulletin board) is assumed.
 \item[‡] Verification of Pietrzak's VDF is logarithmic in $T$ (VDF's delay parameter).
-\item[§] $d = t$ for RandRunner's $d$-unpredictability\todo{match w def} assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
+\item[§] $\beta = t$ for RandRunner's $\beta$-\interunpredictability assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
 \item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \end{tablenotes}
 \end{threeparttable}

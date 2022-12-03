@@ -30,13 +30,13 @@ The output is equivalent to one trustworthy master node with complete knowledge 
 \[
 \drboutput_\epochv = VRF_{sk}(f(\drboutput_{\epochv - 1}))
 \]
-As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. Unpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.\\
+As $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$, there is no marginal entropy contributed by the participants. The ideal 1-\interunpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.
 
 \noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output (assuming a hash function as a random oracle~\cite{bellare1993random}). Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
 \[
 \drboutput_\epochv = H(\mathsf{Sign}_{sk}(\epochv \mathbin\Vert \drboutput_{\epochv - 1}))
 \]
-where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at least $t + 1$ nodes with $sk$ as the implied group secret key generated via DKG. The actual computation of $\drboutput_\epochv$ involves combining of partial signatures computed using $sk_i$ (see Appendix~\ref{appendix:bls}).\\
+where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at least $t + 1$ nodes with $sk$ as the implied group secret key generated via DKG. The actual computation of $\drboutput_\epochv$ involves combining of partial signatures computed using $sk_i$ (see Appendix~\ref{appendix:bls}).
 
 \noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist several other variations.
 \begin{itemize}
