@@ -34,11 +34,12 @@ See Appendix~\ref{appendix:vss} for details.
 \end{definition}
 
 \begin{definition}[Distributed key generation]
+\label{def:dkg}
 A \textit{distributed key generation} (DKG)~\cite{pedersen1991threshold,gennaro1999secure} allows $n$ participants to collectively generate a \textit{group public key} (for an ``implied'' \textit{group secret key}), \textit{individual secret keys}, and \textit{individual public keys} without a trusted third party. It does so by running $n$ instances of VSS (with each participant acting as a dealer for its independent secret). Unlike secret sharing schemes, one DKG setup can lead to an unlimited number of usages, as the group secret key is not computed explicitly.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) for an implied group secret key $sk$ given security parameter $1^\lambda$, $t$, and $n$.
 \end{itemize}
-In a typical setting, the idea behind DKG is that it allows $t + 1$ (but not less) out of $n$ nodes to jointly \textit{use} $sk$ without necessarily \textit{knowing} $sk$ (though this is not the case in Escrow-DKG). See Appendix~\ref{appendix:dkg} for details.
+In a typical setting, the idea behind DKG is that it allows $t + 1$ (but not less) out of $n$ nodes to jointly \textit{use} $sk$ via Lagrange interpolation without necessarily \textit{knowing} $sk$ (though this is not the case in Escrow-DKG). See Appendix~\ref{appendix:dkg} for details.
 % Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix~\ref{appendix:dkg} for details.
 \end{definition}
 
