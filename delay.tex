@@ -26,7 +26,7 @@ The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF pre
     $$y_\epochv, \pi_\epochv = \mathsf{VDF.Eval}(pp, seed_\epochv)$$
     such that $\drboutput_\epochv = H(y_\epochv)$, which is posted and can be efficiently verified by any observer using $\pi_\epochv$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
-\todo{lower case $t$ used here for time?}
+% \todo{lower case $t$ used here for time?}
 As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design. It is possible to outsource this computation, even in a decentralized manner~\cite{thyagarajan2021opensquare}, as it does not matter for security who evaluates since VDFs are deterministic and verifiable. %) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
 
 We note a variation of above~\cite{bunz2017proofs, bonneau2015bitcoin}, replacing or bolstering the participant entropy contributions with  stock prices~\cite{clark2010use} or PoW blockchain headers~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
@@ -57,20 +57,23 @@ All of the protocols in this family\todo{have what properties?}
 The disadvantage of above is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
 Also, the rate at which beacon outputs are generated is limited by $T$ (by default in Unicorn++ and in Bicorn's $\mathsf{ForceOpen}$ case).
 RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-\epoch consensus while allowing each \epoch's duration to be independent of $T$ in the optimistic case.
-As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame.
-Trapdoor VDFs~\cite{wesolowski2019efficient} with the strong uniqueness property~\cite{schindler2021randrunner} serve as its key building block.
+% As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame.
+% Trapdoor VDFs~\cite{wesolowski2019efficient} with the strong uniqueness property~\cite{schindler2021randrunner} serve as its key building block.
 
-\begin{definition}[Strongly unique trapdoor VDF]
-A \textit{strongly unique trapdoor VDF} ($\mathsf{TVDF}$) is a VDF with an additional functionality as follows.
-It allows one who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps, while providing \textit{strong uniqueness} (uniqueness even with the knowledge of such trapdoor).
-\begin{itemize}
-    \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in steps less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
-\end{itemize}
-\end{definition}
+% \begin{definition}[Strongly unique trapdoor VDF]
+% A \textit{strongly unique trapdoor VDF} ($\mathsf{TVDF}$) is a VDF with an additional functionality as follows.
+% It allows one who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) to efficiently evaluate the VDF without $T$ sequential steps, while providing \textit{strong uniqueness} (uniqueness even with the knowledge of such trapdoor).
+% \begin{itemize}
+%     \item $\mathsf{TrapdoorEval}(pp, x, sk) \rightarrow (y, \pi)$ outputs $y$ in steps less than $T$ (unlike $\mathsf{Eval}$) and a proof $\pi$ given $pp$, an input $x$, and the trapdoor $sk$.
+% \end{itemize}
+% \end{definition}
 
-Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple} in its setup, in which $pp_i$ (each corresponding to a different VDF) is broadcast by each $P_i$. Then the idea is that, in each \epoch, the value $H(\drboutput_{\epochv - 1})$ is input to the VDF of the \epoch leader selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed), the implications of which are discussed in Section~\ref{subsubsection:public-committee-selection}.
-
-In the optimistic case, the leader evaluates and publishes the VDF output as the beacon output via $\mathsf{TVDF.TrapdoorEval}$ while in the faulty case (if the leader withholds), others can evaluate the same value via $\mathsf{TVDF.Eval}$ albeit more slowly.
+% Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$.
+% As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple} in its setup, in which $pp_i$ (each corresponding to a different VDF) is broadcast by each $P_i$.
+Namely, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}, where the knowledge of a \textit{trapdoor} allows an efficient evaluation of a VDF without $T$ sequential steps unlike $\mathsf{VDF.Eval}$ (but with $T$ steps otherwise).
+In its setup, each $P_i$ broadcasts $pp_i$ (each corresponding to a different VDF per participant).
+Then the idea is that, in each \epoch, $H(\drboutput_{\epochv - 1})$ is input to the VDF of the \epoch leader---selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed), discussed in Section~\ref{subsubsection:public-committee-selection}.
+In the optimistic case, the leader (the only one that knows its trapdoor) efficiently evaluates and publishes the VDF output as the beacon output while in the faulty case (if the leader withholds), others can evaluate the same value albeit more slowly.
 
 % After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
 % \begin{enumerate}
@@ -88,4 +91,4 @@ In the optimistic case, the leader evaluates and publishes the VDF output as the
 %     \end{itemize}
 % \end{enumerate}
 
-Thus, RandRunner optimistically generates each beacon output rapidly with only $O(n)$ communication complexity. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its pseudorandom nature, the protocol exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-\interunpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $\beta$ as in RandRunner's $\beta$-\interunpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
+Thus, RandRunner optimistically generates each beacon output rapidly with only $O(n)$ communication complexity. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. The protocol exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{VDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-\interunpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, $\beta$ from $\beta$-\interunpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
