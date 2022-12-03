@@ -2,8 +2,7 @@
 
 \section{Discussions}
 \label{section:discussions}
-\todo{better overall grouping in the intro of the section}
-We summarize key properties of all protocols discussed in Table~\ref{table:comparison} and explore several practical issues with DRBs.
+We provide a historical account of the distributed randomness line of research, compare all aforementioned DRBs in Table~\ref{table:comparison}, and explore some practical issues with DRBs.
 
 \subsection{Relation to Collective Coin Flipping Protocols}
 Conceptually, distributed randomness is not a new line of research.
@@ -56,45 +55,45 @@ In a withholding attack, an adversary can influence the outcome by not publishin
 \label{table:comparison}
 % \begin{tabularx}{\textwidth}{@{} l *{20}c}
 % \begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{x}}c@{\phantom{x}}}}
-\begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{w}}c@{\phantom{w}}}}
+\begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{w}}c@{\phantom{e}}}}
 \toprule
-\spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive} & \spheading{Fault Tolerance (less than)} & \spheading{Independent Participation} & \spheading{Per-Epoch Entropy Provider} & \spheading{Unpredictability} & \spheading{Immunity to Withholding} & \spheading{Adaptive Security} & \spheading{Verifier Complexity} & \multicolumn{2}{c}{\spheading{Communication Complexity}} & \spheading{Max Damage} & \spheading{Recovery Cost}\\
-\cmidrule{11-12}
- & & & & & & & & & & Optimistic & Worst & & \\
+\spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive} & \spheading{Fault Tolerance (less than)} & \spheading{Independent Participation} & \spheading{Per-Epoch Entropy Provider} & \spheading{$\alpha$-\Intraunpredictability} & \spheading{$\beta$-\Interunpredictability} & \spheading{Immunity to Withholding} & \spheading{Adaptive Security} & \spheading{Verifier Complexity} & \multicolumn{2}{c}{\spheading{Communication Complexity}} & \spheading{Max Damage} & \spheading{Recovery Cost}\\
+\cmidrule{12-13}
+ & & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
+Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & $O(\Delta)$ & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
-Unicorn++ & \multirow{4}{*}{\ref{section:delay}} & VDF & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
-Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
-RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $t$\tnote{§} & \cmark & \xmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
-Bicorn & & Timed commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Unicorn++ & \multirow{4}{*}{\ref{section:delay}} & VDF & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
+RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $T$\tnote{‡} & $t$\tnote{§} & \cmark & \xmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
+Bicorn & & Timed commitment & $n$ & \cmark & All & $T$\tnote{‡} & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 \midrule
-RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
-EVR & & Escrow-DKG & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
+RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
+EVR & & Escrow-DKG & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
 \midrule
-Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
-Albatross & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias\tnote{r} & $O(n^3)$ \\
-RandShare & & (P)VSS & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(1)$ \\
-SecRand & & PVSS & $n/2$ & \xmark & All & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
-HERB & & Thr. ElGamal & $n/3$ & \xmark & All & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
+Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+Albatross & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias\tnote{r} & $O(n^3)$ \\
+RandShare & & (P)VSS & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(1)$ \\
+SecRand & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+HERB & & Thr. ElGamal & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
 \midrule
-HydRand & \multirow{11}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
-GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
-Ouroboros & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-RandHound & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
-SPURT & & PVSS & $n/3$ & \xmark & Committee & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-OptRand & & PVSS & $n/2$ & \xmark & Committee & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & 1 & \xmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+HydRand & \multirow{11}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
+GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
+Ouroboros & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+RandHound & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
+SPURT & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+OptRand & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & $O(\Delta)$ & 1 & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 \midrule
-drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
-DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-Strobe & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
+drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & $O(\Delta)$ & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
+DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+Strobe & & RSA, VSS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
@@ -104,7 +103,7 @@ Strobe & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(
 \item We assume Scrape's PVSS~\cite{cascudo2017scrape} is used as the default PVSS scheme.
 \item[*] Each committee consists of a leader by default or by expectation.
 \item[†] PBB (public bulletin board) is assumed.
-\item[‡] Verification of Pietrzak's VDF is logarithmic in $T$ (VDF's delay parameter).
+\item[‡] $T$ denotes VDF's delay parameter, and verification of Pietrzak's VDF is logarithmic in $T$.
 \item[§] $\beta = t$ for RandRunner's $\beta$-\interunpredictability assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
 \item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \end{tablenotes}
@@ -114,7 +113,7 @@ Strobe & & RSA, VSS & $n/2$ & \xmark & None & 1 & \cmark & \cmark & $O(1)$ & $O(
 \subsection{Adaptive Security}
 \label{subsection:adaptive}
 A DRB is \textit{adaptively secure} if its security properties remain unaffected against an adaptive adversary instead of a static one.
-In this section, we discuss two ways to remedy adaptive attacks.
+Here, we discuss two ways to remedy adaptive attacks.
 
 \begin{enumerate}
 % \item \textbf{$|\committee_\epochv|$ is greater than $t$ or equal to 0.}

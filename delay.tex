@@ -50,11 +50,11 @@ Bicorn~\cite{choi2022bicorn} realizes the above logic in a simple, efficient DRB
 An improvement of Bicorn over Unicorn++ is that there is an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
 At the same time, context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is even simpler and also requires only one delay function computation.
 
-All of the protocols in this family\todo{have what properties?}
+All of the protocols in this family have an interesting fundamental downside where if exactly one $P_k$ withholds (while others reveal), then $P_k$ is able to simulate the optimistic case and learn $\drboutput_\epochv$ quickly. As this implies $T$-\intraunpredictability (with delay parameter $T$), a protocol should consider $\drboutput_\epochv$ to be potentially available to adversaries as of $\drbtimeone$ (optimistic case), even if it is not publicly known until $\drbtimetwo$ (worst case).
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
-The disadvantage of above is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
+The disadvantage of above approaches is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
 Also, the rate at which beacon outputs are generated is limited by $T$ (by default in Unicorn++ and in Bicorn's $\mathsf{ForceOpen}$ case).
 RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-\epoch consensus while allowing each \epoch's duration to be independent of $T$ in the optimistic case.
 % As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame.

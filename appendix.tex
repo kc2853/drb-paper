@@ -480,6 +480,7 @@ Also known as the Chaum-Pedersen protocol~\cite{chaum1992wallet}, the $\Sigma$ p
 \end{cases}$
 \end{enumerate}
 
+\iffalse
 \subsubsection{NIZK of Correct ElGamal Encryption (CE)}
 \label{appendix:ce}
 Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$~\cite{cherniaeva2019homomorphic} where $G \in \groupG_q$ and $(Q, A, B) = (x G, r G, m G + r Q)$, the prover can non-interactively prove the knowledge of $(m, r)$ and thus prove the legitimacy of an ElGamal encryption (e.g. as opposed to exploiting its malleability). Note that the additive notation is used to handle points on an elliptic curve.\\
@@ -507,3 +508,4 @@ Via $\pi_{CE} = \mathsf{CE}(G, Q, A, B)$~\cite{cherniaeva2019homomorphic} where 
 0 & \text{otherwise}
 \end{cases}$
 \end{enumerate}
+\fi
