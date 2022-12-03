@@ -77,15 +77,17 @@ A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, 
 is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 
 % \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_\epochv$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $\epochv$ denotes the current round).
-\item Liveness\todo{is this part of unbias game?}. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the honest beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
+\item Liveness\todo{is this part of unbias game?}. We define liveness~\cite{guo2020secRand} by requiring that the advantage of $\adv$ denoted by $Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
 
 \item Unpredictability.
-We define three types of unpredictability.
+We define two types of unpredictability.
 Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\drboutput_\epochv$ becomes publicly available) at $\drbtimeone$ in the optimistic case (if every node is honest and online) and at $\drbtimetwo$ in the worst case.
 \begin{itemize}
-\item A DRB is \textit{\intraunpredictable} if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict $\drboutput_\epochv$ before $\drbtimeone$ with negligible probability.
-\item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
-\item A DRB is \textit{$d$-\interunpredictable} if $\adv$ can predict $\drboutput_{\epochv + d}$ before $\drbtimetwo$ with negligible probability.
+\item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with negligible probability.
+It is \textit{$\alpha$-\intrapredictable} otherwise.
+% \item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
+\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ can predict $\drboutput_{\epochv + \beta}$ before $\drbtimetwo$ with negligible probability.
+It is \textit{$\beta$-\interpredictable} otherwise.
 \end{itemize}
 \end{enumerate}
 \end{definition}
