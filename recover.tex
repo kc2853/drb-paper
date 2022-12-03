@@ -18,7 +18,7 @@ See Appendix~\ref{appendix:pvss} for details.
 The idea in these commit-reveal-recover variants is that each participant generates a secret (i.e. entropy contribution), distributes PVSS shares to each other participant, and receives $n$ respective shares of $n$ other participants' secrets. These shares are then used to compute $\drboutput_\epochv$ via Lagrange interpolation ($\mathsf{PVSS.Recon}$) in case some nodes withhold. Based on when and how such Lagrange interpolation takes place, we subdivide the protocols into the following categories: commit-reveal-recover, share-reconstruct-aggregate, and share-aggregate-reconstruct.
 
 \subsubsection{Commit-Reveal-Recover}
-Extending commit-reveal, \textit{commit-reveal-recover} adds another step to the commit phase where every participant is additionally required to distribute PVSS shares of its corresponding secret so that others can reconstruct it via Lagrange interpolation (\textit{recover}) if withheld during reveal. The tradeoff is additional communication cost, which could be amplified multiplicatively in the recover phase if $O(n)$ Lagrange interpolations need to take place. Scrape~\cite{cascudo2017scrape} adopts this technique.\\
+Extending commit-reveal, \textit{commit-reveal-recover} adds a step to the commit phase where every participant is additionally required to distribute PVSS shares of its corresponding secret so that others can reconstruct it via Lagrange interpolation (\textit{recover}) if withheld during reveal. The tradeoff is additional communication cost, which amplifies if $O(n)$ Lagrange interpolations need to take place. Scrape~\cite{cascudo2017scrape} adopts this technique.
 
 \noindent\textbf{Scrape.} With its own PVSS scheme~\cite{cascudo2017scrape} designed for efficiency, Scrape runs as follows after the initial generation ($\mathsf{PVSS.KeyGen}$) of $(sk_i, pk_i)$ for each of the $n$ nodes.
 \begin{enumerate}
@@ -28,7 +28,7 @@ Extending commit-reveal, \textit{commit-reveal-recover} adds another step to the
 \item \textbf{Aggregate.} The final randomness is $\drboutput_\epochv = \prod_{j \in \committee_\epochv} h^{s^{(j)}}$.
 \end{enumerate}
 
-Note that Scrape, in the optimistic case (without Recover), is just a commit-reveal with $O(n^2)$ PVSS shares distributed in the network during commit, $O(n)$ per node. In the worst case (with Recover), it requires an entirely new round of communication and potentially $O(n)$ Lagrange interpolations.\\
+Note that Scrape, in the optimistic case (without Recover), is just a commit-reveal with $O(n^2)$ PVSS shares distributed in the network during commit, $O(n)$ per node. In the worst case (with Recover), it requires an entirely new round of communication and potentially $O(n)$ Lagrange interpolations.
 
 \noindent\textbf{Albatross.} Extending Scrape, Albatross~\cite{cascudo2020albatross} provides an improved amortized communication complexity of $O(n)$ per beacon output by generating a batch of $O(n^2)$ beacon outputs per \epoch (as opposed to one). This is achieved by two techniques: packed Shamir secret sharing and linear $t$-resilient functions~\cite{cascudo2020albatross}, each of which multiplicatively contributes $O(n)$ to the number of beacon outputs produced per \epoch.
 
