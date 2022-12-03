@@ -43,11 +43,11 @@ A \textit{timed commitment} is a commitment with the following additional recove
 \end{itemize}
 \end{definition}
 
-Naturally, this recovery process avoids the last-revealer attack as a withholding participant's contribution can be recovered. Thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
+This recovery process avoids the last-revealer attack as a withholding participant's contribution can be recovered. Thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
 This approach was suggested by Boneh and Naor~\cite{boneh2000timed} though not specified in detail.
-Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that leveraging homomorphic timed commitments~\cite{thyagarajan2021efficient}, it is possible combine participant contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholding participant).
+Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that by leveraging homomorphic timed commitments, it is possible to combine contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholder).
 Bicorn~\cite{choi2022bicorn} realizes the above logic in a simple, efficient DRB with comparable overhead to basic commit-reveal.
-An improvement of Bicorn over Unicorn++ is that there exists an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
+An improvement of Bicorn over Unicorn++ is that there is an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
 At the same time, context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is even simpler and also requires only one delay function computation.
 
 All of the protocols in this family\todo{have what properties?}
@@ -68,20 +68,24 @@ It allows one who knows the \textit{trapdoor} (e.g. $p, q$ for RSA's $N = p q$) 
 \end{itemize}
 \end{definition}
 
-Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}. After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
-\begin{enumerate}
-    \item \textbf{Setup.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$. At the end, all participants should have the same set of public parameters $\{pp_i\}_{i = 1, ..., n}$. The initial value $\drboutput_0$ used to bootstrap the protocol is also agreed upon.
-    \item \textbf{Execution.} A unique leader for \epoch $\epochv$, $l_\epochv$ is selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed, originally called randomized sampling). The implications of each are discussed in Section~\ref{subsubsection:public-committee-selection}. Each \epoch can proceed in two ways depending on $l_\epochv$'s status.
-    \begin{itemize}
-        \item \textbf{Honest Leader.} The leader broadcasts
-        $$y_\epochv, \pi_\epochv = \mathsf{TVDF.TrapdoorEval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}), sk_{l_\epochv})$$
-        in which case other nodes verify the received values via $\mathsf{TVDF.Verify}$. Then the beacon output is
-        $$\drboutput_\epochv = H_2(y_\epochv)$$
-        where $H_1$ and $H_2$ map values from the beacon output space to the VDF space and vice versa.
-        \item \textbf{Dishonest Leader.} Given a dishonest leader that withholds or broadcasts an invalid message, every non-leader computes and broadcasts
-        $$y_\epochv, \pi_\epochv = \mathsf{TVDF.Eval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}))$$
-        in $T$ sequential steps, and then $\drboutput_\epochv = H_2(y_\epochv)$.
-    \end{itemize}
-\end{enumerate}
+Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$. As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple} in its setup, in which $pp_i$ (each corresponding to a different VDF) is broadcast by each $P_i$. Then the idea is that, in each \epoch, the value $H(\drboutput_{\epochv - 1})$ is input to the VDF of the \epoch leader selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed), the implications of which are discussed in Section~\ref{subsubsection:public-committee-selection}.
 
-RandRunner generates each beacon output rapidly with only $O(n)$ communication complexity in the common honest leader case. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its pseudorandom nature, RandRunner exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-unpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $d$ as in RandRunner's $d$-unpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
+In the optimistic case, the leader evaluates and publishes the VDF output as the beacon output via $\mathsf{TVDF.TrapdoorEval}$ while in the faulty case (if the leader withholds), others can evaluate the same value via $\mathsf{TVDF.Eval}$ albeit more slowly.
+
+% After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
+% \begin{enumerate}
+%     \item \textbf{Setup.} Each participant $P_i$ executes $\mathsf{TVDF.Setup}$ to compute its public parameters $pp_i$ and the corresponding secret trapdoor $sk_i$ and broadcasts $pp_i$. At the end, all participants should have the same set of public parameters $\{pp_i\}_{i = 1, ..., n}$. The initial value $\drboutput_0$ used to bootstrap the protocol is also agreed upon.
+%     \item \textbf{Execution.} A unique leader for \epoch $\epochv$, $l_\epochv$ is selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed, originally called randomized sampling). The implications of each are discussed in Section~\ref{subsubsection:public-committee-selection}. Each \epoch can proceed in two ways depending on $l_\epochv$'s status.
+%     \begin{itemize}
+%         \item \textbf{Honest Leader.} The leader broadcasts
+%         $$y_\epochv, \pi_\epochv = \mathsf{TVDF.TrapdoorEval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}), sk_{l_\epochv})$$
+%         in which case other nodes verify the received values via $\mathsf{TVDF.Verify}$. Then the beacon output is
+%         $$\drboutput_\epochv = H_2(y_\epochv)$$
+%         where $H_1$ and $H_2$ map values from the beacon output space to the VDF space and vice versa.
+%         \item \textbf{Dishonest Leader.} Given a dishonest leader that withholds or broadcasts an invalid message, every non-leader computes and broadcasts
+%         $$y_\epochv, \pi_\epochv = \mathsf{TVDF.Eval}(pp_{l_\epochv}, H_1(\drboutput_{\epochv - 1}))$$
+%         in $T$ sequential steps, and then $\drboutput_\epochv = H_2(y_\epochv)$.
+%     \end{itemize}
+% \end{enumerate}
+
+Thus, RandRunner optimistically generates each beacon output rapidly with only $O(n)$ communication complexity. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its pseudorandom nature, the protocol exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-unpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $d$ as in RandRunner's $d$-unpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
