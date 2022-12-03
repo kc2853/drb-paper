@@ -13,27 +13,28 @@ A \textit{verifiable delay function} (VDF) is a function that takes a specified 
 \end{itemize}
 \end{definition}
 
-The two well-known VDF proposals, one due to Pietrzak~\cite{pietrzak2018simple} and the other due to Wesolowski~\cite{wesolowski2019efficient}, make use of the (believed) inherently sequential nature of repeated squaring in a group of unknown order.
+Two well-known VDF proposals, due to Pietrzak~\cite{pietrzak2018simple} and Wesolowski~\cite{wesolowski2019efficient}, make use of the (believed) inherently sequential nature of repeated squaring in a group of unknown order.
+VDFs can also be constructed from incrementally verifiable computation~\cite{boneh2018verifiable,khovratovich2022minroot} or isogenies~\cite{de2019verifiable}.
 VDFs can be used to derive unbiasable randomness either from existing, biasable protocols (e.g. commit-reveal or public implicit beacons) or as the building block for an entirely new protocol (like RandRunner~\cite{schindler2021randrunner}).
 
 \subsection{Modifying Commit-Reveal}
 \label{subsection:modifying-commit-reveal}
-The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF precursor based on computing square roots modulo a prime) in a manner similar to commit-reveal. In fact, commitments are no longer needed; participants simply publish their entropy contributions directly. Unicorn can be improved using a VDF in place of Sloth to achieve an exponential gap between computation and verification times. We refer to this VDF-based Unicorn as \textit{Unicorn++}. It runs as follows.
+The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF precursor based on computing square roots modulo a prime) in a manner similar to commit-reveal. In fact, commitments are no longer needed; participants simply publish their entropy contributions directly. Unicorn can be improved using a modern VDF in place of Sloth to achieve faster (constant time) verification time for a given delay parameter. We refer to VDF-enhanced Unicorn as \textit{Unicorn++}. It runs as follows:
 \begin{enumerate}
     \item \textbf{Collect.} Every participant $P_i$ broadcasts its entropy contribution $e_i$ between time $t_1$ and $t_2$ (assuming synchronized clocks). At $t_2$, they are combined into $seed_\epochv = H(e_1,\ldots, e_n)$.
     \item \textbf{Evaluate.} Some party evaluates the VDF with $seed_\epochv$ and a chosen delay parameter $T$ (part of $pp$) via
     $$y_\epochv, \pi_\epochv = \mathsf{VDF.Eval}(pp, seed_\epochv)$$
     such that $\drboutput_\epochv = H(y_\epochv)$, which is posted and can be efficiently verified by any observer using $\pi_\epochv$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
+\todo{lower case $t$ used here for time?}
+As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design. It is possible to outsource this computation, even in a decentralized manner~\cite{thyagarajan2021opensquare}, as it does not matter for security who evaluates since VDFs are deterministic and verifiable. %) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
 
-As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design (it does not matter for security who evaluates, since VDFs are deterministic and verifiable) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
-
-We quickly note a variation of above: as proposed in~\cite{bunz2017proofs, bonneau2015bitcoin}, beacons using stock prices~\cite{clark2010use} or PoW blockchains~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
+We note a variation of above~\cite{bunz2017proofs, bonneau2015bitcoin}, replacing or bolstering the participant entropy contributions with  stock prices~\cite{clark2010use} or PoW blockchain headers~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
 Unfortunately, they do not easily compare to other DRBs, as the security model depends on the cost of manipulating the external beacon, which has not yet been formally analyzed.
 
 \subsection{Adding Recovery to Commit-Reveal}
 Another way to modify commit-reveal is to leverage a different class of delay functions called timed commitments~\cite{boneh2000timed} in place of regular commitments used in commit-reveal.
-The idea is simple: timed commitments are commitments with an additional recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
+The idea is simple: timed commitments are commitments with an additional slow recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
 
 \begin{definition}[Timed commitment]
 A \textit{timed commitment} is a commitment with the following additional recovery process (also known as forced opening) where the committed value can be recovered in $T$ sequential steps but not before.
@@ -42,10 +43,14 @@ A \textit{timed commitment} is a commitment with the following additional recove
 \end{itemize}
 \end{definition}
 
-Naturally, such recovery process prevents the last-revealer attack, and thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
-Bicorn~\cite{choi2022bicorn} is a recent work that realizes the above logic in an efficient DRB with an emphasis on simplicity and efficiency (e.g. leveraging homomorphism of timed commitments~\cite{thyagarajan2021efficient} to force-open at most one timed commitment).
+Naturally, this recovery process avoids the last-revealer attack as a withholding participant's contribution can be recovered. Thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (see Section~\ref{section:commit-reveal-recover}).
+This approach was suggested by Boneh and Naor~\cite{boneh2000timed} though not specified in detail.
+Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that leveraging homomorphic timed commitments~\cite{thyagarajan2021efficient}, it is possible combine participant contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholding participant).
+Bicorn~\cite{choi2022bicorn} realizes the above logic in a simple, efficient DRB with comparable overhead to basic commit-reveal.
 An improvement of Bicorn over Unicorn++ is that there exists an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
-At the same time, context may be important to consider if the optimistic case is unlikely to ever occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ may be more economical.
+At the same time, context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is even simpler and also requires only one delay function computation.
+
+All of the protocols in this family\todo{have what properties?}
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
@@ -79,4 +84,4 @@ Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowi
     \end{itemize}
 \end{enumerate}
 
-RandRunner generates each beacon output rapidly with only $O(n)$ communication complexity in the common honest leader case. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its pseudorandomness sprouting from the deterministic nature of VDFs, RandRunner exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The tradeoff is that RandRunner can never achieve the ideal 1-unpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $d$ as in RandRunner's $d$-unpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
+RandRunner generates each beacon output rapidly with only $O(n)$ communication complexity in the common honest leader case. Adversarial leaders can increase the \epoch duration to $T$ (or more with network delay $\Delta$) and the communication complexity to $O(n^2)$. Due to its pseudorandomness sprouting from the deterministic nature of VDFs, RandRunner exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as a node can simply compute the beacon outputs over time via $\mathsf{TVDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-unpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, the parameter $d$ as in RandRunner's $d$-unpredictability must be greater than one but can be calculated and bounded~\cite{schindler2021randrunner} depending on assumptions.
