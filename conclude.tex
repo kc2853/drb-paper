@@ -4,7 +4,9 @@
 \label{section:conclusion}
 %In this paper, we systematize distributed randomness beacons.
 %and describe a modular framework comprising two components: selection of entropy providers and beacon output generation, which can be used to analyze a DRB's design.
-Our systematization highlights important insights both for practitioners and researchers. Based on practical considerations such as scalability (in $n$), flexibility (reconfiguration and independent participation), robustness (fault tolerance and max damage), and randomness quality (true randomness versus pseudorandomness), we would advise practitioners planning to deploy a DRB as follows:
+Our systematization highlights important insights both for practitioners and researchers. 
+%Based on practical considerations such as scalability (in $n$), flexibility (reconfiguration and independent participation), robustness (fault tolerance and max damage), and randomness quality (true randomness versus pseudorandomness),
+Based on our comparative framework, we would advise practitioners planning to deploy a DRB to consider the following high-level guidelines:
 \begin{itemize}
     \item Delay-based protocols stand above the competition in terms of scalability, flexibility, and robustness, enabling an efficient DRB with unlimited, open participation and security given any honest participant. In theory, VDFs appear to be a silver bullet for DRBs, though they have yet to be widely used in practice and assumptions about VDF security and hardware speeds remain relatively new. They also invoke a unique practical cost in that \emph{somebody} must compute a VDF (preferably by running specialized hardware), which also induces latency into the DRB.
     \item If not using VDFs, practitioners need to think critically about two design dimensions: how large is the set of participants, and how frequently will it change? Given a small, static set of participants, DKG-based protocols, e.g. HERB (from threshold encryption) and drand (from DVRF), scale better than PVSS-based protocols. HERB and drand are both competitive in this setting, differing in randomness quality and max damage.
