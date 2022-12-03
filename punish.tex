@@ -38,7 +38,7 @@ A \textit{distributed key generation} (DKG)~\cite{pedersen1991threshold,gennaro1
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) for an implied group secret key $sk$ given security parameter $1^\lambda$, $t$, and $n$.
 \end{itemize}
-See Appendix~\ref{appendix:dkg} for details.
+In a typical setting, the idea behind DKG is that it allows $t + 1$ (but not less) out of $n$ nodes to jointly \textit{use} $sk$ without necessarily \textit{knowing} $sk$ (though this is not the case in Escrow-DKG). See Appendix~\ref{appendix:dkg} for details.
 % Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix~\ref{appendix:dkg} for details.
 \end{definition}
 
