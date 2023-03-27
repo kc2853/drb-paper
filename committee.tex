@@ -48,7 +48,7 @@ where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that 
 Each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it ``wins'' the lottery and becomes an entropy provider. As an adversary can perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$.
 
 A prime example of a private lottery is one based on VRFs (verifiable random functions~\cite{micali1999verifiable,dodis2005verifiable}), which output a pseudorandom value (as well as a proof for verification) given secret key $sk$ and input $x$ (see Appendix~\ref{appendix:vrf}).
-Most notably, Algorand~\cite{gilad2017algorand} uses VRFs to realize a lottery every \epoch. (While there exist more than one version of Algorand's algorithm, we consider its first version, as they do not differ fundamentally.) Quite naturally, one's private input to $\textsf{VRF}_{sk}(\cdot)$ is its secret key. The lottery is given by
+Most notably, Algorand~\cite{gilad2017algorand} uses VRFs to realize a lottery every \epoch. Quite naturally, one's private input to $\textsf{VRF}_{sk}(\cdot)$ is its secret key. The lottery\footnote{While there exist more than one version of Algorand's algorithm, we consider its first version, as they do not differ fundamentally.} is given by
 \[
 \textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert role) < target
 \]
@@ -90,9 +90,9 @@ while PVSS recovery is used in case the leader fails to open $e_{\tilde{\epochv}
 \drboutput_\epochv = \textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert \epochv)
 \]
 combining the previous output $\drboutput_{\epochv - 1}$ with the precommitted entropy $sk$. Note that the input to the VRF in beacon output generation is different from that in committee selection, as the VRF output in committee selection is always going to be less than $target$ by design. Ouroboros Praos' beacon output is generated similarly (see Table~\ref{table:committee-based}).
-\item Caucus. Each new reveal ($h_\epochv$ in \epoch $\epochv$) from an entropy provider's private hash chain in Caucus corresponds to that node's precommitted entropy. The beacon output is given by
+\item Caucus. Each new reveal ($h_\epochv$ in \epoch $\epochv$) from an entropy provider's private hash chain in Caucus corresponds to that node's precommitted entropy. The beacon output
 \[
 \drboutput_\epochv = h_\epochv \oplus \drboutput_{\epochv - 1}
 \]
-such that it naturally follows its committee selection mechanism $H(h_\epochv \oplus \drboutput_{\epochv - 1}) < target$.
+naturally follows its committee selection mechanism $H(h_\epochv \oplus \drboutput_{\epochv - 1}) < target$.
 \end{itemize}

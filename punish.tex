@@ -34,7 +34,7 @@ In this paper, we use $(t, n)$-secret sharing and Shamir's secret sharing interc
 \begin{itemize}
     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
     \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ is executed by the dealer with secret $s$ to generate secret shares $\{s_i\}$ (each of which is sent to node $i$ correspondingly) as well as commitment $C$ to the secret sharing polynomial of degree $t$.
-    \item $\mathsf{ShareVerify}(s_i, C) \rightarrow \{0, 1\}$ verifies the correctness of the share $s_i$ using $C$.
+    \item $\mathsf{ShareVerify}(s_i, C) \rightarrow \{0, 1\}$ verifies share $s_i$ using $C$.
     \item $\mathsf{Recon}(A, \{s_i\}_{i \in A}) \rightarrow s$ reconstructs $s$ via Lagrange interpolation from a set $A$ of $t + 1$ nodes that pass $\mathsf{ShareVerify}$.
 \end{itemize}
 See Appendix~\ref{appendix:vss} for details.
