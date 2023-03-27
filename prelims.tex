@@ -12,7 +12,7 @@ We assume a standard public key infrastructure (PKI) such that all nodes know ea
 
 Moreover, we assume a computationally bounded adversary $\adv$ which runs in probabilistic polynomial time (PPT). In particular, this means $\adv$ cannot break standard cryptographic constructions such as hash functions, digital signatures, etc.
 For delay-based protocols, we also assume the adversary cannot compute delay functions in fewer than $T$ time steps.
-The three ways in which $\adv$ can deviate from a protocol are omitting a message (i.e. \textit{withholding attack}), sending invalid messages, and colluding to coordinate an attack based on private information shared among malicious nodes. Additionally, $\adv$ has the power to perform a \textit{grinding attack}, in which $\adv$ privately precomputes and iterates through polynomially many combinations of inputs to an algorithm in order to derive a desirable output. By default, we assume a \textit{static} adversary that chooses nodes to be corrupted before a protocol run whereas an \textit{adaptive} adversary can choose nodes to be corrupted at any time during a protocol run (we assume a model where nodes remain corrupted once corrupted).
+The three ways in which $\adv$ can deviate from a protocol are omitting a message (i.e. \textit{withholding attack}), sending invalid messages, and colluding to coordinate an attack based on private information shared among malicious nodes. Additionally, $\adv$ has the power to perform a \textit{grinding attack}, in which $\adv$ privately precomputes and iterates through polynomially many combinations of inputs to an algorithm in order to derive a desirable output. By default, we assume a ($t$-limited) \textit{static} adversary that chooses nodes to be corrupted before a protocol run whereas an \textit{adaptive} adversary can choose nodes to be corrupted at any time during a protocol run (we assume a model where nodes remain corrupted once corrupted).
 
 We denote our computational model's security parameter by $\lambda$. We call a function $\negl(\lambda)$ \textit{negligible} if for all $c > 0$ there exists a $\lambda_0$ such that $\negl(\lambda) < \frac{1}{\lambda^c}$ for all $\lambda > \lambda_0$. The group elements $g, h \in \groupG$ are generators of $\groupG$ while $p, q$ denote primes where $q \mid p - 1$ (unless stated explicitly) such that $\groupG_q$ is a group of prime order $q$. The notation $tuple[0]$ denotes the first element of $tuple$. Furthermore, we model any hash function $H(\cdot)$ as a random oracle~\cite{bellare1993random}.
 In the context of a distributed randomness beacon, we use $\epochv$ to denote \epoch number and $\drboutput_\epochv$ to denote the \textit{beacon output} (i.e. the distributed randomness output) in \epoch $\epochv$. The \textit{entropy-providing committee} denoted by $\committee_\epochv$ refers to a subset of nodes (hereafter called \textit{entropy providers}) that proactively generate and provide marginal entropy in \epoch $\epochv$. %$\committee_\epochv$ can include all nodes, some but not all nodes, one node (i.e. a leader), or no node.
@@ -83,27 +83,35 @@ is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 We define two types of unpredictability.
 Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\drboutput_\epochv$ becomes publicly available) at $\drbtimeone$ in the optimistic case (if every node is honest and online) and at $\drbtimetwo$ in the worst case.
 \begin{itemize}
-\item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with negligible probability.
+\item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict any property of $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with negligible probability:
+\begin{equation*}
+\Pr[\drboutput_\epochv \in Y] < \frac{|Y|}{2^{\ell_{\drboutput_\epochv}(\lambda)}} + \negl(\lambda)
+\end{equation*}
+where $Y$ denotes the set of possible values predicted by $\adv$ and $\ell_{\drboutput_\epochv}(\lambda)$ denotes the bit-length of $\drboutput_\epochv$.
 It is \textit{$\alpha$-\intrapredictable} otherwise.
 % \item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
-\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ can predict $\drboutput_{\epochv + \beta}$ before $\drbtimetwo$ with negligible probability.
-It is \textit{$\beta$-\interpredictable} otherwise.
+\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ can predict any property of $\drboutput_{\epochv + \beta'}$ (defined similarly to above) for any $\beta' \geq \beta$ before $\drbtimetwo$ with negligible probability.
 \end{itemize}
 \end{enumerate}
 \end{definition}
 
 \noindent\textbf{Unbiasability.}
 In the unbiasability game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first precomputes an advice string ($\sigma$) given the DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ (which may include the previous beacon output, list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
-Our definition is quite general in that the advice string may encode any biasing ``strategy.'' This string is taken by $\adv_1$, which then (statically) corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.
+Our definition is quite general in that the advice string may encode any biasing ``strategy.'' This string is taken by $\adv_1$, which then (statically and within \epoch $\epochv$) corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.
 In contrast, $\drboutput_{\epochv, 0}$ denotes the honest beacon output generated by $\nodes$ (and not involving $\adv_1$).
 For both, the notation $\drb^\epochv_{\tilde{\nodes}}$ denotes a DRB in \epoch $\epochv$ with a participant set $\tilde{\nodes}$.
 Then $\adv_2$ distinguishes the two cases given the same advice string.
 A DRB is unbiasable if the adversary can do so with negligible probability.
-Note that our definition includes the possibility of \emph{private} biasing, e.g. the adversary biases the result in a way that requires a secret key to detect.
+Our definition includes the possibility of \emph{private} biasing, e.g. the adversary biases the result in a way that requires a secret key to detect.
 This means that the biased beacon outputs can even appear pseudorandom (indistinguishable from uniform distribution) to an outsider, a notion not considered in previous works~\cite{bonneau2015bitcoin,das2021spurt,bhat2020randpiper}.
 
+\noindent\textbf{Liveness.}
+While liveness implies a notion called \textit{guaranteed output delivery}~\cite{schindler2020hydrand,das2021spurt} (all honest nodes receive $\drboutput_\epochv$ at the end of \epoch $\epochv$), it is in turn implied by unbiasability (due to the fact that $\drboutput_{\epochv, 0}$ from Figure~\ref{figure:unbias} is never null).
+For instance, commit-reveal, due to the last-revealer attack, does not satisfy liveness and thus is biasable.
+
 \noindent\textbf{Unpredictability.}
-We note that $\beta$-\interunpredictability has been considered in previous works~\cite{bhat2020randpiper,bhat2022optrand} for $\beta \geq 1$, but we extend the notion to ``$\beta = 0$'' and explicitly consider $\alpha$-\intraunpredictability in conjunction with $\beta$-\interunpredictability, in order to exhibit variations across all possible DRBs.
+We note that $\beta$-\interunpredictability (though in different forms) has been considered in previous works~\cite{bhat2020randpiper,bhat2022optrand} for $\beta \geq 1$, but we extend the notion to ``$\beta = 0$'' and explicitly consider $\alpha$-\intraunpredictability in conjunction with $\beta$-\interunpredictability, in order to exhibit variations across all possible DRBs.
+While neither implies the other, both are defined using the same probability formulation (involving $\Pr[\drboutput \in Y]$), which has not been considered in previous works~\cite{bhat2020randpiper,das2021spurt,schindler2020hydrand} and captures cases where (say) $\adv$ predicts the first bit of $\drboutput$ is 1 (in which case $Y$ is a set of possible beacon output values whose first bit is 1), predicts the middle 10 bits make a prime number, etc.
 We also note that $\tilde{\beta}$-\interunpredictability implies $\beta$-\interunpredictability for all $\beta > \tilde{\beta}$, and that $\alpha$-\intraunpredictability for all $\alpha > 0$ implies unbiasability.
 The reason is that biasability allows $\adv$ in $\gamedrbsecurity$ to make a prediction towards its biasing strategy encoded in $\sigma$, implying that there exists $\alpha > 0$ such that the protocol is $\alpha$-\intrapredictable.
 

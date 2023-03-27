@@ -15,10 +15,18 @@ Deploying these protocols in practice also requires an understanding of the valu
 \subsection{Rational Threshold Commit-Reveal}
 Economically Viable Randomness (EVR)~\cite{david2020economically} provides an alternative requiring \textit{constant} deposits while tolerating (honest) faults to an extent. This is achieved by devising a threshold variant of commit-reveal (i.e. in which $t + 1$, as opposed to all $n$, nodes reveal to compute $\drboutput_\epochv$) and having an incentive mechanism around it. The threshold nature also invites collusion, which is counteracted by EVR's \textit{informing} mechanism: if the escrow is notified of collusion (via informing), it rewards the informer and slashes the deposits of all others (\textit{collective punishment}). Realizing this, nodes are discouraged to collude, fearing another node within the collusion would inform.
 
-EVR requires multiple cryptographic building blocks (many are used by other DRBs as well), which we introduce here. EVR uses Escrow-DKG~\cite{david2019rational}, an extension of DKG (distributed key generation)~\cite{pedersen1991threshold,gennaro1999secure}, to realize a threshold commit-reveal. DKG allows a set of $n$ nodes to collectively generate a pair $(sk, pk)$ of group secret and public keys such that $sk$ is shared and ``implied'' (i.e. never computed explicitly) by $n$ nodes via the following building blocks.
+EVR requires multiple cryptographic building blocks (introduced here, as they are used in other DRBs throughout the paper).
+EVR uses Escrow-DKG~\cite{david2019rational}, an extension of DKG (distributed key generation)~\cite{pedersen1991threshold,gennaro1999secure}, to realize a threshold commit-reveal.
+DKG allows a set of $n$ nodes to collectively generate a pair $(sk, pk)$ of group secret and public keys such that $sk$ is shared and ``implied'' (i.e. never computed explicitly) by $n$ nodes via the following building blocks.
 
 \begin{definition}[$(t, n)$-secret sharing]
-A \textit{$(t, n)$-secret sharing} scheme (also known as Shamir's secret sharing~\cite{shamir1979share}) allows a dealer to share a secret $s = p(0)$ for some \textit{secret sharing polynomial} $p \in \groupZ_q[X]$ of degree $t$ among $n$ participants each holding a \textit{share} $s_i = p(i)$ for $i = 1, ..., n$. Any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (see Appendix~\ref{appendix:lagrange}), but smaller subsets cannot.
+The dealer in a \textit{$(t, n)$-secret sharing} shares a secret to $n$ participants such that any subset of $t + 1$ or more participants can reconstruct the secret, but smaller subsets cannot.
+\end{definition}
+
+\begin{definition}[Shamir's secret sharing]
+A concrete realization of $(t, n)$-secret sharing, \textit{Shamir's secret sharing}~\cite{shamir1979share} allows a dealer to share a secret $s = p(0)$ for some \textit{secret sharing polynomial} $p \in \groupZ_q[X]$ of degree $t$ among $n$ participants each holding a \textit{share} $s_i = p(i)$ for $i = 1, ..., n$.
+Any subset of $t + 1$ or more participants can reconstruct the secret $s$ via \textit{Lagrange interpolation} (Appendix~\ref{appendix:lagrange}), but smaller subsets cannot.
+In this paper, we use $(t, n)$-secret sharing and Shamir's secret sharing interchangeably.
 \end{definition}
 
 \begin{definition}[Verifiable secret sharing]
@@ -39,7 +47,7 @@ A \textit{distributed key generation} (DKG)~\cite{pedersen1991threshold,gennaro1
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ outputs the $i$-th node's secret key, its public key (e.g. $pk_i = g^{sk_i}$), and a group public key $pk$ (e.g. $pk = g^{sk}$) for an implied group secret key $sk$ given security parameter $1^\lambda$, $t$, and $n$.
 \end{itemize}
-In a typical setting, the idea behind DKG is that it allows $t + 1$ (but not less) out of $n$ nodes to jointly \textit{use} $sk$ via Lagrange interpolation without necessarily \textit{knowing} $sk$ (though this is not the case in Escrow-DKG). See Appendix~\ref{appendix:dkg} for details.
+The idea behind DKG is that it allows $t + 1$ (but not less) out of $n$ nodes to jointly \textit{use} $sk$ via Lagrange interpolation without necessarily \textit{knowing} $sk$. See Appendix~\ref{appendix:dkg} for details.
 % Joint-Feldman and Joint-Pedersen are two of the most popular DKG protocols. See Appendix~\ref{appendix:dkg} for details.
 \end{definition}
 
@@ -52,7 +60,7 @@ In a typical setting, the idea behind DKG is that it allows $t + 1$ (but not les
 % \end{itemize}
 % \end{definition}
 
-The crux is that EVR adapts Escrow-DKG (whose escrow denoted by $\escrow$ takes in financial deposit to disincentivize misbehavior) to realize a DRB by using the group secret (i.e. the implied group secret key $sk$ after a DKG) as $\drboutput_\epochv$, retrievable from $t + 1$ $sk_i$'s. EVR proceeds in four phases---Setup, Commit, Inform, and Reveal.
+The crux is that EVR adapts Escrow-DKG, different from a typical DKG in that an escrow (e.g. smart contract) denoted by $\escrow$ takes in financial deposit to disincentivize misbehavior and, more importantly, in that a DKG's implied group secret key $sk$ is in fact the beacon output that becomes computed and publicized (so that $sk$ is neither implied nor a group secret key in the context of EVR) to realize a DRB. EVR proceeds in four phases---Setup, Commit, Inform, and Reveal.
 \begin{enumerate}
     \item \textbf{Setup.} Every participant registers by depositing 1 coin per secret (i.e. entropy contribution), and $\escrow$ accordingly sets the threshold parameter $t = 2n / 3$ required for Escrow-DKG. It also sets the \textit{illicit profit bound} (i.e. bound on extra profit an adversary can gain as a result of using EVR's beacon output as opposed to an ideal beacon's output) to $n - t = n / 3$ and the \textit{informing reward} to $n$.
     \item \textbf{Commit.} Escrow-DKG is run, and each participant ends up with an individual key pair $(sk_i, pk_i)$ as well as $pk$.

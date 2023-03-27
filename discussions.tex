@@ -55,45 +55,45 @@ In a withholding attack, an adversary can influence the outcome by not publishin
 \label{table:comparison}
 % \begin{tabularx}{\textwidth}{@{} l *{20}c}
 % \begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{x}}c@{\phantom{x}}}}
-\begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{w}}c@{\phantom{e}}}}
+\begin{tabularx}{\textwidth}{@{} l *{20}{@{\phantom{w}}c@{\phantom{w}}}}
 \toprule
-\spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive} & \spheading{Fault Tolerance (less than)} & \spheading{Independent Participation} & \spheading{Per-Epoch Entropy Provider} & \spheading{$\alpha$-\Intraunpredictability} & \spheading{$\beta$-\Interunpredictability} & \spheading{Immunity to Withholding} & \spheading{Adaptive Security} & \spheading{Verifier Complexity} & \multicolumn{2}{c}{\spheading{Communication Complexity}} & \spheading{Max Damage} & \spheading{Recovery Cost}\\
-\cmidrule{12-13}
- & & & & & & & & & & & Optimistic & Worst & & \\
+\spheading{} & \spheading{Section\\(from paper)} & \spheading{Cryptographic Primitive} & \spheading{Fault Tolerance (less than)} & \spheading{Independent Participation} & \spheading{Per-Epoch Entropy Provider} & \spheading{$\alpha$-\Intraunpredictability} & \spheading{$\beta$-\Interunpredictability} & \spheading{Immunity to Withholding} & \spheading{Verifier Complexity} & \multicolumn{2}{c}{\spheading{Communication Complexity}} & \spheading{Max Damage} & \spheading{Recovery Cost}\\
+\cmidrule{11-12}
+ & & & & & & & & & & Optimistic & Worst & & \\
 \toprule
-Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & $O(\Delta)$ & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
+Commit-Reveal & \hyperref[subsection:commit-reveal]{II} & Commitment & 1 & \cmark & All & $O(\Delta)$ & 1 & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(1)$ \\
 \midrule
-Unicorn++ & \multirow{4}{*}{\ref{section:delay}} & VDF & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
-Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
-RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $T$\tnote{‡} & $t$\tnote{§} & \cmark & \xmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
-Bicorn & & Timed commitment & $n$ & \cmark & All & $T$\tnote{‡} & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Unicorn++ & \multirow{4}{*}{\ref{section:delay}} & VDF & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
+Ext. Beacon+VDF & & VDF & $n$ & \cmark & External & $O(\Delta)$ & 1 & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & None & $O(1)$ \\
+RandRunner & & Trapdoor VDF & $n$ & \xmark & None & $T$\tnote{‡} & $t$\tnote{§} & \cmark & $O(\log T)$\tnote{‡} & $O(n)$ & $O(n^2)$ & Predict & $O(n^3)$ \\
+Bicorn & & Timed commitment & $n$ & \cmark & All & $T$\tnote{‡} & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & None & $O(1)$ \\
 \midrule
-RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
-EVR & & Escrow-DKG & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
+RANDAO & \multirow{2}{*}{\ref{section:commit-reveal-punish}} & Commitment & $n$ & \cmark & All & $O(\Delta)$ & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & None & $O(n)$\tnote{†} \\
+EVR & & Escrow-DKG & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & None & $O(n)$ \\
 \midrule
-Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
-Albatross & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias\tnote{r} & $O(n^3)$ \\
-RandShare & & (P)VSS & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(1)$ \\
-SecRand & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
-HERB & & Thr. ElGamal & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
+Scrape & \multirow{5}{*}{\ref{section:commit-reveal-recover}} & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+Albatross & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias\tnote{r} & $O(n^3)$ \\
+RandShare & & (P)VSS & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(n^3)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(1)$ \\
+SecRand & & PVSS & $n/2$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^4)$ & Bias\tnote{r} & $O(n^3)$ \\
+HERB & & Thr. ElGamal & $n/3$ & \xmark & All & $O(\Delta)$ & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias\tnote{r} & $O(n^4)$ \\
 \midrule
-HydRand & \multirow{11}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
-GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & \xmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
-Ouroboros & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & \xmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-RandHound & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
-SPURT & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-OptRand & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & $O(\Delta)$ & 1 & \xmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
-Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & \cmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
-NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & \cmark & $O(n)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+HydRand & \multirow{11}{*}{\ref{section:committee-based}} & PVSS & $n/3$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^3)$ \\
+GRandPiper & & PVSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & $t$ & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+BRandPiper & & (P)VSS & $n/2$ & \xmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \cmark & $O(n^2)$ & $O(n^2)$ & $O(n^3)$ & Bias & $O(n^4)$ \\
+Ouroboros & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & $O(n^2)$ & $O(n^3)$ & $O(n^3)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+RandHound & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & $O(c n)$ & $O(c^2 n)$ & $O(c^2 n^2)$ & Bias & $O(n^3)$ \\
+SPURT & & PVSS & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+OptRand & & PVSS & $n/2$ & \xmark & Committee & $O(\Delta)$ & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+Algorand & & VRF & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & $O(1)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+Ouroboros Praos & & VRF & $n/2$ & \cmark & Committee & $O(\Delta)$ & 1 & \xmark & $O(n)$ & $O(n^2)$ & $O(n^2)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
+Caucus & & Hash chain & $n/3$ & \cmark & Committee\tnote{*} & $O(\Delta)$ & 1 & \xmark & $O(1)$ & $O(n)$ & $O(n^2)$ & Bias & $O(n^3)$ \\
+NV++ & & VRF, thr. ElGamal & $n/3$ & \xmark & Committee & $O(\Delta)$ & 1 & \xmark & $O(n)$ & $O(n)$ & $O(n)$\tnote{†} & Bias & $O(n^2)$\tnote{†} \\
 \midrule
-drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & $O(\Delta)$ & 1 & \xmark & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
-DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
-Strobe & & RSA, VSS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
+drand & \multirow{5}{*}{\ref{section:dvrf}} & Thr. BLS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+RandHerd & & Thr. Schnorr & $n/3$ & \xmark & None & $O(\Delta)$ & 1 & \xmark & $O(1)$ & $O(c^2 n)$ & $O(n^4)$ & Bias & $O(n^4)$ \\
+DDH-DRB & & DDH-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(n)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+GLOW-DRB & & Pairing-based DVRF & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n^4)$ \\
+Strobe & & RSA, VSS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(1)$ & $O(n^2)$ & $O(n^3)$ & Predict & $O(n)$ \\
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
@@ -119,7 +119,7 @@ Here, we discuss two ways to remedy adaptive attacks.
 % \item \textbf{$|\committee_\epochv|$ is greater than $t$ or equal to 0.}
 % Due to the $t$-limited adversary assumption, a large enough $\committee_\epochv$ (or an empty one as per Section~\ref{section:dvrf}) guarantees adaptive security. Otherwise, a protocol may be vulnerable. In HydRand and GRandPiper (where $|\committee_\epochv| = 1$), an adaptive adversary can corrupt the next $t$ \epoch leaders to predict $t + 1$ future \epochs. In Ouroboros, it can adaptively corrupt the entire $\committee_\epochv$ (which could probabilistically be less than or equal to $t$ in size) publicly known in advance.
 \item \textbf{Protocols with private lotteries require lottery winners to broadcast marginal entropy and proof of selection into $\committee_\epochv$ in the same message.} While some private lottery schemes (e.g. Algorand) may involve less than or equal to $t$ entropy providers per \epoch, the fact that one message (per entropy provider) comprises both announcement of winning the lottery and provision of marginal entropy is what allows adaptive security. By the time an adversary knows which nodes to corrupt adaptively in an \epoch (after the nodes reveal their identity as entropy providers), there is no extra step left to be corrupted. A similar line of research has recently emerged in the MPC literature~\cite{gentry2021yoso}.
-\item \textbf{There is no central point of dependency in any step of the protocol.} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, participating nodes may still need to depend on the leader to make progress on the beacon such that an adversary can adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the \epoch leader allows biasability if the leader aborts after seeing $\drboutput_\epochv$ as aforementioned. In SPURT, corrupting the next $t$ leaders to withhold endangers liveness.
+\item \textbf{There is no central point of dependency in any step of the protocol.}\todo{delete this; adaptive security tricky to prove; threshold BLS; drand example where tBLS fine but DKG maybe not} In leader-based protocols where a leader functions more as an orchestrator than an entropy provider, participating nodes may still need to depend on the leader to make progress on the beacon such that an adversary can adaptively corrupt such leaders to its benefit. In RandRunner, corrupting the next $t$ leaders allows predictability. In RandHound and RandHerd, corrupting the \epoch leader allows biasability if the leader aborts after seeing $\drboutput_\epochv$ as aforementioned. In SPURT, corrupting the next $t$ leaders to withhold endangers liveness.
 \end{enumerate}
 
 \subsection{Comparison of DRBs}
@@ -127,15 +127,22 @@ Table~\ref{table:comparison} provides an overall comparison of DRBs. \textit{Fau
 
 \textit{Verifier Complexity} refers to the computational cost for a passive node (third party) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) (e.g. blockchain) as a reliable information exchange medium in protocols where it is intrinsic. In a PBB model, we consider both the bitwise writing cost (amount of data posted to PBB) and reading cost (by all nodes where each node only reads data relevant to it). In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs $O(n^2)$ cost per decision by default.
 
-\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary can delay sending messages until \textit{after} reading messages sent by the honest nodes in a given round of communication) adversarial nodes cooperate to predict or bias. In escrow-based protocols, we assume the adversaries are rational. \textit{Recovery Cost} refers to the communication cost associated with recovering from an adversarial corruption. Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we assume each DKG incurs $O(n^4)$ recovery cost.
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary delays sending messages until \textit{after} reading messages sent by the honest nodes in a given round of communication) adversarial nodes cooperate to predict or bias.
+The reason for this column is to observe the consequence of when the honest majority assumption breaks down, and the reason for the notion of rushing is that there can exist a separation between what rushing versus non-rushing adversaries can do especially in protocols from Section~\ref{section:commit-reveal-recover}: if the adversary is able to generate its entropy contributions after seeing (or otherwise simultaneously with) all the honest nodes' entropy contributions, then biasing (or otherwise predicting) is possible.
+The same fundamental reasoning applies to (for instance) Ouroboros, where the maximum damage is bias due to the fact that slot leaders (i.e. entropy providers) communicate in sequential slots (and hence the adversary can reconstruct and see an honest node's entropy contribution before generating its own).
+In escrow-based protocols, we assume the adversaries are rational.
+
+\textit{Recovery Cost} refers to the communication cost associated with recovering from an adversarial corruption.
+Regenerating keys (e.g. $\mathsf{PVSS.KeyGen}$ or for private lottery schemes) and $\mathsf{VDF.Setup}$ incur $O(n^3)$ recovery cost without PBB (and $O(n^2)$ with PBB) while we conservatively assume each DKG incurs $O(n^4)$ recovery cost (although it can be optimized~\cite{gurkan2021aggregatable}).
+Finally, we note that it is possible to employ multiple DRBs as subprotocols to a multi-tiered DRB (an approach taken by Mt. Random~\cite{cascudo2021mt}) in order to combine and take advantage of various DRB properties at the same time.
 % \iffalse
 % \subsection{Quality vs Efficiency}
 % % Mt. Random's Tier 1 (fresh randomness per node) > 2 (one VRF, not biasable) > 3 (many VRFs, biasable via withholding) -- from quality of randomness perspective
-% The protocols that we have seen so far provide a range of efficiency and quality tradeoffs under different setups, assumptions and adversarial models. PVSS/VSS based protocols offers uniform randomness, but comes at quartic communication complexity.
-% VRF based protocols require very little communication and computation but the output is biasable by withholding. DVRF based protocols get rid of the bias by allowing a set of participants greater than a threshold to recover the output. VDF based protocols require high computational cost (sequential squarings) but generates uniform pseudorandom outputs with quadratic communication cost. While these protocols can be used on their own, they can also be combined in a modular way to build a distributed randomness beacon. Mt. Random~\cite{cascudomt}, a multi-tiered randomness beacon is one such example.
+% The protocols that we have seen so far provide a range of efficiency and quality trade-offs under different setups, assumptions and adversarial models. PVSS/VSS based protocols offers uniform randomness, but comes at quartic communication complexity.
+% VRF based protocols require very little communication and computation but the output is biasable by withholding. DVRF based protocols get rid of the bias by allowing a set of participants greater than a threshold to recover the output. VDF based protocols require high computational cost (sequential squarings) but generates uniform pseudorandom outputs with quadratic communication cost. While these protocols can be used on their own, they can also be combined in a modular way to build a distributed randomness beacon. Mt. Random~\cite{cascudo2021mt}, a multi-tiered randomness beacon is one such example.
 
 % \joenote{should there be a separate section on protocols that combine other protocols?}
-% Mt. Random has three independent tiers, each based on a different technique and providing different tradeoff between complexity and quality of randomness. Tier 1 provides uniform randomness via PVSS based protocols. Mt. Random reduces the amortized cost per beacon output for PVSS by using an extension of Albatross called GULL (Gradually UnLeashed aLbatross)~\cite{cascudomt}, but could be substituted with any of the Commit-Reveal-Recover variants from Section~\ref{section:commit-reveal-recover}. Tier 2 provides uniform pseudorandomness via DVRF based protocols. Mt. Random uses DDH based version of drand, but any of the DVRF based protocols from Section~\ref{section:dvrf} or RandRunner from Section~\ref{subsection:randrunner} could be used instead. Tier 3 provides biased pseudorandomness using VRF based protocols. Mt. Random uses a variation of Ouroboros Praos where every participant computes and broadcasts their VRF outputs (and requires no committee selection via private lottery). Though this makes detecting malicious participants (and maybe punishing them) easier, the beacon output for the round would still remain biased. Randomness from earlier tiers are used to periodically refresh seeds for Tier 2 and Tier 3 protocols, making them more secure than their stand-alone versions.
+% Mt. Random has three independent tiers, each based on a different technique and providing different trade-off between complexity and quality of randomness. Tier 1 provides uniform randomness via PVSS based protocols. Mt. Random reduces the amortized cost per beacon output for PVSS by using an extension of Albatross called GULL (Gradually UnLeashed aLbatross)~\cite{cascudo2021mt}, but could be substituted with any of the Commit-Reveal-Recover variants from Section~\ref{section:commit-reveal-recover}. Tier 2 provides uniform pseudorandomness via DVRF based protocols. Mt. Random uses DDH based version of drand, but any of the DVRF based protocols from Section~\ref{section:dvrf} or RandRunner from Section~\ref{subsection:randrunner} could be used instead. Tier 3 provides biased pseudorandomness using VRF based protocols. Mt. Random uses a variation of Ouroboros Praos where every participant computes and broadcasts their VRF outputs (and requires no committee selection via private lottery). Though this makes detecting malicious participants (and maybe punishing them) easier, the beacon output for the round would still remain biased. Randomness from earlier tiers are used to periodically refresh seeds for Tier 2 and Tier 3 protocols, making them more secure than their stand-alone versions.
 
 % Mt. Random illustrates a framework in which PVSS and (D)VRF protocols can be combined in a multi-tiered fashion where higher tiers generate random outputs faster than lower tiers albeit with losses in randomness quality. It is possible to extend the framework to other primitives/building blocks or use an altogether different framework to combine different protocols. This remains to be explored further.
 % \fi

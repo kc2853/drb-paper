@@ -299,24 +299,23 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 %     \end{itemize}
 % \fi
 
-\subsection{Threshold ElGamal Cryptosystem}
-\label{appendix:thrElGamal}
-A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic}, with an elliptic curve $E$ over $\mathbb{F}_p$ and its cyclic subgroup $\groupG_q$ with generator $G$, is implemented as follows.
-\begin{itemize}
-    \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
-    \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ outputs ciphertext $c = (A, B) = (r G, m G + r \cdot pk)$ given $m, r \in \groupZ_q$ and $pk = sk \cdot G$.
-    \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ outputs decryption share $D_i = sk_i \cdot A$ for $c = (A, B)$ using individual secret key $sk_i$.
-    \item $\mathsf{Rec}(\tilde{A}, c, pk, \{pk_i\}_{i \in \tilde{A}}, \{D_i\}_{i \in \tilde{A}}) \rightarrow m$ reconstructs the point $D = sk \cdot A$ from $\{D_i\}_{i \in \tilde{A}}$ (given a set $\tilde{A}$ of $t + 1$ honest nodes) via Lagrange interpolation and outputs $m = B - D$.
-\end{itemize}
-
-% \iffalse
-% \section{Verifiable Random Function (VRF)}
-% \label{appendix:vrf}
-% A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given an input $x$ and a secret key $sk$, generates a unique, pseudorandom output $y$ as well as a proof $\pi$ verifying that the computation has been done correctly. Due to $\pi$, it is possible to repeatedly generate new pseudorandom outputs with one $sk$ and varying inputs in a verifiable manner whereas otherwise (e.g. using a classical pseudorandom function) one needs to divulge the secret key and sacrifice its reusability for public verification purposes. It can be represented by the following tuple of algorithms:
+% \subsection{Threshold ElGamal Cryptosystem}
+% \label{appendix:thrElGamal}
+% A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001threshold, cherniaeva2019homomorphic}, with an elliptic curve $E$ over $\mathbb{F}_p$ and its cyclic subgroup $\groupG_q$ with generator $G$, is implemented as follows.
 % \begin{itemize}
-% \item $\mathsf{Prove}(sk, x) \rightarrow (F_{sk}(x), \pi_{sk}(x))$ generates the pseudorandom output $F_{sk}(x)$ and its proof of correctness $\pi_{sk}(x)$ given input $x$ and secret key $sk$.
-% \item $\mathsf{Verify}(pk, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if it is verified that $y = F_{sk}(x)$ using the proof $\pi$ and 0 otherwise.
+%     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ runs a typical DKG.
+%     \item $\mathsf{Enc}(pk, m) \rightarrow (A, B)$ outputs ciphertext $c = (A, B) = (r G, m G + r \cdot pk)$ given $m, r \in \groupZ_q$ and $pk = sk \cdot G$.
+%     \item $\mathsf{DecShare}(sk_i, c) \rightarrow D_i$ outputs decryption share $D_i = sk_i \cdot A$ for $c = (A, B)$ using individual secret key $sk_i$.
+%     \item $\mathsf{Rec}(\tilde{A}, c, pk, \{pk_i\}_{i \in \tilde{A}}, \{D_i\}_{i \in \tilde{A}}) \rightarrow m$ reconstructs the point $D = sk \cdot A$ from $\{D_i\}_{i \in \tilde{A}}$ (given a set $\tilde{A}$ of $t + 1$ honest nodes) via Lagrange interpolation and outputs $m = B - D$.
 % \end{itemize}
+
+\subsection{Verifiable Random Function (VRF)}
+\label{appendix:vrf}
+A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given an input $x$ and a secret key $sk$, generates a unique, pseudorandom output $y$ as well as a proof $\pi$ verifying that the computation has been done correctly. Due to $\pi$, it is possible to repeatedly generate new pseudorandom outputs with one $sk$ and varying inputs in a verifiable manner whereas otherwise (e.g. using a classical pseudorandom function) one needs to divulge the secret key and sacrifice its reusability for public verification purposes. It can be represented by the following tuple of algorithms:
+\begin{itemize}
+\item $\mathsf{Prove}(sk, x) \rightarrow (F_{sk}(x), \pi_{sk}(x))$ generates the pseudorandom output $F_{sk}(x)$ and its proof of correctness $\pi_{sk}(x)$ given input $x$ and secret key $sk$.
+\item $\mathsf{Verify}(pk, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if it is verified that $y = F_{sk}(x)$ using the proof $\pi$ and 0 otherwise.
+\end{itemize}
 
 % Furthermore, a VRF satisfies the following three properties:
 % \begin{enumerate}
@@ -345,7 +344,6 @@ A $(t, n)$-threshold ElGamal cryptosystem~\cite{desmedt1990Threshold, fouque2001
 % \]
 % for any probabilistic polynomial-time algorithm $\adv$, which does not query the oracle on $x$.
 % \end{itemize}
-% \fi
 
 % \iffalse
 % \subsection{Distributed Verifiable Random Function (DVRF)}
