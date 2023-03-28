@@ -83,14 +83,14 @@ is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
 We define two types of unpredictability.
 Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\drboutput_\epochv$ becomes publicly available) at $\drbtimeone$ in the optimistic case (if every node is honest and online) and at $\drbtimetwo$ in the worst case.
 \begin{itemize}
-\item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) can predict any property of $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with negligible probability:
+\item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) cannot predict any property of $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with non-negligible advantage:
 \begin{equation*}
 \Pr[\drboutput_\epochv \in Y] < \frac{|Y|}{2^{\ell_{\drboutput_\epochv}(\lambda)}} + \negl(\lambda)
 \end{equation*}
 where $Y$ denotes the set of possible values predicted by $\adv$ and $\ell_{\drboutput_\epochv}(\lambda)$ denotes the bit-length of $\drboutput_\epochv$.
 It is \textit{$\alpha$-\intrapredictable} otherwise.
 % \item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
-\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ can predict any property of $\drboutput_{\epochv + \beta'}$ (defined similarly to above) for any $\beta' \geq \beta$ before $\drbtimetwo$ with negligible probability.
+\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ cannot predict any property of $\drboutput_{\epochv + \beta'}$ (defined similarly to above) for any $\beta' \geq \beta$ before $\drbtimetwo$ with non-negligible advantage.
 \end{itemize}
 \end{enumerate}
 \end{definition}
