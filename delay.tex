@@ -2,10 +2,10 @@
 
 \section{Delay-Based Protocols}
 \label{section:delay}
-One way to prevent the last-revealer attack is to compute $\drboutput_\epochv$ using a \emph{delay function} after combining each node's entropy contribution. If the delay is suitably long, no participant can predict what effect a potential contribution will have on the output before its share must be published. Typically, a \emph{verifiable delay function} (VDF)~\cite{boneh2018verifiable,boneh2018survey} is used to accomplish this while maintaining efficient verifiability of the result.
+One way to prevent the last-revealer attack is to compute $\drboutput_\epochv$ using a \emph{delay function} after combining each node's entropy contribution. If the delay is suitably long, no participant can predict what effect a potential contribution will have on the output before its contribution must be published. Typically, a \emph{verifiable delay function} (VDF)~\cite{boneh2018verifiable,boneh2018survey} is used to accomplish this while maintaining efficient verifiability of the result.
 
 \begin{definition}[Verifiable delay function]
-A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify. It is described by the following algorithms:
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify. It is described by the following algorithms.
 \begin{itemize}
 \item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and delay parameter $T$.
 \item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ computes $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
@@ -26,14 +26,13 @@ The Unicorn protocol~\cite{lenstra2015random} uses the Sloth function (a VDF pre
     $$y_\epochv, \pi_\epochv = \mathsf{VDF.Eval}(pp, seed_\epochv)$$
     such that $\drboutput_\epochv = H(y_\epochv)$, which is posted and can be efficiently verified by any observer using $\pi_\epochv$ via $\mathsf{VDF.Verify}$.
 \end{enumerate}
-% \todo{lower case $t$ used here for time?}
 As long as $T$ is longer than the duration of $t_2 - t_1$, Unicorn++ successfully defends against any attack possible by the last entropy provider. Also desirably, it is unbiasable by an adversary that controls $n - 1$ of the participants, as even one honest entropy contribution requires computation of $\mathsf{VDF.Eval}$ from scratch. The downside of the protocol is that \emph{somebody} must evaluate the VDF, which is slow by design. It is possible to outsource this computation, even in a decentralized manner~\cite{thyagarajan2021opensquare}, as it does not matter for security who evaluates since VDFs are deterministic and verifiable. %) though it is possible to outsource VDF evaluation in a decentralized manner~\cite{thyagarajan2021opensquare}.
 
-We note a variation of above~\cite{bunz2017proofs, bonneau2015bitcoin}, replacing or bolstering the participant entropy contributions with  stock prices~\cite{clark2010use} or PoW blockchain headers~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) can be used to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
+We note a variation of above~\cite{bunz2017proofs, bonneau2015bitcoin}, replacing or bolstering the participant entropy contributions with  stock prices~\cite{clark2010use} or PoW blockchain headers~\cite{nakamoto2008bitcoin, bentov2016bitcoin, han2020randchain} (which are otherwise susceptible to manipulation) to supply $seed_\epochv$ in Collect. Such schemes are collectively denoted by \textit{Ext. Beacon+VDF} in Table~\ref{table:comparison}.
 Unfortunately, they do not easily compare to other DRBs, as the security model depends on the cost of manipulating the external beacon, which has not yet been formally analyzed.
 
 \subsection{Adding Recovery to Commit-Reveal}
-Another way to modify commit-reveal is to leverage a different class of delay functions called timed commitments~\cite{boneh2000timed} in place of regular commitments used in commit-reveal.
+Another way to modify commit-reveal is to leverage a different class of delay functions called \textit{timed commitments}~\cite{boneh2000timed} in place of regular commitments used in commit-reveal.
 The idea is simple: timed commitments are commitments with an additional slow recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
 
 \begin{definition}[Timed commitment]
@@ -43,9 +42,9 @@ A \textit{timed commitment} is a commitment with the following additional recove
 \end{itemize}
 \end{definition}
 
-This recovery process avoids the last-revealer attack as a withholding participant's contribution can be recovered. Thus the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (Section~\ref{section:commit-reveal-recover}).
+This recovery process avoids the last-revealer attack, as a withholding participant's contribution can be recovered. Thus, the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (Section~\ref{section:commit-reveal-recover}).
 This approach was suggested by Boneh and Naor~\cite{boneh2000timed} though not specified in detail.
-Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that by leveraging homomorphic timed commitments, it is possible to combine contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholder).
+Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that by leveraging \textit{homomorphic} timed commitments, it is possible to combine contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholder).
 Bicorn~\cite{choi2023bicorn} realizes the above logic in a simple, efficient DRB with comparable overhead to basic commit-reveal.
 An improvement of Bicorn over Unicorn++ is that there is an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
 At the same time, context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is even simpler and also requires only one delay function computation.
@@ -73,7 +72,7 @@ RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a V
 Namely, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}, where the knowledge of a \textit{trapdoor} allows an efficient evaluation of a VDF without $T$ sequential steps unlike $\mathsf{VDF.Eval}$ (but with $T$ steps otherwise).
 In its setup, each $P_i$ broadcasts $pp_i$ (each corresponding to a different VDF per participant).
 Then the idea is that, in each \epoch, $H(\drboutput_{\epochv - 1})$ is input to the VDF of the \epoch leader---selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed), discussed in Section~\ref{subsubsection:public-committee-selection}.
-In the optimistic case, the leader (the only one that knows its trapdoor) efficiently evaluates and publishes the VDF output as the beacon output while in the faulty case (if the leader withholds), others can evaluate the same value albeit more slowly.
+In the optimistic case, the honest leader (the only one that knows its trapdoor) efficiently evaluates and publishes the VDF output as the beacon output while in the faulty case (if the leader withholds), others can evaluate the same value albeit more slowly.
 
 % After an initial Setup phase, RandRunner reiterates its Execution phase as follows.
 % \begin{enumerate}

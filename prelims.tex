@@ -26,7 +26,7 @@ Distributed randomness assuming perfect synchrony is straightforward. Consider t
 
 Repeating this protocol periodically would yield a DRB.
 This protocol is simple---in fact, it is essentially what humans approximate when playing rock-paper-scissors (with $e_i \sample \groupZ_3$).
-Under a perfect synchrony assumption, is secure as long as any single participant chooses its $e_i$ randomly. However, security falls apart completely once messages can be delayed.
+Under a perfect synchrony assumption, it is secure as long as any single participant chooses its $e_i$ randomly. However, security falls apart completely once messages can be delayed.
 %assumption is never true. In fact, situations can change dramatically in a practical setting where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers can try to predict or bias the randomness to their benefit.
 Consider a simple scenario with three participants $\{P_1, P_2, P_3\}$ participating to produce $\drboutput = e_1 + e_2 + e_3$. If $P_3$ can read $e_1$ and $e_2$ before sending $e_3$ (due to non-zero message latency) to $P_1$ and $P_2$, then $P_3$ can fix the output $\drboutput$ to any value $\tilde{\drboutput}$ by choosing $e_3 = \tilde{\drboutput} - e_1 - e_2$. Effectively, the protocol cannot tolerate any malicious participants without perfect synchrony.
 Indeed, humans may attempt to cheat in rock-paper-scissors by quickly adjusting their play in reaction to what their opponent is playing.
@@ -42,7 +42,7 @@ A classic fix for the above synchrony problem is to introduce a cryptographic co
 With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as their values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last-revealing participant $P_k$ can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol in this basic form also has no robustness against non-Byzantine faults.
 
 \subsection{Ideal Distributed Randomness Beacons}
-Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) any \epoch's output. %The beacon output should also be verifiable by \todo{remove}any third party.
+Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) any \epoch's output.
 We formalize the security properties of an ideal DRB as follows:\footnote{We present a game-based security definition here, as it is the most commonly used in the literature. Other formulations, such as ideal functionalities as used in UC-security~\cite{canetti2001universally}, are possible.}
 
 \begin{figure}[t!]
@@ -69,7 +69,7 @@ Return $b = b'$
 An ideal distributed randomness beacon satisfies the following security properties:
 \begin{enumerate}
 \item Unbiasability.
-A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the adversary's advantage in the game given in Figure~\ref{figure:unbias}, given by
+A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the adversary's advantage in the game depicted in Figure~\ref{figure:unbias}, given by
 \begingroup\makeatletter\def\f@size{8}\check@mathfonts
 \begin{equation*}
 \advdrbsecurity(\lambda) = \left|\Pr\left[\gamedrbsecurityone(\lambda) = 1\right] - \Pr\left[\gamedrbsecurityzero(\lambda) = 1\right]\right|
