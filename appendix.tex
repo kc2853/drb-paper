@@ -115,7 +115,7 @@ The verifiability in Feldman-VSS comes from inclusion of commitments to the coef
 
 \subsection{Distributed Key Generation (DKG)}
 \label{appendix:dkg}
-One of the best known DKG schemes is Joint-Feldman~\cite{pedersen1991threshold}, proposed by Pedersen.\\\\
+One of the best known DKG schemes is Joint-Feldman, proposed by Pedersen~\cite{pedersen1991threshold}.\\\\
 %As discussed in~\cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper, uses Pedersen commitments~\cite{pedersen1991non} to guarantee uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.\\\\
 \noindent\textbf{Joint-Feldman.}
 \label{appendix:jointFeldman}
@@ -177,7 +177,7 @@ PVSS is a secure VSS scheme providing the following additional guarantee:
 % \iffalse
 \noindent\textbf{Schoenmakers PVSS.}
 \label{appendix:schoenmakersPVSS}
-One of the most common PVSS schemes used in practice is one by Schoenmakers~\cite{schoenmakers1999simple}. As typical, the setup involves $g, h \in \groupG_q$. Additionally, each participant $P_i$ generates a secret key $x_i \in \groupZ^*_q$ and registers $y_i = h^{x_i}$ as its public key.
+One of the simplest PVSS schemes used in practice is one by Schoenmakers~\cite{schoenmakers1999simple}. As typical, the setup involves $g, h \in \groupG_q$. Additionally, each participant $P_i$ generates a secret key $x_i \in \groupZ^*_q$ and registers $y_i = h^{x_i}$ as its public key.
 
 \begin{itemize}
 \item $\mathsf{ShareGen}(s) \rightarrow (\{\mathsf{Enc}(y_i, s_i)\}, \{s'_i\}, \pi)$ with $s'_i$ equal to $\mathsf{Dec}(x_i, \mathsf{Enc}(y_i, s_i))$ first involves production of $\{\mathsf{Enc}(y_i, s_i)\}$ by the dealer with secret $s$. Namely, the dealer picks a random polynomial $p$ of degree $t$ with coefficients in $\groupZ_q$

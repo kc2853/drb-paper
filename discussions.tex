@@ -103,16 +103,16 @@ Strobe & & RSA, VSS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(1)$ 
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
-\item Max Damage refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} adversarial nodes cooperate (see Section~\ref{subsection:comparison}).
 \item $c$ is the size of a shard in RandHerd and RandHound. We assume a leader can be Byzantine for both.
 \item Albatross' verifier and communication complexities are per beacon output.
 \item In Ouroboros and Ouroboros Praos, we assume the number of slot leaders in an \epoch is denoted by $n$.
 \item We assume Scrape's PVSS~\cite{cascudo2017scrape} is used as the default PVSS scheme.
+\item Max Damage refers to the maximum damage possible when $n - 1$ adversarial nodes cooperate (see Section~\ref{subsection:comparison}).
+\item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \item[*] Each committee consists of a leader by default or by expectation.
 \item[†] PBB (public bulletin board) is assumed.
 \item[‡] $T$ denotes VDF's delay parameter, and verification of Pietrzak's VDF is logarithmic in $T$.
 \item[§] $\beta = t$ for RandRunner's $\beta$-\interunpredictability assuming a dishonest minority without any computational advantage. See~\cite{schindler2021randrunner} for more scenarios.
-\item[r] In a non-rushing adversary model, max damage would be predict rather than bias.
 \end{tablenotes}
 \end{threeparttable}
 \end{table*}
