@@ -14,7 +14,7 @@ A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ node
 \item $\mathsf{PartialEval}(sk_i, x) \rightarrow (y_i, \pi_i)$ outputs the partial evaluation $y_i$ as well as its proof of correctness $\pi_i$ given an input $x$ and a node's secret key $sk_i$.
 \item $\mathsf{PartialVerify}(pk_i, x, y_i, \pi_i) \rightarrow \{0, 1\}$ verifies the correctness of the partial evaluation $y_i$ given its proof $\pi_i$, an input $x$, and a node's public key $pk_i$.
 \item $\mathsf{Combine}(A, \{(y_i, \pi_i)\}_{i \in A}) \rightarrow (y, \pi)$ outputs the DVRF evaluation $y$ as well as its proof of correctness $\pi$ given a set $A$ of $t + 1$ nodes and their outputs of $\mathsf{PartialEval}(sk_i, x)$, all of which pass $\mathsf{PartialVerify}$.
-\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi) \rightarrow \{0, 1\}$ verifies the correctness of the DVRF evaluation $y$ given $\pi$, input $x$, and public keys.
+\item $\mathsf{Verify}(pk, \{pk_i\}, x, y, \pi) \rightarrow \{0, 1\}$ verifies the DVRF evaluation $y$ given $\pi$, input $x$, and public keys.
 \end{itemize}
 % Naturally, it should satisfy VRF's properties of provability, uniqueness, and pseudorandomness. See Appendix~\ref{appendix:dvrf}.
 \end{definition}

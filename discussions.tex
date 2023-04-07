@@ -44,9 +44,9 @@ Two countermeasures are possible. First, inclusion of fresh marginal entropy fro
 \label{subsection:withholding}
 In a withholding attack, an adversary can influence the outcome by not publishing some information. Any leader-based protocol is vulnerable due to the inherent reliance on a leader's availability, affecting the protocol's liveness (as well as unbiasability and potentially unpredictability). Any protocol with a private lottery is also fundamentally vulnerable.
 \begin{enumerate}
-\item \textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds its message such that their liveness is affected and a beacon output can be aborted (depending on implementation).
+\item \textbf{Protocols with a leader.} RandHound, RandHerd, and SPURT suffer from the leader unavailability issue in case the leader withholds such that their liveness is affected and a beacon output can be aborted.\footnote{In contrast to a leader in SPURT, that in RandHound or RandHerd can abort after seeing the beacon output in plaintext.}
 % In RandHound and RandHerd, this can create a bias if the leader aborts after seeing $\drboutput_\epochv$.
-A fallback is needed in case a leader withholds (e.g. HydRand's PVSS recovery).
+A fallback is needed if a leader withholds (e.g. HydRand's PVSS recovery).
 \item \textbf{Protocols with a private lottery.} The issue of withholding is more fundamental with private lottery schemes like Algorand, as there is no accountability. There are two possible remedies. First, we can require all participants to post their lottery outputs every single \epoch even if they lose the lottery, in which case any lack of message would be indicative of withholding. However, this incurs communication cost, negating the advantages of a private lottery. Second, SSLE (single secret leader election)~\cite{boneh2020single} can be used to guarantee one winner per \epoch, enabling detection of withholding.
 % In a nutshell, SSLE ensures exactly one leader from a group is randomly chosen while the identity of the leader will only be known when the winner publicly reveals its identity.
 The guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. While this makes withholding obvious, it does not prevent withholding by itself, nor does it detect \emph{who} withholds in the case of withholding.
@@ -103,6 +103,7 @@ Strobe & & RSA, VSS & $n/2$ & \xmark & None & $O(\Delta)$ & 1 & \cmark & $O(1)$ 
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}[flushleft,para]
+\item Max Damage refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} adversarial nodes cooperate (see Section~\ref{subsection:comparison}).
 \item $c$ is the size of a shard in RandHerd and RandHound. We assume a leader can be Byzantine for both.
 \item Albatross' verifier and communication complexities are per beacon output.
 \item In Ouroboros and Ouroboros Praos, we assume the number of slot leaders in an \epoch is denoted by $n$.
@@ -134,13 +135,14 @@ On the other hand, we note that a proof of adaptive security does not follow imm
 Only recently has it been shown that threshold BLS is adaptively secure~\cite{bacho2022adaptive}.
 
 \subsection{Comparison of DRBs}
+\label{subsection:comparison}
 Table~\ref{table:comparison} provides an overall comparison of DRBs. \textit{Fault Tolerance} indicates the minimum number of faulty nodes that can abort a protocol (after the initial setup). Protocols with \textit{Independent Participation} allow a node to contribute to beacon output without the knowledge of other nodes in advance. However, it differs from a permissionless setting in the sense that a node may still have to register in advance to allow verification of its contribution.
 
 \textit{Verifier Complexity} refers to the computational cost for a passive node (third party) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) (e.g. blockchain) as a reliable information exchange medium in protocols where it is intrinsic. In a PBB model, we consider both the bitwise writing cost (amount of data posted to PBB) and reading cost (by all nodes where each node only reads data relevant to it). In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs $O(n^2)$ cost per decision by default.
 
 \textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary delays sending messages until \textit{after} reading messages sent by the honest nodes in a given round of communication) adversarial nodes cooperate to predict or bias.
 The reason for this column is to observe the consequence of when the honest majority assumption breaks down, and the reason for the notion of rushing is that there can exist a separation between what rushing versus non-rushing adversaries can do especially in protocols from Section~\ref{section:commit-reveal-recover}: if the adversary is able to generate its entropy contributions after seeing (or otherwise simultaneously with) all the honest nodes' entropy contributions, then biasing (or otherwise predicting) is possible.
-The same fundamental reasoning applies to (for instance) Ouroboros, where the maximum damage is bias due to the fact that slot leaders (i.e. entropy providers) communicate in sequential slots (and hence the adversary can reconstruct and see an honest node's entropy contribution before generating its own).
+The same fundamental reasoning applies to (for instance) Ouroboros, where slot leaders (i.e. entropy providers) communicate in sequential slots (and hence the adversary can reconstruct and see an honest node's entropy contribution before generating its own).
 In escrow-based protocols, we assume the adversaries are rational.
 
 \textit{Recovery Cost} refers to the communication cost associated with recovering from an adversarial corruption.
