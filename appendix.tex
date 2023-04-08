@@ -65,7 +65,7 @@ VSS schemes have two security requirements.
 Feldman-VSS~\cite{feldman1987practical} and Pedersen-VSS~\cite{pedersen1991non} are the most commonly used VSS schemes.\\\\
 \noindent\textbf{Feldman-VSS.}
 \label{appendix:feldmanVSS}
-The following summarizes a simple VSS scheme proposed by Paul Feldman for sharing a secret $s$ among $n$ participants where any subset of $t + 1$ among them can reconstruct the group secret.
+The following summarizes a simple VSS scheme proposed by Paul Feldman for sharing a secret $s$ among $n$ participants where any subset of $t + 1$ among them can reconstruct the secret.
 
 \begin{itemize}
 \item $\mathsf{ShareGen}(s) \rightarrow (\{s_i\}, C)$ with $s \in \groupZ_q$ involves the dealer sampling $t$ random coefficients $a_1, \ldots, a_t \in \groupZ_q$ and constructing $p(x) = s + a_1x+ a_2x^2 +\ldots+a_tx^t$. The shares are computed as $s_i = p(i)$ in mod $q$ for $1\le i \le n$ and shared privately with each participant. The commitments to the secret $C_0 = g^s$ as well as coefficients $C_j = g^{a_j}$ for $j = 1,\ldots,t$ are also broadcast by the dealer.
@@ -119,17 +119,23 @@ One of the best known DKG schemes is Joint-Feldman, proposed by Pedersen~\cite{p
 %As discussed in~\cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper, uses Pedersen commitments~\cite{pedersen1991non} to guarantee uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.\\\\
 \noindent\textbf{Joint-Feldman.}
 \label{appendix:jointFeldman}
- In this DKG scheme, each participant use Feldman-VSS to share a randomly chosen secret. The protocol is implemented as follows.
+In this DKG scheme, each participant uses Feldman-VSS to share a randomly chosen secret. The protocol is implemented as follows.
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ proceeds in two phases---Sharing and Reconstruction.
     \begin{enumerate}
-        \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\groupZ_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$ and sending a subshare $s_{ij} = p_i(j)$ mod $q$ to each participant $P_j$ privately. \\
-        To satisfy the verifiability portion of VSS, $P_i$ also broadcasts $C_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$. Let the commitment corresponding to the secret be denoted by $y_i = C_{i0}$.
-
-        Each participant $P_j$ also verifies the shares he receives from other participants by performing verification steps of Feldman-VSS on each subshare. If the verification for an index $i$ fails, $P_j$ broadcasts a complaint against $P_i$. If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified. Otherwise, $P_i$ reveals the subshare $s_{ij}$ for every $P_j$ that has broadcast a complaint. We call $\committee$ the set of non-disqualified participants.
+        \item In Sharing phase, each participant $P_i$ runs Feldman-VSS by choosing a random polynomial over $\groupZ_q$ of degree $t$, $p_i(z) = \sum_{j = 0}^{t} a_{ij} z^j$, and sending a subshare $s_{ij} = p_i(j)$ in mod $q$ to each participant $P_j$ privately.
+        To satisfy the verifiability portion of VSS, $P_i$ also broadcasts $C_{ik} = g^{a_{ik}}$ for $k = 0, \ldots, t$.
+        Let the commitment corresponding to the secret be denoted by $y_i = C_{i0}$.
+        Each participant $P_j$ also verifies the subshares it receives from other participants by performing verification steps of Feldman-VSS on each subshare.
+        If verification for index $i$ fails, $P_j$ broadcasts a complaint against $P_i$.
+        If $P_i$ receives more than $t$ complaints, then $P_i$ is disqualified.
+        Otherwise, $P_i$ reveals the subshare $s_{ij}$ for every $P_j$ that has broadcast a complaint.
+        We call $\committee$ the set of non-disqualified participants.
 
         \item Reconstruction phase calculates the keys based on $\committee$.
-        The group public key is calculated as $pk = \prod_{i \in \committee} y_i$ where the individual public keys are $pk_i = y_i$. Each participant $P_j$'s share of the group secret is computed as $sk_j = \sum_{i \in \committee} s_{ij}$ mod $q$. Though not computed explicitly, the group secret key $sk$ is equal to both $\sum_{i \in \committee} a_{i0}$ mod $q$ and the Lagrange interpolation involving the shares $\{sk_j\}_{j \in \committee}$.
+        The group public key is calculated as $pk = \prod_{i \in \committee} y_i$ where the individual public keys are $pk_i = y_i$.
+        Each participant $P_j$'s individual secret key is computed as $sk_j = \sum_{i \in \committee} s_{ij}$.
+        Though not computed explicitly, the group secret key $sk$ is equal to both $\sum_{i \in \committee} a_{i0}$ and the Lagrange interpolation involving the individual secret keys $\{sk_j\}_{j \in \committee}$.
     \end{enumerate}
 \end{itemize}
 
