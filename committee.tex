@@ -3,7 +3,7 @@
 \section{Committee-Based Protocols}
 \label{section:committee-based}
 While all aforementioned commit-reveal variants (Sections~\ref{subsection:modifying-commit-reveal},~\ref{section:commit-reveal-punish}, and~\ref{section:commit-reveal-recover}) include every node in each entropy-providing committee $\committee_\epochv$, this has a scalability problem.
-Requiring communication of marginal entropy by all nodes is inefficient with large numbers of participants, and hence a natural optimization is to use a smaller subset of nodes $\committee_\epochv$ in each \epoch to contribute entropy (i.e. reduce $|\committee_\epochv|$).
+Requiring communication of marginal entropy by all nodes is inefficient with large numbers of participants, and hence a natural optimization is to use a smaller subset of nodes to contribute marginal entropy (i.e. reduce $|\committee_\epochv|$).
 
 In this section, we consider DRBs that are committee-based, with $\committee_\epochv$ such that $1 \leq |\committee_\epochv| < n$. Committee-based protocols proceed in two steps: \textit{committee selection} and \textit{beacon output generation}. As the names suggest, $\committee_\epochv$ is agreed upon during committee selection while the beacon output $\drboutput_\epochv$ is generated and agreed upon during beacon output generation.
 %Provided below is a summary of ten preexisting protocols, and we offer intuition (refer to corresponding citations for full details) on interpreting them under our simple framework.
@@ -43,7 +43,7 @@ In a \textit{private committee selection}, also known as \textit{private lottery
 \[
 f_{priv}(\cdot) < target
 \]
-where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ denotes the lottery's ``difficulty level'' (a la Proof of Work difficulty) such that $target$ can be adjusted to make the lottery arbitrarily easy or hard to win.
+where $f_{priv}(\cdot)$ is a lottery function (i.e. pseudorandom function) that takes some private input $priv$ and $target$ denotes the lottery's ``difficulty level'' (a la proof-of-work difficulty) such that $target$ can be adjusted to make the lottery arbitrarily easy or hard to win.
 
 Each node calculates $f_{priv}(\cdot)$ and checks if the above inequality is satisfied, in which case it ``wins'' the lottery and becomes an entropy provider. As an adversary can perform a grinding attack by trying many values of $priv$ until a desirable function output is achieved, one crucial requirement is that $priv$ should be provably committed in the past and thus be ungrindable at the time of computation of $f_{priv}(\cdot)$.
 

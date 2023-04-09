@@ -17,7 +17,7 @@ Based on our comparative framework, we would advise practitioners planning to de
 
 We conclude by identifying the following areas which we consider most promising for further research.
 \begin{itemize}
-    \item While VDFs are a promising tool, practical deployment requires good estimates of the lower bound of wall-clock VDF evaluation time. More research is needed to gain confidence in the security of underlying VDF primitives (such as repeated modular squaring), and hardware implementations must be built to provide practical assurance against attacks.
+    \item While VDFs are a promising tool, practical deployment requires good estimates of the lower bound of wall-clock VDF evaluation time. More research is needed to gain confidence in the security of underlying VDF primitives (such as repeated modular squaring), and hardware implementations must be built to provide practical assurance.
     \item VDFs might be useful as a modular layer in strengthening other DRBs in a ``belt-and-suspenders'' approach, though this does not appear to have been explored yet.
     % \item To avoid the need for VDF evaluation (and latency) in the optimistic case, timed commitments (a related primitive to VDFs) might be used instead as yet another mechanism to recover from aborts in commit-reveal.
     \item Vulnerable to withholding, protocols based on private lotteries can generate biased outputs. Though the guarantee of a single lottery winner every \epoch via SSLE makes withholding detectable, extending these protocols to enable tracing of which node withheld is a promising direction for further research.
