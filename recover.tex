@@ -26,7 +26,7 @@ Extending commit-reveal, \textit{commit-reveal-recover} adds a step to the commi
 \begin{enumerate}
 \item \textbf{Commit.} Every node $P_j$ runs $\mathsf{PVSS.ShareGen}(s^{(j)})$ as a dealer and publishes the encrypted shares $\mathsf{Enc}(pk_i, s^{(j)}_i)$ for $i \in [n]$ and encryption proofs. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^{(j)}, r_j)$ (with fresh randomness $r_j$). Upon receiving encrypted shares and proofs, all nodes run $\mathsf{PVSS.ShareVerify}$ to verify correct encryption. Let $\committee_\epochv$ be the set of nodes with published commitments and valid shares.
 \item \textbf{Reveal.} Once $t + 1$ nodes have distributed their commitments and valid shares, every node $P_j$, $j \in \committee_\epochv$, opens its commitment by revealing $(s^{(j)}, r_j)$.
-\item \textbf{Recover.} For every node $P_a \in \committee_\epochv$ that withholds $(s^{(a)}, r_a)$ in Reveal phase, other nodes $P_j$ for $j \neq a$ reconstruct $h^{s^{(a)}}$ via $\mathsf{PVSS.Recon}$, which requires each node to publish its decrypted share $h^{s_j^{(a)}}$ and the proof of correct decryption passing $\mathsf{PVSS.ShareVerify}$.
+\item \textbf{Recover.} For every node $P_a \in \committee_\epochv$ that withholds $(s^{(a)}, r_a)$ in Reveal, other nodes $P_j$ for $j \neq a$ reconstruct $h^{s^{(a)}}$ via $\mathsf{PVSS.Recon}$, which requires each node to publish its decrypted share $h^{s_j^{(a)}}$ and the proof of correct decryption passing $\mathsf{PVSS.ShareVerify}$.
 \item \textbf{Aggregate.} The final randomness is $\drboutput_\epochv = \prod_{j \in \committee_\epochv} h^{s^{(j)}}$.
 \end{enumerate}
 

@@ -3,7 +3,7 @@
 \section{Committee-Based Protocols}
 \label{section:committee-based}
 While all aforementioned commit-reveal variants (Sections~\ref{subsection:modifying-commit-reveal},~\ref{section:commit-reveal-punish}, and~\ref{section:commit-reveal-recover}) include every node in each entropy-providing committee $\committee_\epochv$, this has a scalability problem.
-Requiring communication of marginal entropy by all nodes is inefficient with large numbers of participants, and hence a natural optimization is to use a smaller subset of nodes to contribute marginal entropy (i.e. reduce $|\committee_\epochv|$).
+Requiring communication of marginal entropy by all nodes is inefficient with large numbers of participants, and hence a natural optimization is to require a smaller subset of nodes to contribute marginal entropy (i.e. reduce $|\committee_\epochv|$).
 
 In this section, we consider DRBs that are committee-based, with $\committee_\epochv$ such that $1 \leq |\committee_\epochv| < n$. Committee-based protocols proceed in two steps: \textit{committee selection} and \textit{beacon output generation}. As the names suggest, $\committee_\epochv$ is agreed upon during committee selection while the beacon output $\drboutput_\epochv$ is generated and agreed upon during beacon output generation.
 %Provided below is a summary of ten preexisting protocols, and we offer intuition (refer to corresponding citations for full details) on interpreting them under our simple framework.
