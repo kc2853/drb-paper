@@ -85,7 +85,7 @@ Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\
 \begin{itemize}
 \item A DRB is \textit{$\alpha$-\intraunpredictable} ($\alpha > 0$) if $\adv$ participating in $\drb^\epochv$ (Figure~\ref{figure:unbias}) cannot predict any property of $\drboutput_\epochv$ at time $\drbtimetwo - \alpha$ with non-negligible advantage:
 \begin{equation*}
-\Pr[\drboutput_\epochv \in Y] < \frac{|Y|}{2^{\ell_{\drboutput_\epochv}(\lambda)}} + \negl(\lambda)
+\Pr[\drboutput_\epochv \in Y] \le \frac{|Y|}{2^{\ell_{\drboutput_\epochv}(\lambda)}} + \negl(\lambda)
 \end{equation*}
 where $Y$ denotes the set of possible values predicted by $\adv$ and $\ell_{\drboutput_\epochv}(\lambda)$ denotes the bit-length of $\drboutput_\epochv$.
 It is \textit{$\alpha$-\intrapredictable} otherwise.

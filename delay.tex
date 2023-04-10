@@ -36,7 +36,7 @@ Another way to modify commit-reveal is to leverage a different class of delay fu
 The idea is simple: timed commitments are commitments with an additional slow recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
 
 \begin{definition}[Timed commitment]
-A \textit{timed commitment} is a commitment with an additional function whereby the committed value can be recovered (or \emph{forced open}) in $T$ sequential steps but not before:
+A \textit{timed commitment} is a commitment with an additional algorithm whereby the committed value can be recovered (or \emph{forced open}) in $T$ sequential steps but not before:
 \begin{itemize}
 \item $\mathsf{ForceOpen}(\com) \rightarrow (x, r_0)$ outputs the committed value $(x, r_0)$ in $T$ sequential steps given a commitment $\com = \mathsf{Com}(x, r_0)$.
 \end{itemize}
@@ -50,7 +50,7 @@ Bicorn~\cite{choi2023bicorn} realizes the above logic in a simple, efficient DRB
 The advantage of Bicorn over Unicorn++ is that in the optimistic case (where every participant is honest) the protocol has no delay, analogous to a simple commit-reveal.
 Context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is simpler and also requires only one delay function computation.
 
-All of the protocols in this family share a fundamental predictability downside: if only one participant (or a colluding coalition) withhold while all others reveal, then the attacker(s) can simulate the optimistic case and learn $\drboutput_\epochv$ early. As this implies $T$-\intraunpredictability (with delay parameter $T$), a protocol should consider $\drboutput_\epochv$ to be potentially available to adversaries as of $\drbtimeone$ (optimistic case), even if it is not publicly known until $\drbtimetwo$ (worst case).
+All of the protocols in this family share a fundamental predictability downside: if only one participant (or a colluding coalition) withholds while all others reveal, then the attacker(s) can simulate the optimistic case and learn $\drboutput_\epochv$ early. As this implies $T$-\intraunpredictability (with delay parameter $T$), a protocol should consider $\drboutput_\epochv$ to be potentially available to adversaries as of $\drbtimeone$ (optimistic case), even if it is not publicly known until $\drbtimetwo$ (worst case).
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
