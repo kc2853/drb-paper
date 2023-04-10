@@ -1,20 +1,21 @@
 %!TEX root = main.tex
 
-\section{Discussions}
+\section{Discussion}
 \label{section:discussions}
-We provide a historical account of the distributed randomness line of research, compare all aforementioned DRBs in Table~\ref{table:comparison}, and explore some practical issues with DRBs.
+
+%We provide a historical account of the distributed randomness line of research, compare all aforementioned DRBs in Table~\ref{table:comparison}, and explore some practical issues with DRBs.
 
 \subsection{Relation to Collective Coin Flipping Protocols}
 Conceptually, distributed randomness is not a new line of research.
-With its roots in Blum's classic work on coin flipping over telephone~\cite{blum1983coin}, distributed randomness has in fact been much researched albeit in a different context elaborated below.
-Namely, Ben-Or and Linial in their seminal work~\cite{ben1985collective,ben1989collective} introduced the \textit{full information} model for the \textit{collective coin flipping} problem, in which $n$ participants with unbounded computational power communicate only via a single broadcast channel to generate a common random bit (such that honest majority is required~\cite{saks1989robust,boppana2000perfect} and thus assumed).
+Dating to Blum's classic work on coin flipping over the phone~\cite{blum1983coin}, distributed randomness has been much researched, albeit in a different context as elaborated below.
+Namely, Ben-Or and Linial in their seminal work~\cite{ben1985collective,ben1989collective} introduced the \textit{full information} model for the \textit{collective coin flipping} problem, in which $n$ participants with unbounded computational power communicate only via a single broadcast channel to generate a common random bit (such that an honest majority is required~\cite{saks1989robust,boppana2000perfect} and thus assumed).
 Numerous works exist in this setting, largely classifiable into different types of adversaries dealt with: static~\cite{ben1989collective,ajtai1993influence,kahn1989influence,saks1989robust,alon1993coin,boppana2000perfect,feige1999noncryptographic,russell1999lower}, adaptive~\cite{ben1989collective,lichtenstein1989some,goldwasser2015adaptively,dodis2000impossibility,kalai2021lower,haitner2020tight}, and variants of adaptive~\cite{mahloujifar2019can,etesami2020computational,cleve1993martingales,aspnes1998lower,goldwasser2015adaptively}.
 See~\cite{kalai2021lower,haitner2020tight} for this line of research.
 
 Overall, these works concern upper and lower bounds on corruption threshold, bias (deviation from coin flipping probability 1/2), and round complexity, all of which provide interesting theoretical insights.
 Nonetheless, these bounds are often asymptotic (hence not practical) and are grounded in a more lax definition of security where it is sufficient that bias is bounded (but can still be nontrivial).
-This is in contrast to the literature on DRBs considered in this paper, where we require each protocol to be as \drbsecure as possible, outputting multi-bit, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
-The goal is to achieve fully functional and practical DRBs.
+This is in contrast to the modern literature on DRBs considered in this paper, which aims to design protocols which are as \drbsecure as possible, output multiple bits per round, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
+%The goal is to achieve fully functional and practical DRBs.
 
 Outside the full information model (such that cryptography is allowed), the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary controlling half or more of the participants that can bias the output by $\Omega(1 / r)$.
 In other words, it is impossible to have an \drbsecure coin flipping protocol with a dishonest majority.
@@ -40,7 +41,7 @@ Two countermeasures are possible. First, inclusion of fresh marginal entropy fro
 \end{enumerate}
 \fi
 
-\subsection{Withholding Attack}
+\subsection{Withholding Attacks}
 \label{subsection:withholding}
 In a withholding attack, an adversary can influence the outcome by not publishing some information. Any leader-based protocol is vulnerable due to the inherent reliance on a leader's availability, affecting the protocol's liveness (as well as unbiasability and potentially unpredictability). Any protocol with a private lottery is also fundamentally vulnerable.
 \begin{enumerate}
@@ -50,6 +51,7 @@ A fallback is needed if a leader withholds (e.g. HydRand's PVSS recovery).
 \item \textbf{Protocols with a private lottery.} The issue of withholding is more fundamental with private lottery schemes like Algorand, as there is no accountability. There are two possible remedies. First, we can require all participants to post their lottery outputs every single \epoch even if they lose the lottery, in which case any lack of message would be indicative of withholding. However, this incurs communication cost, negating the advantages of a private lottery. Second, SSLE (single secret leader election)~\cite{boneh2020single} can be used to guarantee one winner per \epoch, enabling detection of withholding.
 % In a nutshell, SSLE ensures exactly one leader from a group is randomly chosen while the identity of the leader will only be known when the winner publicly reveals its identity.
 The guarantee of one winner as opposed to the expectation of one winner is what differentiates SSLE. While this makes withholding obvious, it does not prevent withholding by itself, nor does it detect \emph{who} withholds in the case of withholding.
+Designing efficient SSLE protocols remains an open and active research area.
 \end{enumerate}
 
 \begin{table*}[h!]
@@ -138,10 +140,12 @@ Only recently has it been shown that threshold BLS is adaptively secure~\cite{ba
 \label{subsection:comparison}
 Table~\ref{table:comparison} provides an overall comparison of DRBs. \textit{Fault Tolerance} indicates the minimum number of faulty nodes that can abort a protocol (after the initial setup). Protocols with \textit{Independent Participation} allow a node to contribute to beacon output without the knowledge of other nodes in advance. However, it differs from a permissionless setting in the sense that a node may still have to register in advance to allow verification of its contribution.
 
-\textit{Verifier Complexity} refers to the computational cost for a passive node (third party) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) (e.g. blockchain) as a reliable information exchange medium in protocols where it is intrinsic. In a PBB model, we consider both the bitwise writing cost (amount of data posted to PBB) and reading cost (by all nodes where each node only reads data relevant to it). In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs $O(n^2)$ cost per decision by default.
+\textit{Verifier Complexity} refers to the computational cost for a passive observer (not participating in the protocol) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) (e.g. blockchain) as a reliable information exchange medium in protocols where it is intrinsic. In a PBB model, we consider both the bitwise writing cost (amount of data posted to PBB) and reading cost (by all nodes where each node only reads data relevant to it). In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs $O(n^2)$ cost per decision by default.
 
-\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} (where an adversary delays sending messages until \textit{after} reading messages sent by the honest nodes in a given round of communication) adversarial nodes cooperate.
-The reason for this column is to observe the consequence of when the honest majority assumption breaks down (e.g. a \$625 million Axie Infinity's Ronin hack in 2022~\cite{scharfman2023decentralized}), and the reason for the notion of rushing is that there can exist a separation between what rushing versus non-rushing adversaries can do especially in protocols from Section~\ref{section:commit-reveal-recover}: if one can generate its entropy contributions after seeing (or otherwise simultaneously with) all the honest nodes' entropy contributions, then biasing (or otherwise predicting) is possible.
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure}  adversarial nodes cooperate.
+The reason for this column is to observe the consequence of when the honest majority assumption fails, which has happened in practice (e.g. a \$625 million Axie Infinity's Ronin hack in 2022~\cite{scharfman2023decentralized}). 
+A rushing adversary may delay sending messages until \textit{after} reading messages sent by all honest nodes in a given round of communication.
+There can exist a separation between what rushing versus non-rushing adversaries can do especially in protocols from Section~\ref{section:commit-reveal-recover}: if one can generate its entropy contributions after seeing (or otherwise simultaneously with) all the honest nodes' entropy contributions, then biasing (or otherwise predicting) is possible.
 The same fundamental reasoning applies to (say) Ouroboros, where slot leaders (i.e. entropy providers) communicate in sequential slots (and hence the adversary can reconstruct an honest node's entropy contribution before generating its own).
 In escrow-based protocols, we assume the adversaries are rational.
 
