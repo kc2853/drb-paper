@@ -27,6 +27,7 @@ In Cleve's proof, the notion of a ``default bit'' is used in such withholding si
 Second, an implicit assumption in Cleve's model is that a Byzantine node is capable of grinding through possibilities to its liking and can arbitrarily choose which messages to output based on inputs from other nodes that are honest.
 However, VDFs limit this capability such that it is not possible for even a dedicated attacker to grind through possibilities in an attempt to fix an output of some computation if a VDF is applied.
 As a result of above, delay-based DRBs are able to enjoy both the highest fault tolerance and \drbsecurity without violating any classical lower bounds.
+In a similar vein, Bailey et al.~\cite{bailey2022mpc} recently showed that VDFs can circumvent some classical impossibility results for general multiparty computation (MPC), of which DRBs are a special case.
 
 \iffalse
 \subsection{Grinding Attack}
