@@ -5,10 +5,10 @@
 One way to prevent the last-revealer attack is to compute $\drboutput_\epochv$ using a \emph{delay function} after combining each node's entropy contribution. If the delay is suitably long, no participant can predict what effect a potential contribution will have on the output before its contribution must be published. Typically, a \emph{verifiable delay function} (VDF)~\cite{boneh2018verifiable,boneh2018survey} is used to accomplish this while maintaining efficient verifiability of the result.
 
 \begin{definition}[Verifiable delay function]
-A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes exponentially less time to verify. It is described by the following algorithms.
+A \textit{verifiable delay function} (VDF) is a function that takes a specified number of sequential steps to compute (even with a large amount of parallelism available) but takes significantly less time to verify. It is described by the following algorithms:
 \begin{itemize}
 \item $\mathsf{Setup}(\lambda, T) \rightarrow pp$ is a randomized algorithm that outputs public parameters $pp$ given security parameter $\lambda$ and delay parameter $T$.
-\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ computes $y$ in $T$ sequential steps and a proof $\pi$ given $pp$ and an input $x$.
+\item $\mathsf{Eval}(pp, x) \rightarrow (y, \pi)$ computes $y$ in $T$ sequential steps and (optionally) a proof $\pi$, given $pp$ and an input $x$.
 \item $\mathsf{Verify}(pp, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if $y$ is the unique correct evaluation of the VDF on input $x$ and 0 otherwise.
 \end{itemize}
 \end{definition}
@@ -36,7 +36,7 @@ Another way to modify commit-reveal is to leverage a different class of delay fu
 The idea is simple: timed commitments are commitments with an additional slow recovery process (the committed value can be recovered in $T$ sequential steps but not before) in case the committer withholds.
 
 \begin{definition}[Timed commitment]
-A \textit{timed commitment} is a commitment with the following additional recovery process (also known as forced opening) where the committed value can be recovered in $T$ sequential steps but not before.
+A \textit{timed commitment} is a commitment with an additional function whereby the committed value can be recovered (or \emph{forced open}) in $T$ sequential steps but not before:
 \begin{itemize}
 \item $\mathsf{ForceOpen}(\com) \rightarrow (x, r_0)$ outputs the committed value $(x, r_0)$ in $T$ sequential steps given a commitment $\com = \mathsf{Com}(x, r_0)$.
 \end{itemize}
@@ -44,16 +44,17 @@ A \textit{timed commitment} is a commitment with the following additional recove
 
 This recovery process avoids the last-revealer attack, as a withholding participant's contribution can be recovered. Thus, the resulting distributed randomness protocol can be seen as a ``commit-reveal-recover'' protocol (Section~\ref{section:commit-reveal-recover}).
 This approach was suggested by Boneh and Naor~\cite{boneh2000timed} though not specified in detail.
-Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed that by leveraging \textit{homomorphic} timed commitments, it is possible to combine contributions and only compute one delay function even if \emph{all} participants refuse to open (rather than one computation per withholder).
+Thyagarajan et al.~\cite{thyagarajan2021efficient} proposed leveraging \textit{homomorphic} timed commitments to combine contributions and only require one delay function even if \emph{all} participants refuse to open (rather than one computation per withholder).
 Bicorn~\cite{choi2023bicorn} realizes the above logic in a simple, efficient DRB with comparable overhead to basic commit-reveal.
-An improvement of Bicorn over Unicorn++ is that there is an optimistic case (which the latter does not have) when everyone reveals as expected, making the protocol analogous to a simple commit-reveal.
-At the same time, context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is even simpler and also requires only one delay function computation.
 
-All of the protocols in this family have an interesting fundamental downside where if exactly one $P_k$ withholds (while others reveal), then $P_k$ is able to simulate the optimistic case and learn $\drboutput_\epochv$ quickly. As this implies $T$-\intraunpredictability (with delay parameter $T$), a protocol should consider $\drboutput_\epochv$ to be potentially available to adversaries as of $\drbtimeone$ (optimistic case), even if it is not publicly known until $\drbtimetwo$ (worst case).
+The advantage of Bicorn over Unicorn++ is that in the optimistic case (where every participant is honest) the protocol has no delay, analogous to a simple commit-reveal.
+Context may be important to consider if the optimistic case is unlikely to occur (e.g. due to poor network conditions or too many participants), in which case Unicorn++ is simpler and also requires only one delay function computation.
+
+All of the protocols in this family share a fundamental predictability downside: if only one participant (or a colluding coalition) withhold while all others reveal, then the attacker(s) can simulate the optimistic case and learn $\drboutput_\epochv$ early. As this implies $T$-\intraunpredictability (with delay parameter $T$), a protocol should consider $\drboutput_\epochv$ to be potentially available to adversaries as of $\drbtimeone$ (optimistic case), even if it is not publicly known until $\drbtimetwo$ (worst case).
 
 \subsection{Chain of VDFs}
 \label{subsection:randrunner}
-The disadvantage of above approaches is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
+A disadvantage of above approaches is that each \epoch may require consensus~\cite{castro1999practical} on inputs to the delay function, incurring communication cost.
 Also, the rate at which beacon outputs are generated is limited by $T$ (by default in Unicorn++ and in Bicorn's $\mathsf{ForceOpen}$ case).
 RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a VDF design that builds a deterministic chain of outputs (more precisely, a chain of $n$ interleaved VDFs each set up by a node) to bypass per-\epoch consensus while allowing each \epoch's duration to be independent of $T$ in the optimistic case.
 % As a result, the protocol achieves lower communication complexity as well as more beacon outputs generated per time frame.
@@ -69,7 +70,7 @@ RandRunner~\cite{schindler2021randrunner} tackles these issues by leveraging a V
 
 % Wesolowski's VDF~\cite{wesolowski2019efficient} is not strongly unique, as knowing the trapdoor allows an adversary to forge proofs accepted by $\mathsf{VDF.Verify}$.
 % As a result, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple} in its setup, in which $pp_i$ (each corresponding to a different VDF) is broadcast by each $P_i$.
-Namely, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}, where the knowledge of a \textit{trapdoor} allows an efficient evaluation of a VDF without $T$ sequential steps unlike $\mathsf{VDF.Eval}$ (but with $T$ steps otherwise).
+Namely, RandRunner uses Pietrzak's VDF~\cite{pietrzak2018simple}, where knowledge of a \textit{trapdoor} allows an efficient evaluation of a VDF without $T$ sequential steps unlike $\mathsf{VDF.Eval}$ (but with $T$ steps otherwise).
 In its setup, each $P_i$ broadcasts $pp_i$ (each corresponding to a different VDF per participant).
 Then the idea is that, in each \epoch, $H(\drboutput_{\epochv - 1})$ is input to the VDF of the \epoch leader---selected via either \textit{round-robin} (i.e. taking turns in some permuted order) or \textit{random selection} (i.e. using $\drboutput_{\epochv - 1}$ as seed), discussed in Section~\ref{subsubsection:public-committee-selection}.
 In the optimistic case, the honest leader (the only one that knows its trapdoor) efficiently evaluates and publishes the VDF output as the beacon output while in the faulty case (if the leader withholds), others can evaluate the same value albeit more slowly.
@@ -90,5 +91,5 @@ In the optimistic case, the honest leader (the only one that knows its trapdoor)
 %     \end{itemize}
 % \end{enumerate}
 
-Thus, RandRunner optimistically generates each beacon output rapidly with only $O(n)$ communication complexity. Adversarial leaders can increase the \epoch duration to $T$ and the communication complexity to $O(n^2)$ due to consensus.\footnote{We assume each consensus at a protocol level incurs $O(n^2)$ communication cost (bitwise) by default.}
-The protocol exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as one can simply compute the beacon outputs over time via $\mathsf{VDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-\interunpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, $\beta$ from $\beta$-\interunpredictability must be greater than one but can be bounded~\cite{schindler2021randrunner} with assumptions.
+Thus, RandRunner optimistically generates each beacon output rapidly with only $O(n)$ communication complexity. Adversarial leaders can increase the \epoch duration to $T$ and the communication complexity to $O(n^2)$.\footnote{We assume consensus at a protocol level incurs $O(n^2)$ communication cost (bitwise) by default.}
+The protocol exhibits two other beneficial properties. First, liveness is retained even with a dishonest majority and when network connectivity breaks down completely, as one can simply compute the beacon outputs over time via $\mathsf{VDF.Eval}$. Second, it is impossible to bias the beacon once bootstrapped such that even the strongest adversary can only predict but not bias. The trade-off is that RandRunner can never achieve the ideal 1-\interunpredictability property due to the existence of leaders that can withhold and adversaries with higher compute power. In other words, $\beta$-\interunpredictability can be achieved only with $\beta>1$, though $\beta$ can be bounded~\cite{schindler2021randrunner} with assumptions.
