@@ -16,7 +16,7 @@ Nonetheless, these bounds are often asymptotic (hence not practical) and are gro
 This is in contrast to the literature on DRBs considered in this paper, where we require each protocol to be as \drbsecure as possible, outputting multi-bit, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
 The goal is to achieve fully functional and practical DRBs.
 
-Outside the full information model (such that cryptography is allowed) and thus the honest majority assumption, the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary that can bias the output of an honest node by $\Omega(1 / r)$.
+Outside the full information model (such that cryptography is allowed), the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary controlling half or more of the participants that can bias the output by $\Omega(1 / r)$.
 In other words, it is impossible to have an \drbsecure coin flipping protocol with a dishonest majority.
 
 While this may seem to contradict the fault tolerance of delay-based DRBs from Section~\ref{section:delay}, we note that delay functions help circumvent Cleve's impossibility result in the following two ways.
