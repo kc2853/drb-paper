@@ -26,24 +26,24 @@ Distributed randomness assuming perfect synchrony ($\Delta = 0$) is straightforw
 
 Repeating this protocol periodically would yield a DRB.
 This protocol is simple---in fact, it is essentially what humans approximate when playing rock-paper-scissors (with $e_i \sample \groupZ_3$).
-Under a perfect synchrony assumption, it is secure as long as any single participant chooses its $e_i$ randomly. However, security falls apart completely once messages can be delayed.
+Under perfect synchrony, it is secure as long as any single participant chooses its $e_i$ randomly. However, security falls apart completely once messages can be delayed.
 %assumption is never true. In fact, situations can change dramatically in a practical setting where participants can go offline (perhaps temporarily) due to network failure, messages can be delayed either non-significantly or significantly, and Byzantine attackers can try to predict or bias the randomness to their benefit.
-Consider a simple scenario with three participants $\{P_1, P_2, P_3\}$ participating to produce $\drboutput = e_1 + e_2 + e_3$. If $P_3$ can read $e_1$ and $e_2$ before sending $e_3$ (due to non-zero message latency) to $P_1$ and $P_2$, then $P_3$ can fix the output $\drboutput$ to any value $\tilde{\drboutput}$ by choosing $e_3 = \tilde{\drboutput} - e_1 - e_2$. Effectively, the protocol cannot tolerate any malicious participants without perfect synchrony.
+Consider a simple scenario with three participants $\{P_1, P_2, P_3\}$ producing $\drboutput = e_1 + e_2 + e_3$. If $P_3$ can read $e_1$ and $e_2$ before sending $e_3$ (due to non-zero message latency) to $P_1$ and $P_2$, then $P_3$ can fix the output $\drboutput$ to any value $\tilde{\drboutput}$ by choosing $e_3 = \tilde{\drboutput} - e_1 - e_2$. Effectively, the protocol cannot tolerate any malicious participants without perfect synchrony.
 Indeed, humans may attempt to cheat in rock-paper-scissors by quickly adjusting their play in reaction to what their opponent is playing.
 
 \subsection{Commit-Reveal}
 \label{subsection:commit-reveal}
 A classic fix for the above synchrony problem is to introduce a cryptographic commitment step before each party reveals its entropy contribution.
 \begin{enumerate}
-\item \underline{Commit}. Each participant $P_i$ broadcasts a cryptographic commitment $\com_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy contribution $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties~\cite{blum1983coin,damgaard1998commitment}. Assuming participants generate $e_i$ from a large space, it is also secure to simply publish $\com_i = H(e_i)$.
-\item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens its commitment by revealing the pair $(e_i, r_i)$. In turn, $P_i$ verifies each received pair $(e_j, r_j)$ for $j \neq i$ by recomputing $\com_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\drboutput$ can canonically be computed via the aforementioned Equation~\ref{equation:addall}. If any of the checks do not pass, however, the protocol aborts and outputs $\perp$.
+\item \underline{Commit}. Each participant $P_i$ broadcasts a cryptographic commitment $\com_i = \mathsf{Com}(e_i, r_i)$ (with fresh randomness $r_i$) to its entropy contribution $e_i$ rather than $e_i$ itself. Note that $\mathsf{Com}(x, r_0)$ denotes a cryptographic commitment to $x$ with hiding and binding properties~\cite{blum1983coin,damgaard1998commitment}. If participants sample $e_i$ from a suitably large space, it is also secure to simply publish $\com_i = H(e_i)$.
+\item \underline{Reveal}. Once all participants have shared their corresponding commitments, each participant $P_i$ then opens its commitment by revealing the pair $(e_i, r_i)$. In turn, $P_i$ verifies each received pair $(e_j, r_j)$ for $j \neq i$ by recomputing $\com_j = \mathsf{Com}(e_j, r_j)$. Given that these checks pass, the final output $\drboutput$ can be computed as in Equation~\ref{equation:addall}. If any of the checks do not pass, however, the protocol aborts and outputs $\perp$.
 \end{enumerate}
 
 With the additional commit step, it becomes impossible for any participant to manipulate the output $\drboutput$, as the contribution values are bound by commitments published before any participants reveal. Nonetheless, the protocol can still be biased, as the last-revealing participant $P_k$ can in fact compute $\drboutput$ earlier than others and hence can decide to withhold (not reveal) $(e_k, r_k)$ if $\drboutput$ is not to its liking. This is called the \textit{last-revealer attack}. Note that this attack is indistinguishable from an honest node going offline, and indeed the protocol in this basic form also has no robustness against non-Byzantine faults.
 
 \subsection{Ideal Distributed Randomness Beacons}
-Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) any \epoch's output.
-We formalize the security properties of an ideal DRB as follows:\footnote{We present a game-based security definition here, as it is the most commonly used in the literature. Other formulations, such as ideal functionalities as used in UC-security~\cite{canetti2001universally}, are possible.}
+Clearly, a DRB should prevent any one participant from tampering with (e.g. predicting, biasing, or aborting) the output.
+We formalize the security properties of an ideal DRB as follows:
 
 \begin{figure}[t!]
 \begin{center}
@@ -66,7 +66,7 @@ Return $b = b'$
 \end{figure}
 
 \begin{definition}[Ideal distributed randomness beacon]
-An ideal distributed randomness beacon satisfies the following security properties:
+An ideal distributed randomness beacon satisfies the following security properties:\footnote{We present a game-based security definition here, as it is the most commonly used in the literature. Other formulations, such as ideal functionalities as used in UC-security~\cite{canetti2001universally}, are possible.}
 \begin{enumerate}
 \item Unbiasability.
 A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, \adv_2)$, the adversary's advantage in the game depicted in Figure~\ref{figure:unbias}, given by
@@ -74,7 +74,7 @@ A DRB is \textit{unbiasable} if, for any PPT adversary $\adv = (\adv_0, \adv_1, 
 \begin{equation*}
 \advdrbsecurity(\lambda) = \left|\Pr\left[\gamedrbsecurityone(\lambda) = 1\right] - \Pr\left[\gamedrbsecurityzero(\lambda) = 1\right]\right|
 \end{equation*}\endgroup
-is negligible, i.e. $\advdrbsecurity(\lambda) < \negl(\lambda)$.
+is negligible, i.e. $\advdrbsecurity(\lambda) \le \negl(\lambda)$.
 
 % \item Unpredictability. Similarly, $\adv$ cannot predict any $c$ bits of $\drboutput_\epochv$ with probability greater than $\frac{1}{2^c} + \negl(\lambda)$. The protocol satisfies \textit{$d$-unpredictability}~\cite{bhat2020randpiper} for $d \in \mathbb{N}$ if this is true for any round greater than or equal to $r + d$ (where $\epochv$ denotes the current round).
 \item Liveness. We define liveness~\cite{cherniaeva2019homomorphic} by requiring that the advantage of $\adv$ denoted by $\Pr[\drboutput_\epochv = \text{$\perp$}]$ (i.e. the probability that the beacon output at the end of \epoch $\epochv$ is null) is negligible, given a DRB that runs among honest participants and $\adv$.
@@ -90,13 +90,13 @@ Suppose a DRB's \epoch $\epochv$ starts at time $\drbtimezero$ and finalizes ($\
 where $Y$ denotes the set of possible values predicted by $\adv$ and $\ell_{\drboutput_\epochv}(\lambda)$ denotes the bit-length of $\drboutput_\epochv$.
 It is \textit{$\alpha$-\intrapredictable} otherwise.
 % \item A DRB is \textit{\delayunpredictable} if $\adv$ can force a large $\drbtimetwo$ such that $\drbtimetwo - \drbtimeone = o(\poly(\Delta))$ and predict $\drboutput_\epochv$ between $\drbtimeone$ and $\drbtimetwo$ with negligible probability.
-\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ cannot predict any property of $\drboutput_{\epochv + \beta'}$ (defined similarly to above) for any $\beta' \geq \beta$ before $\drbtimetwo$ with non-negligible advantage.
+\item A DRB is \textit{$\beta$-\interunpredictable} ($\beta \geq 1$) if $\adv$ cannot predict any property of $\drboutput_{\epochv + \beta'}$ (as defined above) for any $\beta' \geq \beta$ before $\drbtimetwo$ with non-negligible advantage.
 \end{itemize}
 \end{enumerate}
 \end{definition}
 
 \noindent\textbf{Unbiasability.}
-In the unbiasability game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first precomputes an advice string ($\sigma$) given the DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ (which may include the previous beacon output, list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
+In the unbiasability game $\gamedrbsecurity$ depicted in Figure~\ref{figure:unbias}, the adversary algorithm $\adv_0$ first precomputes an advice string ($\sigma$) given the DRB's public parameters $pp_\epochv$ in \epoch $\epochv$ (which may include the previous beacon output, a list of participants in \epoch $\epochv$, the identity of the \epoch leader, etc. depending on protocol specifications).
 Our definition is quite general in that the advice string may encode any biasing ``strategy.'' This string is taken by $\adv_1$, which then (statically and within \epoch $\epochv$) corrupts up to $t$ nodes in the honest node set $\nodes = \{1, \dots, n\}$, interacts with $\nodes\setminus\adv_1$, and outputs the beacon output $\drboutput_{\epochv, 1}$.
 In contrast, $\drboutput_{\epochv, 0}$ denotes the honest beacon output generated by $\nodes$ (and not involving $\adv_1$).
 For both, the notation $\drb^\epochv_{\tilde{\nodes}}$ denotes a DRB in \epoch $\epochv$ with a participant set $\tilde{\nodes}$.
