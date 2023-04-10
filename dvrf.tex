@@ -4,8 +4,8 @@
 \label{section:dvrf}
 While DRBs can have all nodes ($|\committee_\epochv| = n$) or some subset of nodes ($1 \leq |\committee_\epochv| < n$) contribute marginal entropy to the beacon output every \epoch, it is possible to devise a protocol where no node contributes any marginal entropy ($|\committee_\epochv| = 0$) as the beacon runs. The advantage of this approach is that no node needs to generate and communicate any fresh entropy (alleviating communication cost) while the disadvantage is that the entire beacon is predictable ($\beta$-\interunpredictability fails for all $\beta$) once compromised (perhaps undetectably).
 
-\subsection{From Distributed Verifiable Random Function}
-Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on distributed VRF~\cite{groth2021non,camenisch2022internet,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudo2021mt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with access to $sk$.
+% \subsection{From Distributed Verifiable Random Function}
+Guaranteeing randomness entirely via pseudorandomness, such DRB can be based on a distributed verifiable random function~\cite{groth2021non,camenisch2022internet,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudo2021mt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with $sk$.
 
 \begin{definition}[Distributed verifiable random function]
 A \textit{distributed verifiable random function} (DVRF) is a VRF where $n$ nodes cooperate to yield a pseudorandom output such that up to $t$ Byzantine nodes are tolerated while any $t + 1$ honest nodes are able to yield an honest output. It can be described by the following tuple of algorithms.
