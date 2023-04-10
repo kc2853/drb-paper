@@ -2,17 +2,17 @@
 
 \section{Commit-Reveal-Recover}
 \label{section:commit-reveal-recover}
-Without an escrow to enforce desired behaviors, \textit{commit-reveal-recover} variants extend commit-reveal and defend against the last-revealer attack by providing a mechanism to \textit{recover} or \textit{reconstruct} a participant's entropy contribution if withheld.
+Without using escrow to enforce desired behavior, \textit{commit-reveal-recover} variants defend against the last-revealer attack by providing a mechanism to \textit{recover} or \textit{reconstruct} a participant's entropy contribution if withheld.
 This can be achieved by either \textit{threshold secret sharing} or \textit{threshold encryption}.
 Protocols based on commit-reveal-recover assume a $t$-limited adversary and require the cooperation of at least $t + 1$ nodes to reconstruct such that two desirable properties are achieved simultaneously: there is no need for all $n$ nodes to reveal while any subset of $t$ Byzantine nodes cannot collude to preemptively reconstruct.
-Note that there is an inherent trade-off here: while a smaller value of $t$ helps tolerate more honest faults, it also means that a smaller subset can collude to predict the beacon output in advance.
+Note that this creates an inherent trade-off: while a smaller value of $t$ helps tolerate more honest faults, it also means that a smaller subset can collude to predict the beacon output in advance.
 
 \subsection{From Threshold Secret Sharing}
-Building on $(t, n)$-secret sharing, commit-reveal-recover variants based on threshold secret sharing often use PVSS (publicly verifiable secret sharing)~\cite{schoenmakers1999simple, cascudo2017scrape} as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of sharing and reconstruction.
+Commit-reveal-recover variants often use \emph{publicly verifiable secret sharing} (PVSS)~\cite{schoenmakers1999simple, cascudo2017scrape} as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of sharing and reconstruction.
 
 \begin{definition}[Publicly verifiable secret sharing]
-\textit{Publicly verifiable secret sharing} (PVSS) is a VSS with the following additional functionalities that enable public verification: $\mathsf{PVSS.KeyGen}$ (which generates secret-public key pair per participant), $\mathsf{PVSS.Enc}$ (for public-key encryption), and $\mathsf{PVSS.Dec}$ (decryption).
-The idea is that $\mathsf{PVSS.ShareGen}$ uses above to encrypt and decrypt PVSS shares and also to generate public proofs, e.g. NIZK (non-interactive zero-knowledge) proofs.
+\textit{Publicly verifiable secret sharing} (PVSS) is a VSS with the following additional functionality to enable public verification: $\mathsf{PVSS.KeyGen}$ (which generates secret-public key pair per participant), $\mathsf{PVSS.Enc}$ (for public-key encryption), and $\mathsf{PVSS.Dec}$ (decryption).
+The idea is that $\mathsf{PVSS.ShareGen}$ uses above to encrypt and decrypt PVSS shares and also to generate public proofs, e.g. non-interactive zero-knowledge (NIZK) proofs.
 Then $\mathsf{PVSS.ShareVerify}$ can be run by anyone (not just the participants).
 See Appendix~\ref{appendix:pvss} for details.
 \end{definition}
@@ -20,7 +20,7 @@ See Appendix~\ref{appendix:pvss} for details.
 The idea in these commit-reveal-recover variants is that each participant generates a secret (i.e. entropy contribution), distributes PVSS shares to each other participant, and receives $n$ respective shares of $n$ other participants' secrets. These shares are then used to compute $\drboutput_\epochv$ via Lagrange interpolation\footnote{In this paper, we assume one Lagrange interpolation at a protocol level incurs $O(n^2)$ and $O(n^3)$ communication cost (bitwise) in the optimistic and worst cases, respectively.} ($\mathsf{PVSS.Recon}$) in case some nodes withhold. Based on when and how such Lagrange interpolation takes place, we subdivide the protocols into the following categories: commit-reveal-recover, share-reconstruct-aggregate, and share-aggregate-reconstruct.
 
 \subsubsection{Commit-Reveal-Recover}
-Extending commit-reveal, \textit{commit-reveal-recover} adds a step to the commit phase where every participant is additionally required to distribute PVSS shares of its corresponding secret so that others can reconstruct it via Lagrange interpolation (\textit{recover}) if withheld during reveal. The trade-off is additional communication cost, which amplifies if $O(n)$ Lagrange interpolations need to take place. Scrape~\cite{cascudo2017scrape} adopts this technique.
+Extending commit-reveal, \textit{commit-reveal-recover} adds a step to the commit phase where every participant is additionally required to distribute PVSS shares of its corresponding secret so that others can reconstruct it via Lagrange interpolation (\textit{recover}) if withheld. The trade-off is additional communication cost, which amplifies if $O(n)$ Lagrange interpolations need to take place. Scrape~\cite{cascudo2017scrape} adopts this technique.
 
 \noindent\textbf{Scrape.} With its own PVSS scheme~\cite{cascudo2017scrape} designed for efficiency, Scrape runs as follows after the initial generation ($\mathsf{PVSS.KeyGen}$) of $(sk_i, pk_i)$ for each of the $n$ nodes.
 \begin{enumerate}
@@ -40,12 +40,12 @@ As packed Shamir secret sharing allows sharing of $O(n)$ secrets (as opposed to 
 Another approach is to skip the commit-reveal phase and by default reconstruct each secret shared via PVSS. In other words, all nodes can distribute their PVSS shares (\textit{share}), perform Lagrange interpolation per secret for a total of $O(n)$ times (\textit{reconstruct}), and aggregate the interpolated secrets to output $\drboutput_\epochv$ (\textit{aggregate}). While the resulting \textit{share-reconstruct-aggregate} saves a round of communication (Reveal) from Scrape's worst case, its average case does incur substantial communication cost due to $O(n)$ Lagrange interpolations, each of which requires cooperation of $t + 1$ nodes. Hence, this approach is preferable when it can be assumed that most \epochs will require recovery due to faulty participants. RandShare~\cite{syta2017scalable} uses this technique.
 
 \subsubsection{Share-Aggregate-Reconstruct}
-An alternative is to harness the homomorphic property of PVSS, due to which only one, as opposed to $O(n)$, Lagrange interpolation reconstructs $\drboutput_\epochv$ if nodes perform \textit{aggregate} before \textit{reconstruct}, hence \textit{share-aggregate-reconstruct}. SecRand~\cite{guo2020secRand} uses this technique to reduce communication overhead accordingly.
+Another alternative is to harness the homomorphic property of PVSS, due to which only one, as opposed to $O(n)$, Lagrange interpolation reconstructs $\drboutput_\epochv$ if nodes perform \textit{aggregate} before \textit{reconstruct}, hence \textit{share-aggregate-reconstruct}. SecRand~\cite{guo2020secRand} uses this technique to reduce communication overhead accordingly.
 
 \subsection{From Threshold Encryption}
 While protocols based on threshold secret sharing can incur high communication cost of $O(n^4)$ due to $O(n)$ Lagrange interpolations, protocols relying on a different cryptographic primitive, namely threshold encryption~\cite{desmedt1990Threshold} (which does not rely on PVSS), offer a variant where only one Lagrange interpolation suffices even in the worst case. Though reminiscent of share-aggregate-reconstruct, these protocols differ in that they require a DKG, which may be run multiple times to refresh keys. In this section, we summarize how a protocol like HERB~\cite{cherniaeva2019homomorphic} uses threshold encryption to construct a DRB.
 
-The main idea is simple: $n$ participating nodes run a DKG, encrypt their respective entropy contributions under the group public key $pk$, homomorphically combine all ciphertexts into one group ciphertext, and jointly (requiring at least $t + 1$ nodes) decrypt the group ciphertext via one Lagrange interpolation. Effectively, a DKG is what makes this possible, as it allows the usage of $sk$ (to decrypt a ciphertext under $pk$) without knowing it (recall from Definition~\ref{def:dkg}).
+The main idea is simple: $n$ participating nodes run a DKG, encrypt their respective entropy contributions under the group public key $pk$, homomorphically combine all ciphertexts into one group ciphertext, and jointly (requiring at least $t + 1$ nodes) decrypt the group ciphertext via one Lagrange interpolation. Effectively, the DKG is what makes this possible, as it allows the usage of $sk$ (to decrypt a ciphertext under $pk$) without knowing it (recall from Definition~\ref{def:dkg}).
 
 % \begin{definition}[$(t, n)$-threshold encryption]
 % A \textit{$(t, n)$-threshold encryption} scheme uses DKG among $n$ nodes as a subroutine and allows encryption of a message under the resulting group public key $pk$ such that the message can be decrypted by any $t + 1$ of the $n$ nodes, but not less. The scheme ($\mathsf{ThrEnc}$) is composed of the following algorithms.
