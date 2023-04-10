@@ -450,7 +450,7 @@ Note that BLS uses a bilinear pairing $e: \groupG_1 \times \groupG_2 \rightarrow
 \item Computability. $e(g_1, g_2)$ can be efficiently computed.
 \end{itemize}
 
-The threshold variant~\cite{boldyreva2003threshold} of BLS (i.e. threshold BLS) requires $\mathsf{Sign}_{sk}(m)$ to be computed by $t + 1$ out of $n$ nodes. This is achieved via DKG such that $sk$ denotes the implied group secret key whereas each node broadcasts its partial signature $H_1(m)^{sk_i}$, $t + 1$ of which from the set $A$ of honest nodes are combined to generate
+The threshold variant~\cite{boldyreva2003threshold} of BLS (i.e. threshold BLS) requires $\mathsf{Sign}_{sk}(m)$ to be computed by $t + 1$ out of $n$ nodes. This is achieved via DKG such that $sk$ denotes the implicit group secret key whereas each node broadcasts its partial signature $H_1(m)^{sk_i}$, $t + 1$ of which from the set $A$ of honest nodes are combined to generate
 \[
 H_1(m)^{sk} = \prod_{i \in A} \left(H_1(m)^{sk_i}\right)^{\lambda_{0, i, A}}
 \]

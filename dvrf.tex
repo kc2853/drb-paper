@@ -39,7 +39,7 @@ There is no marginal entropy contributed by the participants, $f$ typically take
 \[
 \drboutput_\epochv = H(\mathsf{Sign}_{sk}(\epochv \mathbin\Vert \drboutput_{\epochv - 1}))
 \]
-where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at least $t + 1$ nodes with $sk$ as the implied group secret key generated via DKG. The actual computation involves combining of partial signatures computed using $sk_i$ (see Appendix~\ref{appendix:bls}).
+where $\mathsf{Sign}_{sk}(\cdot)$ is a threshold BLS signature computed by at least $t + 1$ nodes with $sk$ as the implicit group secret key generated via DKG. The actual computation involves combining of partial signatures computed using $sk_i$ (see Appendix~\ref{appendix:bls}).
 
 \noindent\textbf{Variations on a chain of unique signatures.} Besides a chain of BLS signatures, there exist several other variations.
 \begin{itemize}
