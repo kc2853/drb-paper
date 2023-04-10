@@ -1,7 +1,7 @@
 %!TEX root = main.tex
 
 \section{Discussion}
-\label{section:discussions}
+\label{section:discussion}
 
 %We provide a historical account of the distributed randomness line of research, compare all aforementioned DRBs in Table~\ref{table:comparison}, and explore some practical issues with DRBs.
 
@@ -14,7 +14,7 @@ See~\cite{kalai2021lower,haitner2020tight} for this line of research.
 
 Overall, these works concern upper and lower bounds on corruption threshold, bias (deviation from coin flipping probability 1/2), and round complexity, all of which provide interesting theoretical insights.
 Nonetheless, these bounds are often asymptotic (hence not practical) and are grounded in a more lax definition of security where it is sufficient that bias is bounded (but can still be nontrivial).
-This is in contrast to the modern literature on DRBs considered in this paper, which aims to design protocols which are as \drbsecure as possible, output multiple bits per round, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
+This is in contrast to the modern literature on DRBs considered in this paper, which aims to design protocols which are as \drbsecure as possible, output multiple bits per \epoch, have explicit round complexity and fault tolerance, and assume computationally bounded adversaries in a cryptographic setting as well as point-to-point communication channels in the first place.
 %The goal is to achieve fully functional and practical DRBs.
 
 Outside the full information model (such that cryptography is allowed), the well-known lower bound by Cleve~\cite{cleve1986limits} states that for any $r$-round coin flipping protocol there exists an efficient adversary controlling half or more of the participants that can bias the output by $\Omega(1 / r)$.
@@ -143,8 +143,8 @@ Table~\ref{table:comparison} provides an overall comparison of DRBs. \textit{Fau
 
 \textit{Verifier Complexity} refers to the computational cost for a passive observer (not participating in the protocol) to verify a beacon output. We exclude the cost associated with the initial setup for both verifier and communication complexities. We assume a verifier complexity of $O(n)$ per Lagrange interpolation or Scrape's PVSS~\cite{cascudo2017scrape} run. \textit{Communication Complexity} concerns bitwise point-to-point communication among nodes by default. Alternatively, we consider a \textit{public bulletin board} (PBB) (e.g. blockchain) as a reliable information exchange medium in protocols where it is intrinsic. In a PBB model, we consider both the bitwise writing cost (amount of data posted to PBB) and reading cost (by all nodes where each node only reads data relevant to it). In the absence of PBB, Byzantine consensus~\cite{castro1999practical} incurs $O(n^2)$ cost per decision by default.
 
-\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure}  adversarial nodes cooperate.
-The reason for this column is to observe the consequence of when the honest majority assumption fails, which has happened in practice (e.g. a \$625 million Axie Infinity's Ronin hack in 2022~\cite{scharfman2023decentralized}). 
+\textit{Max Damage} refers to the maximum damage possible when $n - 1$ rushing~\cite{gennaro1999secure} adversarial nodes cooperate.
+The reason for this column is to observe the consequence of when the honest majority assumption fails, which has happened in practice (e.g. a \$625 million Axie Infinity's Ronin hack in 2022~\cite{scharfman2023decentralized}).
 A rushing adversary may delay sending messages until \textit{after} reading messages sent by all honest nodes in a given round of communication.
 There can exist a separation between what rushing versus non-rushing adversaries can do especially in protocols from Section~\ref{section:commit-reveal-recover}: if one can generate its entropy contributions after seeing (or otherwise simultaneously with) all the honest nodes' entropy contributions, then biasing (or otherwise predicting) is possible.
 The same fundamental reasoning applies to (say) Ouroboros, where slot leaders (i.e. entropy providers) communicate in sequential slots (and hence the adversary can reconstruct an honest node's entropy contribution before generating its own).

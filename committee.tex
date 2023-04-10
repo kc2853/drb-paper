@@ -2,8 +2,8 @@
 
 \section{Committee-Based Protocols}
 \label{section:committee-based}
-All aforementioned commit-reveal variants (Sections~\ref{subsection:modifying-commit-reveal},~\ref{section:commit-reveal-punish}, and~\ref{section:commit-reveal-recover}) include every node the entropy-providing committee $\committee_\epochv$ in each round.
-Incorporating marginal entropy from all nodes scales poorly with large numbers of participants, and hence a natural optimization is to select a smaller subset of nodes to contribute marginal entropy in each round (i.e. reduce $|\committee_\epochv|$).
+All aforementioned commit-reveal variants include every node in the entropy-providing committee $\committee_\epochv$ for every \epoch.
+Incorporating marginal entropy from all nodes scales poorly with large numbers of participants, and hence a natural optimization is to select a smaller subset of nodes to contribute marginal entropy in each \epoch (i.e. reduce $|\committee_\epochv|$).
 
 In this section, we consider DRBs that are committee-based, with $\committee_\epochv$ such that $1 \leq |\committee_\epochv| < n$. Committee-based protocols proceed in two steps: \textit{committee selection} and \textit{beacon output generation}. As the names suggest, $\committee_\epochv$ is agreed upon during committee selection while the beacon output $\drboutput_\epochv$ is generated and agreed upon during beacon output generation.
 %Provided below is a summary of ten preexisting protocols, and we offer intuition (refer to corresponding citations for full details) on interpreting them under our simple framework.
@@ -25,21 +25,21 @@ In HydRand~\cite{schindler2020hydrand} and GRandPiper~\cite{bhat2020randpiper}, 
 
 Randomized selection means that some nodes may, in theory, never be selected and therefore never be able to contribute entropy. A more serious concern is that an adversary can attempt to bias $\drboutput_\epochv$ via grinding in order to bias $\committee_{\epochv + 1}$ (which can bias $\drboutput_{\epochv + 1}$ and so on). In the worst case, this can lead to a vicious cycle in which an adversary controlling enough nodes on the current committee to manipulate the beacon output can ensure it will also control enough nodes on the next committee, and so on ad infinitum.
 
-This is not an issue in RR, as its committee selection is deterministic and independent of the preceding beacon output. Nonetheless, a trade-off of RR is that denial-of-service becomes indefinitely possible (for all \epochs $\epochv$ for $\epochv > \tilde{\epochv}$ given $\drboutput_{\tilde{\epochv}}$) since each committee is publicly known in advance. All in all, RR gains unbiasability (due to determinism) at the cost of indefinite DoS, while RS reduces the risk DoS of, i.e. that only for \epoch $\epochv + 1$ (due to randomization given $\drboutput_\epochv$), at the cost of potential grinding attacks.
+This is not an issue in RR, as its committee selection is deterministic and independent of the preceding beacon output. Nonetheless, a trade-off of RR is that denial-of-service (DoS) becomes indefinitely possible (for all \epochs $\epochv$ for $\epochv > \tilde{\epochv}$ given $\drboutput_{\tilde{\epochv}}$) since each committee is publicly known in advance. All in all, RR gains unbiasability (due to determinism) at the cost of indefinite DoS, while RS reduces the risk of DoS, i.e. that only for \epoch $\epochv + 1$ (due to randomization given $\drboutput_\epochv$), at the cost of potential grinding attacks.
 
 \noindent\textbf{Leader-Based Selection (LS).} A third example, \textit{leader-based selection} (LS) is a hybrid method that exhibits both determinism and randomization. It runs in two steps: the first step involves electing an \epoch leader (either by RR or RS) while the second involves selection of $\committee_\epochv$ by the elected leader. It is in this way that the mechanism is deterministic from the leader's perspective while randomized from that of others.
 
 One approach to limit the power delegated to the leader is that $|\committee_\epochv|$ needs to be greater than $t$ so that a malicious leader wouldn't be able to choose $\committee_\epochv$ maliciously. RandHound~\cite{syta2017scalable}, SPURT~\cite{das2021spurt}, and OptRand~\cite{bhat2022optrand} demonstrate such LS.
 \begin{itemize}
 \item RandHound. As instantiated in RandHerd~\cite{syta2017scalable}, RandHound's leader election (i.e. via RS as the first step of LS) involves a public lottery where each node generates a lottery ticket $H(C \mathbin\Vert pk_i)$ given a public configuration parameter $C$ (assuming its randomness) such that node $\argmin_{i} H(C \mathbin\Vert pk_i)$ becomes the leader (originally called client). In the second step of LS, RandHound adopts a form of sharding (involving PVSS groups). The leader selects more than a threshold number of nodes in each shard (PVSS group), guaranteeing a threshold number of entropy providers across all shards.
-\item SPURT and OptRand. Unlike RandHound, SPURT and OptRand adopt RR as the first step of leader selection, with nodes simply taking turns as \epoch leader. Then the leader chooses $\committee_\epochv$ based on received encrypted messages.
+\item SPURT and OptRand. Unlike RandHound, SPURT and OptRand adopt RR as the first step of LS, with nodes simply taking turns as an \epoch leader. Then the leader chooses $\committee_\epochv$ based on received encrypted messages.
 \end{itemize}
 
 Given an underlying DRB that utilizes a leader to orchestrate communication, LS is a natural choice to committee selection, as a leader helps mitigate the protocol's communication cost overall.
 
 \subsubsection{Private Committee Selection}
 \label{subsubsection:private-committee-selection}
-In \textit{private committee selection}, also known as a \textit{private lottery}, each node needs to input some private information (e.g. secret key) in order to check whether or not it has been selected into $\committee_\epochv$ (i.e. has won a lottery to serve on the committee). The general formulation of a private lottery is given by:
+In a \textit{private committee selection}, also known as a \textit{private lottery}, each node needs to input some private information (e.g. secret key) in order to check whether or not it has been selected into $\committee_\epochv$ (i.e. has won a lottery to serve on the committee). The general formulation of a private lottery is given by
 \[
 f_{priv}(\cdot) < target
 \]
