@@ -11,7 +11,7 @@ Note that this creates an inherent trade-off: while a smaller value of $t$ helps
 Commit-reveal-recover variants often use \emph{publicly verifiable secret sharing} (PVSS)~\cite{schoenmakers1999simple, cascudo2017scrape} as a subprotocol in order to allow any external party (not just the participants) to verify the correctness of sharing and reconstruction.
 
 \begin{definition}[Publicly verifiable secret sharing]
-\textit{Publicly verifiable secret sharing} (PVSS) is a VSS with the following additional functionality to enable public verification: $\mathsf{PVSS.KeyGen}$ (which generates secret-public key pair per participant), $\mathsf{PVSS.Enc}$ (for public-key encryption), and $\mathsf{PVSS.Dec}$ (decryption).
+\textit{Publicly verifiable secret sharing} (PVSS) is a VSS with the following additional algorithms to enable public verification: $\mathsf{PVSS.KeyGen}$ (which generates secret-public key pair per participant), $\mathsf{PVSS.Enc}$ (for public-key encryption), and $\mathsf{PVSS.Dec}$ (decryption).
 The idea is that $\mathsf{PVSS.ShareGen}$ uses above to encrypt and decrypt PVSS shares and also to generate public proofs, e.g. non-interactive zero-knowledge (NIZK) proofs.
 Then $\mathsf{PVSS.ShareVerify}$ can be run by anyone (not just the participants).
 See Appendix~\ref{appendix:pvss} for details.

@@ -4,11 +4,11 @@
 \label{section:dvrf}
 
 %While DRBs can have all nodes ($|\committee_\epochv| = n$) or some subset of nodes ($1 \leq |\committee_\epochv| < n$) contribute marginal entropy to the beacon output every \epoch, 
-It is possible to devise a protocol where no node contributes any marginal entropy ($|\committee_\epochv| = 0$) as the beacon runs, producing unpredictable output solely via cryptographic pseudorandomness. This can improve efficiency as no node needs to generate and communicate fresh entropy.
+It is possible to devise a protocol where no node contributes any marginal entropy ($|\committee_\epochv| = 0$) as the beacon runs, producing the beacon output solely via cryptographic pseudorandomness. This can improve efficiency as no node needs to generate and communicate fresh entropy.
 However, the beacon becomes predictable forever ($\beta$-\interunpredictability fails for all $\beta$) if compromised (perhaps undetectably).
 
 % \subsection{From Distributed Verifiable Random Function}
-Such a DRB can be based on a distributed verifiable random function~\cite{groth2021non,camenisch2022internet,galindo2020fully} (DVRF, also known as threshold VRF or TVRF~\cite{cascudo2021mt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with $sk$.
+Such a DRB can be based on a \textit{distributed verifiable random function}~\cite{camenisch2022internet,galindo2020fully,cachin2005random} (DVRF, also known as threshold VRF or TVRF~\cite{cascudo2021mt}). The idea is that the VRF's $sk$ is distributed among $n$ nodes via DKG such that $t + 1$ nodes can cooperate to compute a per-\epoch VRF output (as well as its proof), as if the computation involves one master node with $sk$.
 
 \begin{definition}[Distributed verifiable random function]
 A \textit{distributed verifiable random function} (DVRF) is a VRF where any $t + 1$ out of $n$ nodes can jointly compute a pseudorandom output while any $t$ Byzantine nodes cannot. It can be described by the following algorithms:
@@ -33,7 +33,7 @@ The output is equivalent to one trustworthy master node with complete knowledge 
 \[
 \drboutput_\epochv = \textsf{VRF}_{sk}(f(\drboutput_{\epochv - 1}))
 \]
-There is no marginal entropy contributed by the participants, $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$. The ideal 1-\interunpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.
+There is no marginal entropy contributed by the participants, as $f$ typically takes a form resembling $f(\drboutput_{\epochv - 1}) = H(\epochv \mathbin\Vert \drboutput_{\epochv - 1})$. The ideal 1-\interunpredictability of the above DVRF formulation relies on the fact that no one node (or up to $t$ nodes) can gain knowledge of $sk$ to be able to compute and predict future beacon outputs.
 
 \noindent\textbf{DVRF-based DRB from a chain of unique signatures.} Since taking the hash of a verifiable unpredictable function (VUF)~\cite{micali1999verifiable} is equivalent to a VRF, a unique digital signature (which is a VUF~\cite{dodis2005verifiable}) can be made into a DVRF by computing its threshold variant~\cite{boldyreva2003threshold} and hashing the output (assuming a hash function as a random oracle~\cite{bellare1993random}). Dfinity~\cite{camenisch2022internet} and drand~\cite{drand} (while differing slightly in minor details) both use the BLS signature scheme~\cite{boneh2001short} to realize a DRB as
 \[

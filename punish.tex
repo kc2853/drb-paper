@@ -16,7 +16,7 @@ Practical deployment also requires understanding of the value to participants of
 Economically Viable Randomness (EVR)~\cite{david2020economically} provides an alternative requiring \textit{constant} deposits while tolerating (honest) faults to an extent. This is achieved by devising a threshold variant of commit-reveal (i.e. in which $t + 1$, as opposed to all $n$, nodes reveal to compute $\drboutput_\epochv$) and having an incentive mechanism around it. The threshold nature also invites collusion, which is counteracted by EVR's \textit{informing} mechanism: if the escrow is notified of collusion (via informing), it rewards the informer and slashes the deposits of all others (\textit{collective punishment}). Realizing this, nodes are discouraged to collude, fearing another node within the coalition would inform.
 
 EVR requires multiple cryptographic building blocks (introduced here, as they are used in other DRBs throughout the paper).
-EVR uses Escrow-DKG~\cite{david2019rational}, an extension of DKG (distributed key generation)~\cite{pedersen1991threshold,gennaro1999secure}, to realize a threshold commit-reveal.
+EVR uses Escrow-DKG~\cite{david2019rational}, an extension of DKG (distributed key generation)~\cite{pedersen1991threshold,gennaro1999secure,groth2021non,gurkan2021aggregatable}, to realize a threshold commit-reveal.
 DKG allows a set of $n$ nodes to collectively generate a pair $(sk, pk)$ of group secret and public keys such that $sk$ is shared and ``implied'' (i.e. never computed explicitly) by $n$ nodes via the following building blocks.
 
 \begin{definition}[$(t, n)$-secret sharing]
