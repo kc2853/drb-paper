@@ -119,7 +119,7 @@ One of the best known DKG schemes is Joint-Feldman, proposed by Pedersen~\cite{p
 %As discussed in~\cite{gennaro1999secure}, Joint-Feldman does not guarantee uniform randomness or secrecy of the shared secret key. Joint-Pedersen, proposed in the same paper, uses Pedersen commitments~\cite{pedersen1991non} to guarantee uniform randomness by increasing the number of communication rounds by one. Nevertheless, it has been shown that the public key biasability should not be a problem for applications that use DKG as a subprotocol for distributed randomness.\\\\
 \noindent\textbf{Joint-Feldman.}
 \label{appendix:jointFeldman}
-In this DKG scheme, each participant uses Feldman-VSS to share a randomly chosen secret. The protocol is implemented as follows.
+In this DKG scheme, each participant uses Feldman-VSS to share a randomly chosen secret. The protocol is implemented as follows:
 \begin{itemize}
     \item $\mathsf{DKG}(1^\lambda, t, n) \rightarrow (sk_i, pk_i, pk)$ proceeds in two phases---Sharing and Reconstruction.
     \begin{enumerate}
@@ -165,7 +165,7 @@ In this DKG scheme, each participant uses Feldman-VSS to share a randomly chosen
 
 \subsection{Publicly Verifiable Secret Sharing (PVSS)}
 \label{appendix:pvss}
-PVSS can be described by the following algorithms.
+PVSS can be described by the following algorithms:
 \begin{itemize}
     \item $\mathsf{Setup}(\lambda) \rightarrow pp$ generates the public parameters $pp$, an implicit input to all other algorithms.
     \item $\mathsf{KeyGen}(\lambda) \rightarrow (sk_i, pk_i)$ generates the PVSS key pair used for encryption and decryption for node $i$.
@@ -317,7 +317,7 @@ where $\lambda_{0, i, A}$ denotes the Lagrange coefficients. Note that, unlike V
 
 \subsection{Verifiable Random Function (VRF)}
 \label{appendix:vrf}
-A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given an input $x$ and a secret key $sk$, generates a unique, pseudorandom output $y$ as well as a proof $\pi$ verifying that the computation has been done correctly. Due to $\pi$, it is possible to repeatedly generate new pseudorandom outputs with one $sk$ and varying inputs in a verifiable manner whereas otherwise (e.g. using a classical pseudorandom function) one needs to divulge the secret key and sacrifice its reusability for public verification purposes. It can be represented by the following tuple of algorithms:
+A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given an input $x$ and a secret key $sk$, generates a unique, pseudorandom output $y$ as well as a proof $\pi$ verifying that the computation has been done correctly. Due to $\pi$, it is possible to repeatedly generate new pseudorandom outputs with one $sk$ and varying inputs in a verifiable manner whereas otherwise (e.g. using a classical pseudorandom function) one needs to divulge the secret key and sacrifice its reusability for public verification purposes. It can be represented by the following tuple of algorithms.
 \begin{itemize}
 \item $\mathsf{Prove}(sk, x) \rightarrow (F_{sk}(x), \pi_{sk}(x))$ generates the pseudorandom output $F_{sk}(x)$ and its proof of correctness $\pi_{sk}(x)$ given input $x$ and secret key $sk$.
 \item $\mathsf{Verify}(pk, x, y, \pi) \rightarrow \{0, 1\}$ outputs 1 if it is verified that $y = F_{sk}(x)$ using the proof $\pi$ and 0 otherwise.
@@ -383,7 +383,7 @@ A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given 
 \cmidrule{3-5}
 & & LS & \begin{tabular}{@{}l@{}}\textbf{RandHound}\\\textit{Step 1}: Node $\argmin_{i} H(C \mathbin\Vert pk_i)$\\\textit{Step 2}: Share-reconstruct-aggregate\\\\\textbf{SPURT, OptRand}\\\textit{Step 1}: Node $i \equiv \epochv \pmod n$\\\textit{Step 2}: Share-aggregate-reconstruct\end{tabular} & \\
 \cmidrule{2-5}
-& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\drboutput_\epochv = VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert \epochv)$\\\\\textbf{Ouroboros Praos}\tnote{1}\\\textit{Step 1}: $VRF_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert slot \mathbin\Vert \mathsf{TEST}) < target$\\\textit{Step 2}: $\drboutput_\epochv = H(\drboutput_{\epochv - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
+& \multirow{2}{*}[-0.55cm]{Private} & VRF & \begin{tabular}{@{}l@{}}\textbf{NV++}\\\textit{Step 1}: $\textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert nonce) < target$\\\textit{Step 2}: Threshold ElGamal\end{tabular} & \begin{tabular}{@{}l@{}}\textbf{Algorand}\\\textit{Step 1}: $\textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert role) < target$\\\textit{Step 2}: $\drboutput_\epochv = \textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert \epochv)$\\\\\textbf{Ouroboros Praos}\tnote{1}\\\textit{Step 1}: $\textsf{VRF}_{sk}(\drboutput_{\epochv - 1} \mathbin\Vert slot \mathbin\Vert \text{TEST}) < target$\\\textit{Step 2}: $\drboutput_\epochv = H(\drboutput_{\epochv - 1} \mathbin\Vert epoch \mathbin\Vert \rho_1 \mathbin\Vert ... \mathbin\Vert \rho_K)$\end{tabular} \\
 \cmidrule{3-5}
 & & Hash chain & & \begin{tabular}{@{}l@{}}\textbf{Caucus}\tnote{2}\\\textit{Step 1}: $H(h_\epochv \oplus \drboutput_{\epochv - 1}) < target$\\\textit{Step 2}: $\drboutput_\epochv = h_\epochv \oplus \drboutput_{\epochv - 1}$\end{tabular} \\
 \cmidrule{1-5}
@@ -391,7 +391,7 @@ A VRF~\cite{micali1999verifiable,dodis2005verifiable} is a function that, given 
 \begin{tablenotes}[flushleft]
 \footnotesize
 \item Note that public committee selection mechanisms (Section~\ref{subsubsection:public-committee-selection}) include RR (round-robin), RS (random selection), and LS (leader-based selection) while details regarding private committee selection can be found in Section~\ref{subsubsection:private-committee-selection}. For details on beacon output generation, see Sections~\ref{subsubsection:fresh} and~\ref{subsubsection:precommitted}.
-\item[1] The protocol is a variant of Algorand. While $|\committee_\epochv|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per \epoch), that in Ouroboros Praos is expected to be $K$ where each \epoch consists of $K$ slots and thus $K$ per-slot lotteries. Parameters $slot$ and $epoch$ denote the slot and \epoch numbers, respectively, and $\rho_i = VRF_{sk_i}(\drboutput_{\epochv - 1} \mathbin\Vert slot_i \mathbin\Vert \mathsf{NONCE})$ is returned by the slot leader of $slot_i$. $\mathsf{TEST}$ and $\mathsf{NONCE}$ are strings.
+\item[1] The protocol is a variant of Algorand. While $|\committee_\epochv|$ is expected to be one in Algorand (with 1 final winner per lottery and 1 lottery per \epoch), that in Ouroboros Praos is expected to be $K$ where each \epoch consists of $K$ slots and thus $K$ per-slot lotteries. Parameters $slot$ and $epoch$ denote the slot and \epoch numbers, respectively, and $\rho_i = \textsf{VRF}_{sk_i}(\drboutput_{\epochv - 1} \mathbin\Vert slot_i \mathbin\Vert \text{NONCE})$ is returned by the slot leader of $slot_i$. $\text{TEST}$ and $\text{NONCE}$ are strings.
 \item[2] In Caucus, a VRF is replaced by a hash function combined with a hash chain, i.e. a list ($h_1, ..., h_m$) with $h_\epochv = H(h_{\epochv + 1})$ for all $\epochv = 1, ..., m - 1$ where $h_m = s$ for some random seed. A hash chain provides the functionality of provably committing to private inputs as one publicizes one $h_\epochv$ at a time (i.e. $h_\epochv$ in \epoch $\epochv$). Each node independently generates a private hash chain. One downside is that the hash chain needs to be periodically regenerated, as $m$ is finite.
 \end{tablenotes}
 \end{threeparttable}

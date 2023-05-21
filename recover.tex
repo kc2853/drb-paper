@@ -22,7 +22,7 @@ The idea in these commit-reveal-recover variants is that each participant genera
 \subsubsection{Commit-Reveal-Recover}
 Extending commit-reveal, \textit{commit-reveal-recover} adds a step to the commit phase where every participant is additionally required to distribute PVSS shares of its corresponding secret so that others can reconstruct it via Lagrange interpolation (\textit{recover}) if withheld. The trade-off is additional communication cost, which amplifies if $O(n)$ Lagrange interpolations need to take place. Scrape~\cite{cascudo2017scrape} adopts this technique.
 
-\noindent\textbf{Scrape.} With its own PVSS scheme~\cite{cascudo2017scrape} designed for efficiency, Scrape runs as follows after the initial generation ($\mathsf{PVSS.KeyGen}$) of $(sk_i, pk_i)$ for each of the $n$ nodes.
+\noindent\textbf{Scrape.} With its own PVSS scheme~\cite{cascudo2017scrape} designed for efficiency, Scrape runs as follows after the initial generation ($\mathsf{PVSS.KeyGen}$) of $(sk_i, pk_i)$ for each of the $n$ nodes:
 \begin{enumerate}
 \item \textbf{Commit.} Every node $P_j$ runs $\mathsf{PVSS.ShareGen}(s^{(j)})$ as a dealer and publishes the encrypted shares $\mathsf{Enc}(pk_i, s^{(j)}_i)$ for $i \in [n]$ and encryption proofs. $P_j$ also publishes a commitment to the secret exponent $\mathsf{Com}(s^{(j)}, r_j)$ (with fresh randomness $r_j$). Upon receiving encrypted shares and proofs, all nodes run $\mathsf{PVSS.ShareVerify}$ to verify correct encryption. Let $\committee_\epochv$ be the set of nodes with published commitments and valid shares.
 \item \textbf{Reveal.} Once $t + 1$ nodes have distributed their commitments and valid shares, every node $P_j$, $j \in \committee_\epochv$, opens its commitment by revealing $(s^{(j)}, r_j)$.
